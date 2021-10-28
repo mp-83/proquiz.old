@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Code challenge</title>
+  </head>
+  <body>
+	<div>
+		<button id="start-btn">Start</button>
+	</div>
+	<div id="first-question-section" hidden>
+	    <div>
+			<h4>Q.1</h4>
+			<p>this test is failing. Find the subtle bug.</p>
+		</div>
+		<pre cols="4">
+		<code>
+			class Client:
+				...
+
+			class Navigator:
+				def __init__(self, base_url):
+					self.base_url = base_url
+					self.client = Client()
+
+				def format_url(self, page):
+					return return f'{self.base_url}/{page})
+		
+			def test_should_navigate_to_albums_page():
+				base_url = 'https://photos.com'
+				nav = Navigator(base_url)
+				assert nav.format_url('/albums') == base_url + '/albums'			
+		</code>
+		</pre>
+		<div>
+			<input type="text">
+		</div>
+	</div>
+	<pre>
+		<code>
+		</code>
+	</pre>
+	<div>
+		<button id="next-btn" display="center" hidden>Next</button>
+	</div>
+  </body>
+  <script>
+	const startBtn = document.getElementById("start-btn");
+	const firstCodeSection = document.getElementById("first-question-section");
+	startBtn.addEventListener("click", function(event) {
+		firstCodeSection.hidden = false;
+	});
+  </script>
+</html>
