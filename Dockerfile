@@ -20,5 +20,5 @@ COPY package/ /package
 RUN pip install --editable ".[dev]"
 
 # CMD tail -f /dev/null
-CMD python /package/server/app.py
+CMD python /package/src/app.py
 # CMD /usr/local/bin/pserve development.ini --reload

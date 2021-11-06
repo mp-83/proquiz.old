@@ -18,5 +18,5 @@ setup(
     install_requires=requires,
     extras_require={
         'dev': dev_requires,
-    }
+    },
 )
