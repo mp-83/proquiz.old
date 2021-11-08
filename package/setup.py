@@ -14,9 +14,14 @@ dev_requires = [
 ]
 
 setup(
-    name='interview_server',
+    name='codechallenge',
     install_requires=requires,
     extras_require={
         'dev': dev_requires,
     },
+    entry_points={
+        'paste.app_factory': [
+            'main = codechallenge:main'
+        ],
+    }    
 )
