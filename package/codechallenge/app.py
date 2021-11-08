@@ -3,7 +3,7 @@ from pyramid.response import Response
 
 
 def good_evening(request):
-    return Response('<body><h1>Good Evening y\'all !!! Does it work?</h1></body>')
+    return Response('<body><h1>Good Evening y\'all !!! Does it work? It does :)</h1></body>')
 
 
 def main(global_config, **settings):

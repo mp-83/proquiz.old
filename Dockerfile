@@ -11,7 +11,7 @@ WORKDIR /package
 
 COPY package/ /package
 
-RUN /usr/local/bin/pip install --editable .
+RUN /usr/local/bin/pip install --editable .[dev]
 
 # CMD tail -f /dev/null
 CMD /usr/local/bin/pserve development.ini --reload
