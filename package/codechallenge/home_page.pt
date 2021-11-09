@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Code Challenge</title>
+</head>
+<body>
+	<h1>Hi ${name}</h1>
+	<h2>Welcome to the Code Challenge! Start the <a href='/test'>test</a></h2>
+</body>
+</html>

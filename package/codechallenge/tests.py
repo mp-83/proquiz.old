@@ -1,24 +1,19 @@
-import unittest
-
+import pytest
 from pyramid import testing
 
 
-class TutorialViewTests(unittest.TestCase):
-    def setUp(self):
-        self.config = testing.setUp()
-
-    def tearDown(self):
-        testing.tearDown()
-
-    def test_hello_world(self):
-        from codechallenge.app import good_evening
+class TestCaseTutorialView:
+    def test_home_view(self):
+        from codechallenge.views import CodeChallengeViews
 
         request = testing.DummyRequest()
-        response = good_evening(request)
-        self.assertEqual(response.status_code, 200)
+        view_obj = CodeChallengeViews(request)
+        response = view_obj.home()
+        assert response['name'] == 'Marco'
 
 
-class TutorialFunctionalTests(unittest.TestCase):
+class TestCaseTutorialFunctional:
+    @pytest.fixture(autouse=True)
     def setUp(self):
         from codechallenge import main
         app = main({})
@@ -26,6 +21,10 @@ class TutorialFunctionalTests(unittest.TestCase):
 
         self.testapp = TestApp(app)
 
-    def test_hello_world(self):
+    def test_home_page(self):
         res = self.testapp.get('/', status=200)
-        self.assertIn(b'<h1>Good Evening y\'all !!! Does it work? It does :)</h1>', res.body)
+        assert b'Welcome' in res.body
+
+    def test_test_page(self):
+        res = self.testapp.get('/test', status=200)
+        assert b'Start' in res.body

@@ -2,12 +2,10 @@ from pyramid.config import Configurator
 from pyramid.response import Response
 
 
-def good_evening(request):
-    return Response('<body><h1>Good Evening y\'all !!! Does it work? It does :)</h1></body>')
-
-
 def main(global_config, **settings):
     config = Configurator(settings=settings)
-    config.add_route('good-evening', '/')
-    config.add_view(good_evening, route_name='good-evening')
+    config.include('pyramid_chameleon')    
+    config.add_route('home', '/')
+    config.add_route('test', '/test')
+    config.scan('.views')
     return config.make_wsgi_app()
