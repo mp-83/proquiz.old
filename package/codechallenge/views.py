@@ -5,14 +5,15 @@ from pyramid.view import view_config
 class CodeChallengeViews:
     
     def __init__(self, request):
-        self.request = request    
+        self.request = request
 
-    @view_config(route_name='home', renderer='home_page.jinja2')
-    def home(self):
-        test_route = '/test'
+    @view_config(route_name='start', renderer='start_page.jinja2')
+    def start(self):
         return {'name': 'Marco'}
 
-
-    @view_config(route_name='test', renderer='question_page.jinja2')
-    def interview_test(self):
-        return {}
+    @view_config(route_name='question', renderer='question_page.jinja2')
+    def question(self):
+        return {
+            'text': '',
+            'code': ''
+        }
