@@ -2,9 +2,14 @@
 <html lang="en">
 <head>
     <title>Code Challenge</title>
+	<link href="{{request.static_url('codechallenge:static/bootstrap.min.css')}}" rel="stylesheet">
 </head>
 <body>
 	<h1>Hi {{name}}</h1>
-	<h2>Welcome to the Code Challenge! Start the <a href='/question'>test</a></h2>
+	<h2>Welcome to the Code Challenge!</h2>
+
+	<div>
+		<a class="btn btn-primary btn-lg" href="/question">Start</a>
+	</div>
 </body>
 </html>

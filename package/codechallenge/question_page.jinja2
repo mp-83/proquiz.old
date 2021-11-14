@@ -3,11 +3,11 @@
   <head>
     <meta charset="utf-8">
     <title>Code challenge</title>
+	<link href="{{request.static_url('codechallenge:static/bootstrap.min.css')}}" rel="stylesheet">
+	<script src="{{request.static_url('codechallenge:static/bootstrap.min.js')}}"></script>
+	<script src="{{request.static_url('codechallenge:static/question.js')}}"></script>
   </head>
   <body>
-	<div>
-		<button id="start-btn">Start</button>
-	</div>
 	<div id="first-question-section">
 	    <div>
 			<h4>Q.{{index}}</h4>
@@ -26,11 +26,4 @@
 		<button id="next-btn" display="center" hidden>Next</button>
 	</div>
   </body>
-  <script>
-	const startBtn = document.getElementById("start-btn");
-	const firstCodeSection = document.getElementById("first-question-section");
-	startBtn.addEventListener("click", function(event) {
-		firstCodeSection.hidden = false;
-	});
-  </script>
 </html>

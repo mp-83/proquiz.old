@@ -7,5 +7,6 @@ def main(global_config, **settings):
     config.include('pyramid_jinja2')    
     config.add_route('start', '/')
     config.add_route('question', '/question')
+    config.add_static_view(name='static', path='codechallenge:static')
     config.scan('.views')
     return config.make_wsgi_app()
