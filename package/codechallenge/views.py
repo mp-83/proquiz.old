@@ -1,5 +1,6 @@
 from pyramid.response import Response
 from pyramid.view import view_config
+from codechallenge.db import read_question
 
 
 class CodeChallengeViews:
@@ -13,7 +14,4 @@ class CodeChallengeViews:
 
     @view_config(route_name='question', renderer='question_page.jinja2')
     def question(self):
-        return {
-            'text': '',
-            'code': ''
-        }
+        return read_question(0)

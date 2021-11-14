@@ -9,8 +9,8 @@ requires = [
 ]
 
 dev_requires = [
-    'pyramid_debugtoolbar',
     'pytest',
+    'pytest-mock',
     'webtest',
 ]
 

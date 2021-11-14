@@ -10,51 +10,18 @@
 	</div>
 	<div id="first-question-section">
 	    <div>
-			<h4>Q.1</h4>
-			<p>this test is failing. Find the subtle bug.</p>
+			<h4>Q.{{index}}</h4>
+			<p>{{text}}</p>
 		</div>
+			{% if code %}
 		<pre cols="4">
-		<code>
-			class Client:
-				...
-
-			class Navigator:
-				def __init__(self, base_url):
-					self.base_url = base_url
-					self.client = Client()
-
-				def format_url(self, page):
-					return return f'{self.base_url}/{page})
-		
-			def test_should_navigate_to_albums_page():
-				base_url = 'https://photos.com'
-				nav = Navigator(base_url)
-				assert nav.format_url('/albums') == base_url + '/albums'			
-		</code>
+		<code>{{code}}</code>
 		</pre>
+			{% endif %}
 		<div>
 			<input type="text">
 		</div>
 	</div>
-	<div id="second-question-section">
-	    <div>
-			<h4>Q.2</h4>
-			<p>What is the purpose of *args? and **kwargs? What does the ** signify?</p>
-		</div>
-		<pre cols="4">
-		<code>
-			def fn(*args, **kwargs):
-			    ...
-		</code>
-		</pre>
-		<div>
-			<input type="text">
-		</div>
-	</div>
-	<pre>
-		<code>
-		</code>
-	</pre>
 	<div>
 		<button id="next-btn" display="center" hidden>Next</button>
 	</div>
