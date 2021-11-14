@@ -8,7 +8,7 @@ class TestCaseTutorialView:
         request = testing.DummyRequest()
         view_obj = CodeChallengeViews(request)
         response = view_obj.start()
-        assert response['name'] == 'Marco'
+        assert response == {}
 
     def test_question_view(self, mocker):
         question_sample = {
@@ -44,3 +44,9 @@ class TestCaseCodeChallengeFunctional:
     def test_question_page(self):
         res = self.testapp.get('/question', status=200, params={'index': 1})
         assert b'Q.1' in res.body
+
+    def test_question_page_wrong_method(self):
+        self.testapp.post('/question', status=404)
+
+    def test_start_page_wrong_method(self):
+        self.testapp.patch('/', status=404)
