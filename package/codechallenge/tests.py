@@ -3,7 +3,6 @@ from pyramid import testing
 from codechallenge.views import CodeChallengeViews
 
 
-
 class TestCaseTutorialView:
     def test_start_view(self):
         request = testing.DummyRequest()
@@ -20,10 +19,13 @@ class TestCaseTutorialView:
             'codechallenge.views.read_question', return_value=question_sample
         )
         request = testing.DummyRequest()
+        request.params.update(index=2)
         view_obj = CodeChallengeViews(request)
         response = view_obj.question()
-        question_sample.update(index=0)
-        assert response == question_sample
+        
+        expected = question_sample.copy()
+        expected.update(index=2)
+        assert response == expected
 
 
 class TestCaseCodeChallengeFunctional:
@@ -40,5 +42,5 @@ class TestCaseCodeChallengeFunctional:
         assert b'Welcome' in res.body
 
     def test_question_page(self):
-        res = self.testapp.get('/question', status=200)
-        assert b'Start' in res.body
+        res = self.testapp.get('/question', status=200, params={'index': 1})
+        assert b'Q.1' in res.body

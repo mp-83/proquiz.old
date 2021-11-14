@@ -1,6 +1,6 @@
 
 def read_question(index):
-    return [
+    result = [
         {
             'text': 'This test is failing. Find the subtle bug.',
             'code': """
@@ -30,3 +30,5 @@ def read_question(index):
             """
         }
     ][index]
+    result.update(index=index)
+    return result

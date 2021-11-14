@@ -14,4 +14,7 @@ class CodeChallengeViews:
 
     @view_config(route_name='question', renderer='question_page.jinja2')
     def question(self):
-        return read_question(0)
+        index = self.request.params.get('index', 0)
+        result = read_question(int(index))
+        result.update(index=index)
+        return result
