@@ -1,6 +1,9 @@
+import logging
 from pyramid.response import Response
 from pyramid.view import view_config, view_defaults
 from codechallenge.db import read_question
+
+logger = logging.getLogger(__name__)
 
 
 @view_defaults(request_method='GET')
@@ -11,6 +14,7 @@ class CodeChallengeViews:
 
     @view_config(route_name='start', renderer='start_page.jinja2')
     def start(self):
+        logger.info("Start page")
         return {}
 
     @view_config(route_name='question', renderer='question_page.jinja2')
