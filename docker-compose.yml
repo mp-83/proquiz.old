@@ -1,17 +1,17 @@
 version: "3.5"
 services:
   serverdb:
-    image: "postgres:13.1-alpine"
+    image: "mysql"
     env_file:
-      - ".env"
+     - ".env"
     volumes:
-      - "interviewdb:/var/lib/postgresql/data"
-    ports:
-      - "4432:5432"
+      - "interviewdb:/var/lib/mysql"
+    # ports:
+    #   - "4432:4432"
 
   server:
-#    env_file:
-#      - ".env"
+    env_file:
+     - ".env"
     build:
       context: "./"
     volumes:

@@ -1,4 +1,3 @@
-
 def read_question(index):
     result = [
         {
@@ -32,3 +31,4 @@ def read_question(index):
     ][index]
     result.update(index=index)
     return result
+    

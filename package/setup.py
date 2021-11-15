@@ -6,6 +6,11 @@ requires = [
     'pyramid',
     'pyramid_jinja2',
     'waitress',
+    'pyramid_tm',
+    'sqlalchemy',
+    'pymysql',
+    'cryptography',
+    'zope.sqlalchemy'
 ]
 
 dev_requires = [
@@ -24,5 +29,8 @@ setup(
         'paste.app_factory': [
             'main = codechallenge:main'
         ],
+        'console_scripts': [
+            'initialize_codechallenge_db = codechallenge.init_db'
+        ],        
     }    
 )
