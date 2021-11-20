@@ -1,19 +1,57 @@
+import os
 from pyramid.authorization import Allow, Everyone
-from sqlalchemy import Column, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import scoped_session, sessionmaker
-from zope.sqlalchemy import register
+from sqlalchemy import Column, Integer, String, select, create_engine
+from sqlalchemy.orm import declarative_base, Session
 
-DBSession = scoped_session(sessionmaker())
-register(DBSession)
+
+cache = {}
 Base = declarative_base()
+
+
+def my_sql_dsn():
+    return '{sql_protocol}://{user}:{pwd}@{host}/{db}?charset=utf8mb4'.format(
+        sql_protocol=os.getenv('SQL_PROTOCOL'),
+        user=os.getenv('MYSQL_USER'),
+        pwd=os.getenv('MYSQL_PASSWORD'),
+        host=os.getenv('MYSQL_HOST'),
+        db=os.getenv('MYSQL_DATABASE')
+    )
+
+
+def get_engine():
+    echo = True
+    if os.getenv('TESTING'):
+        echo = False
+        db_uri = 'sqlite:///:memory:'
+    else:
+        db_uri = my_sql_dsn()
+        
+    if not cache.get('engine'):
+        cache['engine'] = create_engine(db_uri, echo=echo)
+    return cache['engine']
+
+def init_session():
+    engine = get_engine() 
+    DBSession = Session(engine)
+    return DBSession
+
+
+def init_db():
+    Base.metadata.create_all(get_engine())
 
 
 class Question(Base):
     __tablename__ = 'questions'
+
     uid = Column(Integer, primary_key=True)
-    text = Column(String(200), unique=True)
+    pos = Column(Integer, nullable=False)
+    text = Column(String(200), nullable=False)
     code = Column(String(5000))
+
+    @classmethod
+    def all(cls):
+        session = init_session()
+        return session.execute(select(cls)).all()
 
 
 class Root:

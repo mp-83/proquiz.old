@@ -1,6 +1,12 @@
 import pytest
 from pyramid import testing
+from codechallenge.models import Question
 from codechallenge.views import CodeChallengeViews
+
+
+class TestCaseQuestion:
+    def test_all_questions(self, initTestingDB):
+        assert len(Question.all()) == 3
 
 
 class TestCaseTutorialView:
