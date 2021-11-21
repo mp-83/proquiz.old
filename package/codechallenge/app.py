@@ -1,6 +1,5 @@
 import os
 import sys
-import transaction
 from pyramid.config import Configurator
 from pyramid.response import Response
 from pyramid.session import SignedCookieSessionFactory
