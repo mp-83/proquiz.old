@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, select
-from codechallenge.models.meta import Base, init_session
+from codechallenge.models.meta import Base
 
 
 class Answer(Base):

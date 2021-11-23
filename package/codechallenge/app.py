@@ -1,14 +1,43 @@
+import logging
+
 import os
 import sys
 from pyramid.config import Configurator
 from pyramid.response import Response
 from pyramid.session import SignedCookieSessionFactory
 from pyramid.paster import get_appsettings, setup_logging
-from codechallenge.models.meta import init_db
+
+
+logger = logging.getLogger(__name__)
+
+
+class StoreConfig:
+    _instance = None
+    _config = None
+    
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(StoreConfig, cls).__new__(cls)
+        return cls._instance
+
+    @property
+    def config(self):
+        return self._config
+        
+    @config.setter
+    def config(self, value):
+        self._config = value
 
 
 def main(global_config, **settings):
-    init_db()
+    settings['sqlalchemy.url'] = '{sql_protocol}://{user}:{pwd}@{host}/{db}?charset=utf8mb4'.format(
+        sql_protocol=os.getenv('SQL_PROTOCOL'),
+        user=os.getenv('MYSQL_USER'),
+        pwd=os.getenv('MYSQL_PASSWORD'),
+        host=os.getenv('MYSQL_HOST'),
+        db=os.getenv('MYSQL_DATABASE')
+    )
+
     session_factory = SignedCookieSessionFactory('sessionFactory')
     config = Configurator(
         settings=settings,
@@ -20,4 +49,7 @@ def main(global_config, **settings):
     config.add_route('question', '/question')
     config.add_static_view(name='static', path='codechallenge:static')
     config.scan('.views')
+    config.include('codechallenge.models.meta')
+    
+    StoreConfig().config = config
     return config.make_wsgi_app()

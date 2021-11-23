@@ -7,6 +7,7 @@ requires = [
     'pyramid_jinja2',
     'waitress',
     'pyramid_tm',
+    'pyramid_retry',
     'sqlalchemy',
     'pymysql',
     'cryptography',

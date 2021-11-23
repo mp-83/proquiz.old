@@ -3,11 +3,20 @@ from pyramid import testing
 from codechallenge.models.question import Question
 from codechallenge.models.answer import Answer
 from codechallenge.views import CodeChallengeViews
+from codechallenge.app import StoreConfig
 
 
 class TestCaseQuestion:
     def test_all_questions(self, initTestingDB):
         assert len(Question.all()) == 3
+        
+    def test(self):
+        sc = StoreConfig()
+        settings_mock = {'setting': True}
+        sc.config = settings_mock
+        for _ in range(2):
+            assert sc is StoreConfig()
+            assert sc.config is settings_mock
 
 
 class TestCaseTutorialView:
