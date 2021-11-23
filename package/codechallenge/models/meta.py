@@ -30,6 +30,7 @@ def get_engine():
         cache['engine'] = create_engine(db_uri, echo=echo)
     return cache['engine']
 
+
 def init_session():
     engine = get_engine() 
     DBSession = Session(engine)
@@ -38,20 +39,6 @@ def init_session():
 
 def init_db():
     Base.metadata.create_all(get_engine())
-
-
-class Question(Base):
-    __tablename__ = 'questions'
-
-    uid = Column(Integer, primary_key=True)
-    pos = Column(Integer, nullable=False)
-    text = Column(String(200), nullable=False)
-    code = Column(String(5000))
-
-    @classmethod
-    def all(cls):
-        session = init_session()
-        return session.execute(select(cls)).all()
 
 
 class Root:

@@ -4,15 +4,16 @@ from pyramid.config import Configurator
 from pyramid.response import Response
 from pyramid.session import SignedCookieSessionFactory
 from pyramid.paster import get_appsettings, setup_logging
-from codechallenge.models import init_db
+from codechallenge.models.meta import init_db
 
 
 def main(global_config, **settings):
+    init_db()
     session_factory = SignedCookieSessionFactory('sessionFactory')
     config = Configurator(
         settings=settings,
         session_factory=session_factory,
-        root_factory='codechallenge.models.Root'
+        root_factory='codechallenge.models.meta.Root'
     )
     config.include('pyramid_jinja2')    
     config.add_route('start', '/')

@@ -1,6 +1,7 @@
 import pytest
 from pyramid import testing
-from codechallenge.models import Question
+from codechallenge.models.question import Question
+from codechallenge.models.answer import Answer
 from codechallenge.views import CodeChallengeViews
 
 

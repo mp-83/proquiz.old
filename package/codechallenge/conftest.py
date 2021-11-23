@@ -2,7 +2,8 @@ import os
 import pytest
 import transaction
 from sqlalchemy.orm import scoped_session, sessionmaker
-from codechallenge.models import Base, Question, init_db, init_session
+from codechallenge.models.meta import init_db, init_session
+from codechallenge.models.question import Question
 
 
 os.environ['TESTING'] = 'True'
