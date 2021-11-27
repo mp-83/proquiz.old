@@ -24,3 +24,7 @@ def initTestingDB():
             Question(text='q3.text', code='q3.code', pos=3),
         ])
         db_session.commit()
+
+    yield
+
+    Base.metadata.drop_all(engine)

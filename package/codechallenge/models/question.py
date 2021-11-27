@@ -13,11 +13,13 @@ class Question(Base):
 
     @property
     def session(self):
-        return
-
-    @classmethod
-    def all(cls):
         config = StoreConfig().config
         factory = config['dbsession_factory']
-        session = factory()
-        return session.execute(select(cls)).all()
+        return factory()
+
+    def all(self):
+        return self.session.execute(select(Question)).all()
+
+    def at_position(self, pos):
+        matched_row = self.session.execute(select(Question).where(Question.pos==pos))
+        return matched_row.scalar_one_or_none()

@@ -6,17 +6,23 @@ from codechallenge.views import CodeChallengeViews
 from codechallenge.app import StoreConfig
 
 
-class TestCaseQuestion:
-    def test_all_questions(self, initTestingDB):
-        assert len(Question.all()) == 3
-        
-    def test(self):
+class TestCaseConfigSingleton:
+    def test_that_works_as_expected(self):
         sc = StoreConfig()
         settings_mock = {'setting': True}
         sc.config = settings_mock
         for _ in range(2):
             assert sc is StoreConfig()
             assert sc.config is settings_mock
+
+
+class TestCaseQuestion:
+    def test_all_questions(self, initTestingDB):
+        assert len(Question().all()) == 3
+
+    def test_question_at_position(self, initTestingDB):
+        question = Question().at_position(1)
+        assert question.text == 'q1.text'
 
 
 class TestCaseTutorialView:
