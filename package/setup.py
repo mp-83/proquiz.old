@@ -11,6 +11,7 @@ requires = [
     'sqlalchemy',
     'pymysql',
     'cryptography',
+    'alembic'
 ]
 
 dev_requires = [

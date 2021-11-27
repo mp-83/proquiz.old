@@ -11,6 +11,15 @@ from pyramid.paster import get_appsettings, setup_logging
 logger = logging.getLogger(__name__)
 
 
+DB_DSN = '{sql_protocol}://{user}:{pwd}@{host}/{db}?charset=utf8mb4'.format(
+    sql_protocol=os.getenv('SQL_PROTOCOL'),
+    user=os.getenv('MYSQL_USER'),
+    pwd=os.getenv('MYSQL_PASSWORD'),
+    host=os.getenv('MYSQL_HOST'),
+    db=os.getenv('MYSQL_DATABASE')
+)
+
+
 class StoreConfig:
     _instance = None
     _config = None
@@ -30,14 +39,7 @@ class StoreConfig:
 
 
 def main(global_config, **settings):
-    settings['sqlalchemy.url'] = '{sql_protocol}://{user}:{pwd}@{host}/{db}?charset=utf8mb4'.format(
-        sql_protocol=os.getenv('SQL_PROTOCOL'),
-        user=os.getenv('MYSQL_USER'),
-        pwd=os.getenv('MYSQL_PASSWORD'),
-        host=os.getenv('MYSQL_HOST'),
-        db=os.getenv('MYSQL_DATABASE')
-    )
-
+    settings['sqlalchemy.url'] = DB_DSN
     session_factory = SignedCookieSessionFactory('sessionFactory')
     config = Configurator(
         settings=settings,

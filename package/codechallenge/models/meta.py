@@ -4,6 +4,8 @@ from sqlalchemy import Column, Integer, String, select, engine_from_config
 from sqlalchemy.orm import declarative_base, Session, sessionmaker
 
 
+
+# TODO: replace with from functools import lru_cache
 cache = {}
 Base = declarative_base()
 
@@ -11,14 +13,8 @@ Base = declarative_base()
 def get_engine(settings, prefix='sqlalchemy.'):
     echo = settings.get('echo', False)
     if not cache.get('engine'):
-        cache['engine'] = engine_from_config(settings, prefix, echo=echo)
+        cache['engine'] = engine_from_config(settings, echo=echo)
     return cache['engine']
-
-
-# def init_session():
-#     engine = get_engine()
-#     DBSession = Session(engine)
-#     return DBSession
 
 
 def get_session_factory(engine):
@@ -38,11 +34,9 @@ def get_tm_session(session_factory, transaction_manager, request=None):
     return dbsession
 
 
-
 def includeme(config):
     """
     Initialize the model for a Pyramid app.
-
     """
     settings = config.get_settings()
     settings['tm.manager_hook'] = 'pyramid_tm.explicit_manager'

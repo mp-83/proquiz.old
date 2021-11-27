@@ -27,6 +27,12 @@ def read_question(index):
 			def fn(*args, **kwargs):
 			    ...
             """
+        },
+        {
+            'text': 'This expression is True/False?',
+            'code': """
+            1 in [None, True, False]
+            """
         }
     ][index]
     result.update(index=index)
