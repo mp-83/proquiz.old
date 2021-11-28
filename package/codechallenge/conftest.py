@@ -14,8 +14,9 @@ def initTestingDB():
     engine = get_engine({'sqlalchemy.url': 'sqlite:///:memory:'})
     session_factory = get_session_factory(engine)
     Base.metadata.create_all(engine)
-    StoreConfig().config = {'dbsession_factory': session_factory}
-    db_session = session_factory()
+    sc = StoreConfig()
+    sc.config = {'dbsession_factory': session_factory}
+    db_session = sc.session
 
     with transaction.manager:
         db_session.add_all([

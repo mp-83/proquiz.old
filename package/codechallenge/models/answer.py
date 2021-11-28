@@ -19,14 +19,9 @@ class Answer(Base):
 
     @property
     def session(self):
-        config = StoreConfig().config
-        factory = config['dbsession_factory']
-        return factory()
+        return StoreConfig().session
 
     def create(self):
-        current_session = self.session
-        new_obj = current_session.merge(self)
-        # import pdb;pdb.set_trace()
-        current_session.add(new_obj)
-        current_session.flush()
-        return new_obj
+        self.session.add(self)
+        self.session.flush()
+        return self

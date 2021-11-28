@@ -15,9 +15,7 @@ class Question(Base):
 
     @property
     def session(self):
-        config = StoreConfig().config
-        factory = config['dbsession_factory']
-        return factory()
+        return StoreConfig().session
 
     def all(self):
         return self.session.execute(select(Question)).all()
@@ -27,4 +25,6 @@ class Question(Base):
         return matched_row.scalar_one_or_none()
 
     def save(self):
-        self.session.commit()
+        from sqlalchemy import inspect
+        # import pdb;pdb.set_trace()
+        self.session.flush()

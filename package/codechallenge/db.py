@@ -1,5 +1,8 @@
-from sqlalchemy import select
+from sqlalchemy import select, event
 from codechallenge.app import StoreConfig
+
+
+
 
 
 def count(cls):

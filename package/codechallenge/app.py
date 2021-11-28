@@ -23,6 +23,7 @@ DB_DSN = '{sql_protocol}://{user}:{pwd}@{host}/{db}?charset=utf8mb4'.format(
 class StoreConfig:
     _instance = None
     _config = None
+    _session = None
     
     def __new__(cls):
         if cls._instance is None:
@@ -36,6 +37,16 @@ class StoreConfig:
     @config.setter
     def config(self, value):
         self._config = value
+
+    @property
+    def session(self):
+        factory = self.config['dbsession_factory']
+        if self._session is None:
+            self._session = factory()
+        return self._session
+        
+    def reset_session(self):
+        self._session = None
 
 
 def main(global_config, **settings):

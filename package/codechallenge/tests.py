@@ -34,15 +34,20 @@ class TestCaseQuestion:
         a2 = Answer(question=question, text='question2.answer2', pos=2).create()
         assert a1.uid
         assert count(Answer) == 2
-        assert question.answers[0].question_uid == question
+        assert question.answers[0].question_uid == question.uid
 
     def test_all_answer_of_same_question_must_differ(self, initTestingDB):
         question = Question().at_position(2)
+        # Answer(text='question2.answer1', pos=1).create
         with pytest.raises((IntegrityError, InvalidRequestError)):
             question.answers.extend([
                 Answer(text='question2.answer1', pos=1),
                 Answer(text='question2.answer1', pos=2)
             ])
+            question.save()
+            
+        current_session = StoreConfig().session
+        current_session.rollback
 
 
 class TestCaseTutorialView:
