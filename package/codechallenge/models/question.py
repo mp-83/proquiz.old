@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, select
+from sqlalchemy import Column, Integer, String, select, inspect
 from sqlalchemy.orm import relationship
 from codechallenge.models.meta import Base
 from codechallenge.app import StoreConfig
@@ -25,6 +25,7 @@ class Question(Base):
         return matched_row.scalar_one_or_none()
 
     def save(self):
-        from sqlalchemy import inspect
-        # import pdb;pdb.set_trace()
-        self.session.flush()
+        session = inspect(self).session
+        session.add(self)
+        session.flush()
+        return self

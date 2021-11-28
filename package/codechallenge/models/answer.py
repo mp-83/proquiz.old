@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, ForeignKey, String, select
+from sqlalchemy import Column, Integer, ForeignKey, String, select, inspect
 from sqlalchemy.schema import UniqueConstraint
 from sqlalchemy.orm import relationship
 from codechallenge.models.meta import Base
@@ -22,6 +22,7 @@ class Answer(Base):
         return StoreConfig().session
 
     def create(self):
-        self.session.add(self)
-        self.session.flush()
+        session = inspect(self).session
+        session.add(self)
+        session.flush()
         return self

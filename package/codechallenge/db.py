@@ -1,14 +1,9 @@
-from sqlalchemy import select, event
+from sqlalchemy import select
 from codechallenge.app import StoreConfig
 
 
-
-
-
 def count(cls):
-    config = StoreConfig().config
-    factory = config['dbsession_factory']
-    session = factory()
+    session = StoreConfig().session
     rows = session.execute(select(cls)).all()
     return len(rows)
 
