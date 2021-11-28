@@ -1,3 +1,15 @@
+from sqlalchemy import select
+from codechallenge.app import StoreConfig
+
+
+def count(cls):
+    config = StoreConfig().config
+    factory = config['dbsession_factory']
+    session = factory()
+    rows = session.execute(select(cls)).all()
+    return len(rows)
+
+
 def read_question(index):
     result = [
         {

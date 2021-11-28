@@ -1,9 +1,12 @@
 import pytest
 from pyramid import testing
+from sqlalchemy.exc import IntegrityError, InvalidRequestError
+
 from codechallenge.models.question import Question
 from codechallenge.models.answer import Answer
 from codechallenge.views import CodeChallengeViews
 from codechallenge.app import StoreConfig
+from codechallenge.db import count
 
 
 class TestCaseConfigSingleton:
@@ -23,6 +26,23 @@ class TestCaseQuestion:
     def test_question_at_position(self, initTestingDB):
         question = Question().at_position(1)
         assert question.text == 'q1.text'
+        
+    def test_appending_questions_to_answer(self, initTestingDB):
+        question = Question().at_position(1)
+        assert count(Answer) == 0
+        a1 = Answer(question=question, text='question2.answer1', pos=1).create()
+        a2 = Answer(question=question, text='question2.answer2', pos=2).create()
+        assert a1.uid
+        assert count(Answer) == 2
+        assert question.answers[0].question_uid == question
+
+    def test_all_answer_of_same_question_must_differ(self, initTestingDB):
+        question = Question().at_position(2)
+        with pytest.raises((IntegrityError, InvalidRequestError)):
+            question.answers.extend([
+                Answer(text='question2.answer1', pos=1),
+                Answer(text='question2.answer1', pos=2)
+            ])
 
 
 class TestCaseTutorialView:
