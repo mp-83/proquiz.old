@@ -18,6 +18,7 @@ dev_requires = [
     'pytest',
     'pytest-mock',
     'webtest',
+    'pre-commit'
 ]
 
 setup(

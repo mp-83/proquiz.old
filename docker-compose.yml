@@ -6,8 +6,6 @@ services:
      - ".env"
     volumes:
       - "interviewdb:/var/lib/mysql"
-    # ports:
-    #   - "4432:4432"
 
   server:
     env_file:
