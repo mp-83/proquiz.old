@@ -1,11 +1,8 @@
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
-
 from alembic import context
-
 from codechallenge.app import DB_DSN
+from codechallenge.models.meta import Base, get_engine
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -15,15 +12,7 @@ config = context.config
 # This line sets up loggers basically.
 fileConfig(config.config_file_name)
 
-# add your model's MetaData object here
-# for 'autogenerate' support
-from codechallenge.models.meta import Base, get_engine
 target_metadata = Base.metadata
-
-# other values from the config, defined by the needs of env.py,
-# can be acquired:
-# my_important_option = config.get_main_option("my_important_option")
-# ... etc.
 
 
 def run_migrations_offline():
@@ -36,7 +25,6 @@ def run_migrations_offline():
 
     Calls to context.execute() here emit the given string to the
     script output.
-
     """
     context.configure(
         url=DB_DSN,
@@ -54,13 +42,10 @@ def run_migrations_online():
 
     In this scenario we need to create an Engine
     and associate a connection with the context.
-
     """
-    connectable = get_engine({'sqlalchemy.url': DB_DSN})
+    connectable = get_engine({"sqlalchemy.url": DB_DSN})
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()
