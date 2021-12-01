@@ -1,17 +1,17 @@
-from sqlalchemy import Column, Integer, String, select, inspect
-from sqlalchemy.orm import relationship
-from codechallenge.models.meta import Base
 from codechallenge.app import StoreConfig
+from codechallenge.models.meta import Base
+from sqlalchemy import Column, Integer, String, inspect, select
+from sqlalchemy.orm import relationship
 
 
 class Question(Base):
-    __tablename__ = 'question'
+    __tablename__ = "question"
 
     uid = Column(Integer, primary_key=True)
-    pos = Column(Integer, nullable=False)
     text = Column(String(400), nullable=False)
+    position = Column(Integer, nullable=False)
     code = Column(String(5000))
-    answers = relationship('Answer')
+    answers = relationship("Answer")
 
     @property
     def session(self):
@@ -20,8 +20,10 @@ class Question(Base):
     def all(self):
         return self.session.execute(select(Question)).all()
 
-    def at_position(self, pos):
-        matched_row = self.session.execute(select(Question).where(Question.pos==pos))
+    def at_position(self, position):
+        matched_row = self.session.execute(
+            select(Question).where(Question.position == position)
+        )
         return matched_row.scalar_one_or_none()
 
     def save(self):
@@ -29,3 +31,22 @@ class Question(Base):
         session.add(self)
         session.flush()
         return self
+
+    @property
+    def json(self):
+        return {"text": self.text, "code": self.code, "position": self.position}
+
+
+class QuestionQuery:
+    @property
+    def session(self):
+        return StoreConfig().session
+
+    def all(self):
+        return self.session.execute(select(Question)).all()
+
+    def at_position(self, position):
+        matched_row = self.session.execute(
+            select(Question).where(Question.position == position)
+        )
+        return matched_row.scalar_one_or_none()
