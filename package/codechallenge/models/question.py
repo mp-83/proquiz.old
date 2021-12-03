@@ -27,7 +27,7 @@ class Question(Base):
         return matched_row.scalar_one_or_none()
 
     def save(self):
-        session = inspect(self).session
+        session = inspect(self).session or self.session
         session.add(self)
         session.flush()
         return self

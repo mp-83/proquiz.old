@@ -21,3 +21,15 @@ class CodeChallengeViews:
         index = self.request.params.get("index", 0)
         result = Question().at_position(int(index))
         return result.json
+
+    @view_config(
+        route_name="insert_question",
+        renderer="question_page.jinja2",
+        request_method="POST",
+    )
+    def insert_question(self):
+        data = self.request.params.get("data", {})
+        if not data:
+            return {}
+        new_question = Question(**data).save()
+        return new_question.json

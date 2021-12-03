@@ -19,23 +19,21 @@ class TestCaseConfigSingleton:
 
 
 class TestCaseQuestion:
-    def test_all_questions(self, initTestingDB):
-        assert len(Question().all()) == 3
+    def test_all_questions(self, fillTestingDB):
+        assert count(Question) == 3
 
-    def test_question_at_position(self, initTestingDB):
+    def test_question_at_position(self, fillTestingDB):
         question = Question().at_position(1)
         assert question.text == "q1.text"
 
-    def test_appending_questions_to_answer(self, initTestingDB):
+    def test_appending_questions_to_answer(self, fillTestingDB):
         question = Question().at_position(1)
-        assert question.uid
-        a1 = Answer(question=question, text="question2.answer1", position=1).create()
+        Answer(question=question, text="question2.answer1", position=1).create()
         Answer(question=question, text="question2.answer2", position=2).create()
-        assert a1.uid
         assert count(Answer) == 2
         assert question.answers[0].question_uid == question.uid
 
-    def test_all_answer_of_same_question_must_differ(self, initTestingDB):
+    def test_all_answer_of_same_question_must_differ(self, fillTestingDB):
         question = Question().at_position(2)
         with pytest.raises((IntegrityError, InvalidRequestError)):
             question.answers.extend(
@@ -57,12 +55,26 @@ class TestCaseTutorialView:
         response = view_obj.start()
         assert response == {}
 
-    def test_question_view(self, initTestingDB):
+    def test_question_view(self, fillTestingDB):
         request = testing.DummyRequest()
         request.params.update(index=2)
         view_obj = CodeChallengeViews(request)
         response = view_obj.question()
         assert response == {"text": "q2.text", "code": "q2.code", "position": 2}
+
+    def test_insert_view(self, sessionTestDB):
+        request = testing.DummyRequest()
+        request.params.update(
+            data={
+                "text": "eleven pm",
+                "code": "x = 0; x += 1; print(x)",
+                "position": 1,
+            }
+        )
+        view_obj = CodeChallengeViews(request)
+        response = view_obj.insert_question()
+        assert count(Question) == 1
+        assert response["text"] == "eleven pm"
 
 
 class TestCaseCodeChallengeFunctional:
@@ -79,7 +91,7 @@ class TestCaseCodeChallengeFunctional:
         res = self.testapp.get("/", status=200)
         assert b"Welcome" in res.body
 
-    def test_question_page(self, initTestingDB):
+    def test_question_page(self, fillTestingDB):
         res = self.testapp.get("/question", status=200, params={"index": 1})
         assert b"q1.text" in res.body
 
