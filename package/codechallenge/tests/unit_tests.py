@@ -9,7 +9,7 @@ from sqlalchemy.exc import IntegrityError, InvalidRequestError
 
 
 class TestCaseConfigSingleton:
-    def test_that_works_as_expected(self):
+    def t_singletonHasToBeCreatedOnce(self):
         sc = StoreConfig()
         settings_mock = {"setting": True}
         sc.config = settings_mock
@@ -19,21 +19,21 @@ class TestCaseConfigSingleton:
 
 
 class TestCaseQuestion:
-    def test_all_questions(self, fillTestingDB):
+    def t_countMethodReturnsTheCorrectValue(self, fillTestingDB):
         assert count(Question) == 3
 
-    def test_question_at_position(self, fillTestingDB):
+    def t_theQuestionAtPositionShouldBeReturned(self, fillTestingDB):
         question = Question().at_position(1)
         assert question.text == "q1.text"
 
-    def test_appending_questions_to_answer(self, fillTestingDB):
+    def t_newCreatedAnswersShouldBeAvailableFromTheQuestion(self, fillTestingDB):
         question = Question().at_position(1)
         Answer(question=question, text="question2.answer1", position=1).create()
         Answer(question=question, text="question2.answer2", position=2).create()
         assert count(Answer) == 2
         assert question.answers[0].question_uid == question.uid
 
-    def test_all_answer_of_same_question_must_differ(self, fillTestingDB):
+    def t_allAnswersOfAQuestionMustDiffer(self, fillTestingDB):
         question = Question().at_position(2)
         with pytest.raises((IntegrityError, InvalidRequestError)):
             question.answers.extend(
@@ -49,20 +49,20 @@ class TestCaseQuestion:
 
 
 class TestCaseTutorialView:
-    def test_start_view(self):
+    def t_start_view(self):
         request = testing.DummyRequest()
         view_obj = CodeChallengeViews(request)
         response = view_obj.start()
         assert response == {}
 
-    def test_question_view(self, fillTestingDB):
+    def t_question_view(self, fillTestingDB):
         request = testing.DummyRequest()
         request.params.update(index=2)
         view_obj = CodeChallengeViews(request)
         response = view_obj.question()
         assert response == {"text": "q2.text", "code": "q2.code", "position": 2}
 
-    def test_insert_view(self, sessionTestDB):
+    def t_insert_view(self, sessionTestDB):
         request = testing.DummyRequest()
         request.params.update(
             data={
@@ -87,16 +87,16 @@ class TestCaseCodeChallengeFunctional:
 
         self.testapp = TestApp(app)
 
-    def test_start_page(self):
+    def t_start_page(self):
         res = self.testapp.get("/", status=200)
         assert b"Welcome" in res.body
 
-    def test_question_page(self, fillTestingDB):
+    def t_question_page(self, fillTestingDB):
         res = self.testapp.get("/question", status=200, params={"index": 1})
         assert b"q1.text" in res.body
 
-    def test_question_page_wrong_method(self):
+    def t_question_page_wrong_method(self):
         self.testapp.post("/question", status=404)
 
-    def test_start_page_wrong_method(self):
+    def t_start_page_wrong_method(self):
         self.testapp.patch("/", status=404)
