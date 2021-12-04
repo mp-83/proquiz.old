@@ -48,12 +48,16 @@ def main(global_config, **settings):
         root_factory="codechallenge.models.meta.Root",
     )
     config.include("pyramid_jinja2")
+
     config.add_route("start", "/")
     config.add_route("question", "/question")
     config.add_route("insert_question", "/insert")
+
     config.add_static_view(name="static", path="codechallenge:static")
     config.scan(".views")
+
     config.include("codechallenge.models.meta")
+    config.include("codechallenge.security")
 
     StoreConfig().config = config
     return config.make_wsgi_app()
