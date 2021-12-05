@@ -25,8 +25,6 @@ class TestCaseCodeChallengeFunctional:
         res = self.testapp.get("/question", status=200, params={"index": 1})
         assert b"No Questions" in res.body
 
-    def t_question_page_wrong_method(self):
+    def t_wrongMethodsReturn404not405(self, sessionTestDB):
         self.testapp.post("/question", status=404)
-
-    def t_start_page_wrong_method(self):
         self.testapp.patch("/", status=404)

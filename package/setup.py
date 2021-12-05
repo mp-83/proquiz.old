@@ -3,15 +3,16 @@ from setuptools import setup
 # List of dependencies installed via `pip install -e .`
 # by virtue of the Setuptools `install_requires` value below.
 requires = [
+    "alembic",
+    "pymysql",
+    "cryptography",
     "pyramid",
     "pyramid_jinja2",
-    "waitress",
     "pyramid_tm",
     "pyramid_retry",
     "sqlalchemy",
-    "pymysql",
-    "cryptography",
-    "alembic",
+    "waitress",
+    "zope.sqlalchemy",
 ]
 
 dev_requires = [
