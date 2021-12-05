@@ -1,8 +1,7 @@
+from codechallenge.models import User
 from pyramid.authentication import AuthTktCookieHelper
 from pyramid.csrf import CookieCSRFStoragePolicy
 from pyramid.request import RequestLocalCache
-
-from . import models
 
 
 class SecurityPolicy:
@@ -16,7 +15,7 @@ class SecurityPolicy:
             return None
 
         userid = identity["userid"]
-        user = request.dbsession.query(models.User).get(userid)
+        user = request.dbsession.query(User).get(userid)
         return user
 
     def identity(self, request):

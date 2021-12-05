@@ -27,6 +27,9 @@ class Question(Base):
         return matched_row.scalar_one_or_none()
 
     def save(self):
+        if self.position is None:
+            n = self.session.query(Question).count()
+            self.position = n + 1
         self.session.add(self)
         self.session.flush()
         return self

@@ -27,11 +27,11 @@ class CodeChallengeViews:
         return result.json if result else {}
 
     @view_config(
-        route_name="insert_question",
-        renderer="question_page.jinja2",
+        route_name="new_question",
+        renderer="codechallenge:templates/new_question.jinja2",
         request_method="POST",
     )
-    def insert_question(self):
+    def new_question(self):
         data = self.request.params.get("data", {})
         if not data:
             return {}

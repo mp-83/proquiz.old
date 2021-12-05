@@ -37,6 +37,10 @@ class TestCaseModels:
         question.update(text="new-text")
         assert question.text == "new-text"
 
+    def t_createQuestionWithoutPosition(self, fillTestingDB):
+        new_question = Question(text="new-question").save()
+        assert new_question.position == 4
+
     def t_allAnswersOfAQuestionMustDiffer(self, fillTestingDB):
         question = Question().at_position(2)
         with pytest.raises((IntegrityError, InvalidRequestError)):
@@ -78,16 +82,13 @@ class TestCaseTutorialView:
         response = view_obj.question()
         assert response == {}
 
-    def t_insert_view(self, sessionTestDB):
+    def t_createNewQuestion(self, sessionTestDB):
         request = testing.DummyRequest()
         request.params.update(
-            data={
-                "text": "eleven pm",
-                "code": "x = 0; x += 1; print(x)",
-                "position": 1,
-            }
+            data={"text": "eleven pm", "code": "x = 0; x += 1; print(x)", "position": 2}
         )
         view_obj = CodeChallengeViews(request)
-        response = view_obj.insert_question()
+        response = view_obj.new_question()
         assert count(Question) == 1
         assert response["text"] == "eleven pm"
+        assert response["position"] == 2
