@@ -7,8 +7,17 @@ from pyramid.config import Configurator
 
 
 @pytest.fixture
-def engine_factory():
-    yield get_engine({"sqlalchemy.url": "sqlite:///:memory:"})
+def settings():
+    yield {
+        "sqlalchemy.url": "sqlite:///:memory:",
+        "auth.secret": "sekret",
+        "TEST": True,
+    }
+
+
+@pytest.fixture
+def engine_factory(settings):
+    yield get_engine(settings)
 
 
 @pytest.fixture

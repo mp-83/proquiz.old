@@ -40,7 +40,8 @@ class StoreConfig:
 
 
 def main(global_config, **settings):
-    settings["sqlalchemy.url"] = DB_DSN
+    if not settings.get("TEST", False):
+        settings["sqlalchemy.url"] = DB_DSN
     session_factory = SignedCookieSessionFactory("sessionFactory")
     config = Configurator(
         settings=settings,

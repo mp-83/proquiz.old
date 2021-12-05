@@ -55,12 +55,19 @@ class TestCaseTutorialView:
         response = view_obj.start()
         assert response == {}
 
-    def t_question_view(self, fillTestingDB):
+    def t_textCodeAndPositionAreReturnedWhenQuestionIsFound(self, fillTestingDB):
         request = testing.DummyRequest()
         request.params.update(index=2)
         view_obj = CodeChallengeViews(request)
         response = view_obj.question()
         assert response == {"text": "q2.text", "code": "q2.code", "position": 2}
+
+    def t_whenQuestionIsNoneEmptyDictIsReturned(self, fillTestingDB):
+        request = testing.DummyRequest()
+        request.params.update(index=30)
+        view_obj = CodeChallengeViews(request)
+        response = view_obj.question()
+        assert response == {}
 
     def t_insert_view(self, sessionTestDB):
         request = testing.DummyRequest()
@@ -79,10 +86,11 @@ class TestCaseTutorialView:
 
 class TestCaseCodeChallengeFunctional:
     @pytest.fixture(autouse=True)
-    def setUp(self):
+    def setUp(self, settings):
         from codechallenge import main
 
-        app = main({})
+        app = main({}, **settings)
+
         from webtest import TestApp
 
         self.testapp = TestApp(app)
@@ -91,9 +99,14 @@ class TestCaseCodeChallengeFunctional:
         res = self.testapp.get("/", status=200)
         assert b"Welcome" in res.body
 
-    def t_question_page(self, fillTestingDB):
+    def t_relativeSectionIsRenderedWhenQuestionIsFound(self, fillTestingDB):
         res = self.testapp.get("/question", status=200, params={"index": 1})
+        assert b"Q.1" in res.body
         assert b"q1.text" in res.body
+
+    def t_defaultMessageIsRenderedIfNoQuestionsArePresent(self, sessionTestDB):
+        res = self.testapp.get("/question", status=200, params={"index": 1})
+        assert b"No Questions" in res.body
 
     def t_question_page_wrong_method(self):
         self.testapp.post("/question", status=404)

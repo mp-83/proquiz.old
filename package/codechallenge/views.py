@@ -24,7 +24,7 @@ class CodeChallengeViews:
     def question(self):
         index = self.request.params.get("index", 0)
         result = Question().at_position(int(index))
-        return result.json
+        return result.json if result else {}
 
     @view_config(
         route_name="insert_question",

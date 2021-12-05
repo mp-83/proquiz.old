@@ -8,9 +8,10 @@
 	<script src="{{request.static_url('codechallenge:static/question.js')}}"></script>
   </head>
   <body>
+	{% if text %}
 	<div id="first-question-section">
 	    <div>
-			<h4>Q.{{index}}</h4>
+			<h4>Q.{{position}}</h4>
 			<p>{{text}}</p>
 		</div>
 			{% if code %}
@@ -25,5 +26,7 @@
 	<div>
 		<button id="next-btn" display="center">Next</button>
 	</div>
+	{% endif %}
+		<div>No Questions</div>
   </body>
 </html>
