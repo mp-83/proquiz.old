@@ -1,8 +1,7 @@
 import pytest
 from codechallenge.app import StoreConfig
 from codechallenge.db import count
-from codechallenge.models.answer import Answer
-from codechallenge.models.question import Question
+from codechallenge.models import Answer, Question, User
 from codechallenge.views import CodeChallengeViews
 from pyramid import testing
 from sqlalchemy.exc import IntegrityError, InvalidRequestError
@@ -18,7 +17,7 @@ class TestCaseConfigSingleton:
             assert sc.config is settings_mock
 
 
-class TestCaseQuestion:
+class TestCaseModels:
     def t_countMethodReturnsTheCorrectValue(self, fillTestingDB):
         assert count(Question) == 3
 
@@ -46,6 +45,11 @@ class TestCaseQuestion:
 
         current_session = StoreConfig().session
         current_session.rollback
+
+    def t_createNewUserAndSetPassword(self, sessionTestDB):
+        new_user = User(name="marco").create()
+        new_user.set_password("password")
+        assert new_user.check_password("password")
 
 
 class TestCaseTutorialView:

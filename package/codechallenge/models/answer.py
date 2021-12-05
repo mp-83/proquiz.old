@@ -1,6 +1,6 @@
 from codechallenge.app import StoreConfig
 from codechallenge.models.meta import Base
-from sqlalchemy import Column, ForeignKey, Integer, String, inspect, select
+from sqlalchemy import Column, ForeignKey, Integer, String, select
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import UniqueConstraint
 
@@ -23,7 +23,6 @@ class Answer(Base):
         return self.session.execute(select(Answer)).all()
 
     def create(self):
-        session = inspect(self).session
-        session.add(self)
-        session.flush()
+        self.session.add(self)
+        self.session.flush()
         return self

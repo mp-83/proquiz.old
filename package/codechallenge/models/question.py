@@ -1,6 +1,6 @@
 from codechallenge.app import StoreConfig
 from codechallenge.models.meta import Base
-from sqlalchemy import Column, Integer, String, inspect, select
+from sqlalchemy import Column, Integer, String, select
 from sqlalchemy.orm import relationship
 
 
@@ -27,9 +27,8 @@ class Question(Base):
         return matched_row.scalar_one_or_none()
 
     def save(self):
-        session = inspect(self).session or self.session
-        session.add(self)
-        session.flush()
+        self.session.add(self)
+        self.session.flush()
         return self
 
     @property
