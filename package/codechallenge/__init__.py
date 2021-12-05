@@ -1,1 +1,1 @@
-from codechallenge.app import main
+from codechallenge.app import main  # noqa: F401
