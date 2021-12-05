@@ -2,7 +2,7 @@ import pytest
 from codechallenge.app import StoreConfig
 from codechallenge.db import count
 from codechallenge.models import Answer, Question, User
-from codechallenge.views import CodeChallengeViews
+from codechallenge.views.views import CodeChallengeViews
 from pyramid import testing
 from sqlalchemy.exc import IntegrityError, InvalidRequestError
 
@@ -31,6 +31,11 @@ class TestCaseModels:
         Answer(question=question, text="question2.answer2", position=2).create()
         assert count(Answer) == 2
         assert question.answers[0].question_uid == question.uid
+
+    def t_editingTextOfExistingQuestion(self, fillTestingDB):
+        question = Question().at_position(2)
+        question.update(text="new-text")
+        assert question.text == "new-text"
 
     def t_allAnswersOfAQuestionMustDiffer(self, fillTestingDB):
         question = Question().at_position(2)
