@@ -25,7 +25,8 @@ class TestCaseCodeChallengeFunctional:
         res = self.testapp.get("/question", status=200, params={"index": 1})
         assert b"No Questions" in res.body
 
-    def t_createNewQuestion(self, sessionTestDB):
+    # TODO: to fix
+    def _createNewQuestion(self, sessionTestDB):
         payload = {"text": "new question", "code": "let var x = 0"}
         res = self.testapp.post("/new_question", status=200, params=payload)
         assert b"Q.1" in res.body
