@@ -7,14 +7,9 @@ import pytest
 import transaction
 from codechallenge.app import StoreConfig, main
 from codechallenge.models import Question
-from codechallenge.models.meta import (
-    Base,
-    get_engine,
-    get_session_factory,
-    get_tm_session,
-)
-from pyramid.config import Configurator
+from codechallenge.models.meta import Base, get_engine, get_tm_session
 from pyramid.paster import get_appsettings
+from webtest import TestApp
 
 
 def pytest_addoption(parser):
@@ -65,6 +60,28 @@ def app(app_settings, dbengine):
 
 
 @pytest.fixture
+def testapp(app, tm, dbsession):
+    # override request.dbsession and request.tm with our own
+    # externally-controlled values that are shared across requests but aborted
+    # at the end
+    _testapp = TestApp(
+        app,
+        extra_environ={
+            "HTTP_HOST": "example.com",
+            "tm.active": True,
+            "tm.manager": tm,
+            "app.dbsession": dbsession,
+        },
+    )
+
+    # initialize a csrf token instead of running an initial request to get one
+    # from the actual app - this only works using the CookieCSRFStoragePolicy
+    _testapp.set_cookie("csrf_token", "dummy_csrf_token")
+
+    return _testapp
+
+
+@pytest.fixture
 def tm():
     tm = transaction.TransactionManager(explicit=True)
     tm.begin()
@@ -76,19 +93,15 @@ def tm():
 
 
 @pytest.fixture
-def sessionTestDB(app, tm):
-    session_factory = app.registry["dbsession_factory"]
-    return get_tm_session(session_factory, tm)
+def dbsession(sessionTestDB):
+    yield sessionTestDB
 
 
 @pytest.fixture
-def _sessionTestDB(dbengine):
-    session_factory = get_session_factory(dbengine)
-    sc = StoreConfig()
-    configurator = Configurator()
-    configurator.registry["dbsession_factory"] = session_factory
-    sc.config = configurator
-    yield sc.session
+def sessionTestDB(app, tm):
+    session_factory = app.registry["dbsession_factory"]
+    _ = StoreConfig()
+    return get_tm_session(session_factory, tm)
 
 
 @pytest.fixture

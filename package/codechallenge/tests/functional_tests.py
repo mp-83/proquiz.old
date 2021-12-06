@@ -3,14 +3,8 @@ import pytest
 
 class TestCaseCodeChallengeFunctional:
     @pytest.fixture(autouse=True)
-    def setUp(self, app_settings):
-        from codechallenge import main
-
-        app = main({}, **app_settings)
-
-        from webtest import TestApp
-
-        self.testapp = TestApp(app)
+    def setUp(self, testapp):
+        self.testapp = testapp
 
     def t_start_page(self):
         res = self.testapp.get("/", status=200)
