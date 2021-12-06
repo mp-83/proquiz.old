@@ -5,7 +5,7 @@ import alembic.command
 import alembic.config
 import pytest
 import transaction
-from codechallenge.app import StoreConfig
+from codechallenge.app import StoreConfig, main
 from codechallenge.models import Question
 from codechallenge.models.meta import (
     Base,
@@ -39,7 +39,7 @@ def app_settings(ini_file):
 
 
 @pytest.fixture
-def engine_factory(app_settings, ini_file, alembic_ini_file):
+def dbengine(app_settings, ini_file, alembic_ini_file):
     engine = get_engine(app_settings)
 
     alembic_cfg = alembic.config.Config(alembic_ini_file)
@@ -60,6 +60,11 @@ def engine_factory(app_settings, ini_file, alembic_ini_file):
 
 
 @pytest.fixture
+def app(app_settings, dbengine):
+    return main({}, dbengine=dbengine, **app_settings)
+
+
+@pytest.fixture
 def tm():
     tm = transaction.TransactionManager(explicit=True)
     tm.begin()
@@ -71,14 +76,14 @@ def tm():
 
 
 @pytest.fixture
-def dbsession(app, tm):
+def _sessionTestDB(app, tm):
     session_factory = app.registry["dbsession_factory"]
     return get_tm_session(session_factory, tm)
 
 
 @pytest.fixture
-def sessionTestDB(engine_factory):
-    session_factory = get_session_factory(engine_factory)
+def sessionTestDB(dbengine):
+    session_factory = get_session_factory(dbengine)
     sc = StoreConfig()
     configurator = Configurator()
     configurator.registry["dbsession_factory"] = session_factory
@@ -87,7 +92,7 @@ def sessionTestDB(engine_factory):
 
 
 @pytest.fixture
-def fillTestingDB(engine_factory, sessionTestDB):
+def fillTestingDB(dbengine, sessionTestDB):
     db_session = sessionTestDB
     with transaction.manager:
         db_session.add_all(
