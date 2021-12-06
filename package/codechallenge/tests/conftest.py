@@ -5,11 +5,50 @@ import alembic.command
 import alembic.config
 import pytest
 import transaction
+import webtest
 from codechallenge.app import StoreConfig, main
 from codechallenge.models import Question
 from codechallenge.models.meta import Base, get_engine, get_tm_session
 from pyramid.paster import get_appsettings
-from webtest import TestApp
+from webob.cookies import Cookie
+
+
+class TestApp(webtest.TestApp):
+    def get_cookie(self, name, default=None):
+        # webtest currently doesn't expose the unescaped cookie values
+        # so we're using webob to parse them for us
+        # see https://github.com/Pylons/webtest/issues/171
+        cookie = Cookie(
+            " ".join(
+                "%s=%s" % (c.name, c.value) for c in self.cookiejar if c.name == name
+            )
+        )
+        return next(
+            (m.value.decode("latin-1") for m in cookie.values()),
+            default,
+        )
+
+    def get_csrf_token(self):
+        """
+        Convenience method to get the current CSRF token.
+
+        This value must be passed to POST/PUT/DELETE requests in either the
+        "X-CSRF-Token" header or the "csrf_token" form value.
+
+        testapp.post(..., headers={'X-CSRF-Token': testapp.get_csrf_token()})
+
+        or
+
+        testapp.post(..., {'csrf_token': testapp.get_csrf_token()})
+
+        """
+        return self.get_cookie("csrf_token")
+
+    def login(self, params, status=303, **kw):
+        """Convenience method to login the client."""
+        body = {"csrf_token": self.get_csrf_token()}
+        body.update(params)
+        return self.post("/login", body, **kw)
 
 
 def pytest_addoption(parser):

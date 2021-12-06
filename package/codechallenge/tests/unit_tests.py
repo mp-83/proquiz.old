@@ -85,9 +85,11 @@ class TestCaseTutorialView:
 
     def t_createNewQuestion(self, sessionTestDB):
         request = testing.DummyRequest()
-        request.params.update(
-            data={"text": "eleven pm", "code": "x = 0; x += 1; print(x)", "position": 2}
-        )
+        request.json = {
+            "text": "eleven pm",
+            "code": "x = 0; x += 1; print(x)",
+            "position": 2,
+        }
         view_obj = CodeChallengeViews(request)
         response = view_obj.new_question()
         assert count(Question) == 1

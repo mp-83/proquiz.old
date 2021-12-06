@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Code challenge</title>
+	<link href="{{request.static_url('codechallenge:static/bootstrap.min.css')}}" rel="stylesheet">
+	<script src="{{request.static_url('codechallenge:static/bootstrap.min.js')}}"></script>
+	<script src="{{request.static_url('codechallenge:static/question.js')}}"></script>
+  </head>
+  <body>
+	<div>
+	    <div>
+			<h4>Q.{{position}}</h4>
+			<p>{{text}}</p>
+		</div>
+			{% if code %}
+		<pre cols="4">
+		<code>{{code}}</code>
+		</pre>
+			{% endif %}
+		<div>
+			<input type="text">
+		</div>
+	</div>
+  </body>
+</html>

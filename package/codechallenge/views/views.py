@@ -32,7 +32,7 @@ class CodeChallengeViews:
         request_method="POST",
     )
     def new_question(self):
-        data = self.request.params.get("data", {})
+        data = self.request.json
         if not data:
             return {}
         new_question = Question(**data).save()
