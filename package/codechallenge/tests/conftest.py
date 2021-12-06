@@ -76,13 +76,13 @@ def tm():
 
 
 @pytest.fixture
-def _sessionTestDB(app, tm):
+def sessionTestDB(app, tm):
     session_factory = app.registry["dbsession_factory"]
     return get_tm_session(session_factory, tm)
 
 
 @pytest.fixture
-def sessionTestDB(dbengine):
+def _sessionTestDB(dbengine):
     session_factory = get_session_factory(dbengine)
     sc = StoreConfig()
     configurator = Configurator()
@@ -92,18 +92,16 @@ def sessionTestDB(dbengine):
 
 
 @pytest.fixture
-def fillTestingDB(dbengine, sessionTestDB):
-    db_session = sessionTestDB
-    with transaction.manager:
-        db_session.add_all(
+def fillTestingDB(app):
+    tm = transaction.TransactionManager(explicit=True)
+    dbsession = get_tm_session(app.registry["dbsession_factory"], tm)
+    with tm:
+        dbsession.add_all(
             [
                 Question(text="q1.text", code="q1.code", position=1),
                 Question(text="q2.text", code="q2.code", position=2),
                 Question(text="q3.text", code="q3.code", position=3),
             ]
         )
-        db_session.commit()
 
     yield
-
-    # Base.metadata.drop_all(engine_factory)
