@@ -7,7 +7,12 @@ import pytest
 import transaction
 from codechallenge.app import StoreConfig
 from codechallenge.models import Question
-from codechallenge.models.meta import Base, get_engine, get_session_factory
+from codechallenge.models.meta import (
+    Base,
+    get_engine,
+    get_session_factory,
+    get_tm_session,
+)
 from pyramid.config import Configurator
 from pyramid.paster import get_appsettings
 
@@ -55,12 +60,24 @@ def engine_factory(app_settings, ini_file, alembic_ini_file):
 
 
 @pytest.fixture
-def initTestingDB(engine_factory):
-    pass
+def tm():
+    tm = transaction.TransactionManager(explicit=True)
+    tm.begin()
+    tm.doom()
+
+    yield tm
+
+    tm.abort()
 
 
 @pytest.fixture
-def sessionTestDB(engine_factory, initTestingDB):
+def dbsession(app, tm):
+    session_factory = app.registry["dbsession_factory"]
+    return get_tm_session(session_factory, tm)
+
+
+@pytest.fixture
+def sessionTestDB(engine_factory):
     session_factory = get_session_factory(engine_factory)
     sc = StoreConfig()
     configurator = Configurator()
