@@ -58,6 +58,7 @@ class TestCaseModels:
     def t_createNewUserAndSetPassword(self, sessionTestDB):
         new_user = User(name="marco").create()
         new_user.set_password("password")
+        new_user.save()
         assert new_user.check_password("password")
 
 

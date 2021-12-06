@@ -29,14 +29,8 @@ Base = declarative_base(metadata=metadata)
 
 
 def get_engine():
-    echo = True
-    db_uri = DB_DSN
-    if os.getenv("TESTING"):
-        echo = False
-        db_uri = "sqlite:///:memory:"
-
     if not cache.get("engine"):
-        cache["engine"] = create_engine(db_uri, echo=echo)
+        cache["engine"] = create_engine(DB_DSN, echo=True)
     return cache["engine"]
 
 

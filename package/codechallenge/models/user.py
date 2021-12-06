@@ -32,3 +32,7 @@ class User(Base):
         self.session.add(self)
         self.session.flush()
         return self
+
+    def save(self):
+        self.session.flush()
+        return self

@@ -3,10 +3,10 @@ import pytest
 
 class TestCaseCodeChallengeFunctional:
     @pytest.fixture(autouse=True)
-    def setUp(self, settings):
+    def setUp(self, app_settings):
         from codechallenge import main
 
-        app = main({}, **settings)
+        app = main({}, **app_settings)
 
         from webtest import TestApp
 

@@ -46,7 +46,7 @@ class StoreConfig:
 
 
 def main(global_config, **settings):
-    if not settings.get("TEST", False):
+    if not settings.get("testing", False):
         settings["sqlalchemy.url"] = DB_DSN
     session_factory = SignedCookieSessionFactory("sessionFactory")
     config = Configurator(

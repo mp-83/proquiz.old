@@ -1,28 +1,62 @@
+import os
+
+import alembic
+import alembic.command
+import alembic.config
 import pytest
 import transaction
 from codechallenge.app import StoreConfig
 from codechallenge.models import Question
 from codechallenge.models.meta import Base, get_engine, get_session_factory
 from pyramid.config import Configurator
+from pyramid.paster import get_appsettings
+
+
+def pytest_addoption(parser):
+    parser.addoption("--ini", action="store", metavar="INI_FILE")
+
+
+@pytest.fixture(scope="session")
+def ini_file(request):
+    # potentially grab this path from a pytest option
+    return os.path.abspath("pytest.ini")
+
+
+@pytest.fixture(scope="session")
+def alembic_ini_file(request):
+    return os.path.abspath("alembic.ini")
+
+
+@pytest.fixture(scope="session")
+def app_settings(ini_file):
+    _sett = get_appsettings(ini_file)
+    yield _sett
 
 
 @pytest.fixture
-def settings():
-    yield {
-        "sqlalchemy.url": "sqlite:///:memory:",
-        "auth.secret": "sekret",
-        "TEST": True,
-    }
+def engine_factory(app_settings, ini_file, alembic_ini_file):
+    engine = get_engine(app_settings)
 
+    alembic_cfg = alembic.config.Config(alembic_ini_file)
+    Base.metadata.drop_all(bind=engine)
+    alembic.command.stamp(alembic_cfg, None, purge=True)
 
-@pytest.fixture
-def engine_factory(settings):
-    yield get_engine(settings)
+    # run migrations to initialize the database
+    # depending on how we want to initialize the database from scratch
+    # we could alternatively call:
+    Base.metadata.create_all(bind=engine)
+    # alembic.command.stamp(alembic_cfg, "head")
+    # alembic.command.upgrade(alembic_cfg, "head")
+
+    yield engine
+
+    Base.metadata.drop_all(bind=engine)
+    # alembic.command.stamp(alembic_cfg, None, purge=True)
 
 
 @pytest.fixture
 def initTestingDB(engine_factory):
-    Base.metadata.create_all(engine_factory)
+    pass
 
 
 @pytest.fixture
@@ -50,4 +84,4 @@ def fillTestingDB(engine_factory, sessionTestDB):
 
     yield
 
-    Base.metadata.drop_all(engine_factory)
+    # Base.metadata.drop_all(engine_factory)
