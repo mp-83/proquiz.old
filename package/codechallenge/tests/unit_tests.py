@@ -95,3 +95,17 @@ class TestCaseTutorialView:
         assert count(Question) == 1
         assert response["text"] == "eleven pm"
         assert response["position"] == 2
+
+    def t_successfulLogin(self, dummy_request, dummy_config):
+        dummy_config.add_route("login", "/login")
+        dummy_config.add_route("new_question", "/new_question")
+        next_url = "new_question"
+        request = dummy_request
+        request.params = {
+            "email": "user@test.com",
+            "password": "p@ss",
+            "next_url": next_url,
+        }
+        view_obj = CodeChallengeViews(request)
+        response = view_obj.login()
+        assert response["next_url"].endswith(next_url)

@@ -10,6 +10,7 @@ from codechallenge.app import StoreConfig, main
 from codechallenge.models import Question
 from codechallenge.models.meta import Base, get_engine, get_tm_session
 from pyramid.paster import get_appsettings
+from pyramid.testing import DummyRequest, testConfig
 from webob.cookies import Cookie
 
 
@@ -157,3 +158,37 @@ def fillTestingDB(app):
         )
 
     yield
+
+
+@pytest.fixture
+def dummy_request(tm, dbsession):
+    """
+    A lightweight dummy request.
+
+    This request is ultra-lightweight and should be used only when the request
+    itself is not a large focus in the call-stack.  It is much easier to mock
+    and control side-effects using this object, however:
+
+    - It does not have request extensions applied.
+    - Threadlocals are not properly pushed.
+
+    """
+    request = DummyRequest()
+    request.domain = "codechallenge.project"
+    request.host = "codechallenge.project"
+    request.dbsession = dbsession
+    request.tm = tm
+
+    return request
+
+
+@pytest.fixture
+def dummy_config(dummy_request):
+    """
+    A dummy :class:`pyramid.config.Configurator` object.  This allows for
+    mock configuration, including configuration for ``dummy_request``, as well
+    as pushing the appropriate threadlocals.
+
+    """
+    with testConfig(request=dummy_request) as config:
+        yield config
