@@ -1,6 +1,14 @@
 import logging
 
-from codechallenge.models.question import Question
+from codechallenge.models import Question, User
+from pyramid.csrf import new_csrf_token
+from pyramid.httpexceptions import (
+    HTTPBadRequest,
+    HTTPForbidden,
+    HTTPNotFound,
+    HTTPSeeOther,
+)
+from pyramid.security import remember
 from pyramid.view import view_config, view_defaults
 
 logger = logging.getLogger(__name__)
@@ -47,20 +55,15 @@ class CodeChallengeViews:
             next_url = self.request.route_url("new_question")
         message = ""
         login = ""
-        # if self.request.method == 'POST':
-        #     login = self.request.params['login']
-        #     password = self.request.params['password']
-        #     user = (
-        #         self.request.dbsession.query(models.User)
-        #         .filter_by(name=login)
-        #         .first()
-        #     )
-        #     if user is not None and user.check_password(password):
-        #         new_csrf_token(request)
-        #         headers = remember(request, user.id)
-        #         return HTTPSeeOther(location=next_url, headers=headers)
-        #     message = 'Failed login'
-        #     self.request.response.status = 400
+        if self.request.method == "POST":
+            email = self.request.params["email"]
+            password = self.request.params["password"]
+            user = self.request.dbsession.query(User).filter_by(email=email).first()
+            if user is not None and user.check_password(password):
+                new_csrf_token(self.request)
+                headers = remember(self.request, user.uid)
+                return HTTPSeeOther(location=next_url, headers=headers)
+            raise HTTPBadRequest("Login failed")
 
         return {
             "message": message,

@@ -7,9 +7,15 @@ from sqlalchemy import Column, Integer, String, select
 class User(Base):
     __tablename__ = "user"
     uid = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False, unique=True)
-
+    email = Column(String, nullable=False, unique=True)
+    name = Column(String, nullable=True)
     password_hash = Column(String)
+
+    def __init__(self, **kwargs):
+        password = kwargs.pop("password", "")
+        if password:
+            self.set_password(password)
+        super().__init__(**kwargs)
 
     def set_password(self, pw):
         pwhash = bcrypt.hashpw(pw.encode("utf8"), bcrypt.gensalt())
