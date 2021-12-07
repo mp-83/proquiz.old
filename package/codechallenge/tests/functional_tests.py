@@ -23,11 +23,11 @@ class TestCaseCodeChallengeFunctional:
         payload = {"text": "new question", "code": "let var x = 0"}
         res = self.testapp.post_json(
             "/new_question",
-            status=200,
+            status=302,
             params=payload,
             headers={"X-CSRF-Token": testapp.get_csrf_token()},
         )
-        assert b"Q.1" in res.body
+        assert b"/login" in res.body
         # assert b"Answers" in res.body
 
     def t_wrongMethodsReturn404not405(self, sessionTestDB):

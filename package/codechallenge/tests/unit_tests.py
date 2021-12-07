@@ -4,12 +4,7 @@ from codechallenge.db import count
 from codechallenge.models import Answer, Question, User
 from codechallenge.views.views import CodeChallengeViews
 from pyramid import testing
-from pyramid.httpexceptions import (
-    HTTPBadRequest,
-    HTTPForbidden,
-    HTTPNotFound,
-    HTTPSeeOther,
-)
+from pyramid.httpexceptions import HTTPBadRequest, HTTPFound, HTTPSeeOther
 from sqlalchemy.exc import IntegrityError, InvalidRequestError
 
 
@@ -89,8 +84,9 @@ class TestCaseTutorialView:
         response = view_obj.question()
         assert response == {}
 
-    def t_createNewQuestion(self, sessionTestDB):
-        request = testing.DummyRequest()
+    def t_createNewQuestion(self, dummy_request, mocker):
+        mocker.patch("pyramid.testing.DummyRequest.is_authenticated")
+        request = dummy_request
         request.json = {
             "text": "eleven pm",
             "code": "x = 0; x += 1; print(x)",
@@ -101,6 +97,15 @@ class TestCaseTutorialView:
         assert count(Question) == 1
         assert response["text"] == "eleven pm"
         assert response["position"] == 2
+
+
+class TestCaseLoginRequired:
+    def t_checkViewsAreDecorated(self, dummy_request, dummy_config):
+        view_obj = CodeChallengeViews(dummy_request)
+        for view_name in ["new_question", "edit_question"]:
+            view_method = getattr(view_obj, view_name)
+            response = view_method()
+            assert isinstance(response, HTTPFound)
 
 
 class TestCaseLogin:
@@ -120,7 +125,7 @@ class TestCaseLogin:
         }
         view_obj = CodeChallengeViews(request)
         with pytest.raises(HTTPBadRequest):
-            response = view_obj.login()
+            view_obj.login()
 
     def t_successfulLogin(self, dummy_request, dummy_config):
         credentials = {

@@ -192,6 +192,7 @@ def dummy_config(dummy_request):
     """
     with testConfig(request=dummy_request) as config:
         config.add_route("login", "/login")
-        config.add_route("new_question", "/new_question")
         config.add_route("start", "/start")
+        config.add_route("new_question", "/new_question")
+        config.add_route("edit_question", "/edit_question/{uid}")
         yield config
