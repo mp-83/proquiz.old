@@ -4,7 +4,7 @@ from codechallenge.db import count
 from codechallenge.models import Answer, Question, User
 from codechallenge.views.views import CodeChallengeViews
 from pyramid import testing
-from pyramid.httpexceptions import HTTPBadRequest, HTTPFound, HTTPSeeOther
+from pyramid.httpexceptions import HTTPBadRequest, HTTPSeeOther
 from sqlalchemy.exc import IntegrityError, InvalidRequestError
 
 
@@ -105,7 +105,7 @@ class TestCaseLoginRequired:
         for view_name in ["new_question", "edit_question"]:
             view_method = getattr(view_obj, view_name)
             response = view_method()
-            assert isinstance(response, HTTPFound)
+            assert isinstance(response, HTTPSeeOther)
 
 
 class TestCaseLogin:

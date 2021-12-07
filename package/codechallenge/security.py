@@ -1,7 +1,7 @@
 from codechallenge.models import User
 from pyramid.authentication import AuthTktCookieHelper
 from pyramid.csrf import CookieCSRFStoragePolicy
-from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPSeeOther
 from pyramid.request import RequestLocalCache
 
 
@@ -49,6 +49,6 @@ def login_required(func):
         if view.request.is_authenticated:
             return func(*args, **kwargs)
         login_url = view.request.route_url("login")
-        return HTTPFound(login_url)
+        return HTTPSeeOther(login_url)
 
     return function_wrapper
