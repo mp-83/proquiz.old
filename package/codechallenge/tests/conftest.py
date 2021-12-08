@@ -6,7 +6,7 @@ import alembic.config
 import pytest
 import transaction
 import webtest
-from codechallenge.app import StoreConfig, main
+from codechallenge.app import main
 from codechallenge.models import Question
 from codechallenge.models.meta import Base, get_engine, get_tm_session
 from codechallenge.security import SecurityPolicy
@@ -134,14 +134,8 @@ def tm():
 
 
 @pytest.fixture
-def dbsession(sessionTestDB):
-    yield sessionTestDB
-
-
-@pytest.fixture
-def sessionTestDB(app, tm):
+def dbsession(app, tm):
     session_factory = app.registry["dbsession_factory"]
-    _ = StoreConfig()
     return get_tm_session(session_factory, tm)
 
 

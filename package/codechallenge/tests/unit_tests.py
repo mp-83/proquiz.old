@@ -54,22 +54,22 @@ class TestCaseModels:
         current_session = StoreConfig().session
         current_session.rollback
 
-    def t_createNewUserAndSetPassword(self, sessionTestDB):
+    def t_createNewUserAndSetPassword(self, dbsession):
         new_user = User(email="user@test.project").create()
         new_user.set_password("password")
         new_user.save()
         assert new_user.check_password("password")
 
-    def t_questionMustBeBoundToAGame(self, sessionTestDB):
+    def t_questionMustBeBoundToAGame(self, dbsession):
         new_question = Question(text="new-question").save()
         assert new_question.game is not None
 
-    def t_gameMustBeBoundToAMatch(self, sessionTestDB):
+    def t_gameMustBeBoundToAMatch(self, dbsession):
         new_game = Game(index=1).create()
         assert new_game.match is not None
         assert new_game.match.name != ""
 
-    def t_raiseErrorWhenTwoGamesOfMatchHaveSamePosition(self, sessionTestDB):
+    def t_raiseErrorWhenTwoGamesOfMatchHaveSamePosition(self, dbsession):
         new_game = Game(index=1).create()
         with pytest.raises((IntegrityError, InvalidRequestError)):
             Game(index=1, match_uid=new_game.match.uid).create()
