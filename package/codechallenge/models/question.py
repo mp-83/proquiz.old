@@ -17,6 +17,10 @@ class Question(Base):
     def session(self):
         return StoreConfig().session
 
+    @property
+    def is_open(self):
+        return len(self.answers) == 0
+
     def all(self):
         return self.session.execute(select(Question)).all()
 

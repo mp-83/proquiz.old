@@ -38,6 +38,7 @@ class TestCaseModels:
     def t_createQuestionWithoutPosition(self, fillTestingDB):
         new_question = Question(text="new-question").save()
         assert new_question.position == 4
+        assert new_question.is_open
 
     def t_allAnswersOfAQuestionMustDiffer(self, fillTestingDB):
         question = Question().at_position(2)
