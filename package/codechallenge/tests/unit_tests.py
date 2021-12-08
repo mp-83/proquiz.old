@@ -1,7 +1,7 @@
 import pytest
 from codechallenge.app import StoreConfig
 from codechallenge.db import count
-from codechallenge.models import Answer, Question, User
+from codechallenge.models import Answer, Game, Question, User
 from sqlalchemy.exc import IntegrityError, InvalidRequestError
 
 
@@ -19,7 +19,7 @@ class TestCaseModels:
     def t_countMethodReturnsTheCorrectValue(self, fillTestingDB):
         assert count(Question) == 3
 
-    def t_theQuestionAtPositionShouldBeReturned(self, fillTestingDB):
+    def t_theQuestionAtPosition(self, fillTestingDB):
         question = Question().at_position(1)
         assert question.text == "q1.text"
 
@@ -59,3 +59,17 @@ class TestCaseModels:
         new_user.set_password("password")
         new_user.save()
         assert new_user.check_password("password")
+
+    def t_questionMustBeBoundToAGame(self, sessionTestDB):
+        new_question = Question(text="new-question").save()
+        assert new_question.game is not None
+
+    def t_gameMustBeBoundToAMatch(self, sessionTestDB):
+        new_game = Game(index=1).create()
+        assert new_game.match is not None
+        assert new_game.match.name != ""
+
+    def t_raiseErrorWhenTwoGamesOfMatchHaveSamePosition(self, sessionTestDB):
+        new_game = Game(index=1).create()
+        with pytest.raises((IntegrityError, InvalidRequestError)):
+            Game(index=1, match_uid=new_game.match.uid).create()

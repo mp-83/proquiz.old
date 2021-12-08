@@ -1,6 +1,7 @@
 from codechallenge.app import StoreConfig
+from codechallenge.models.game import Game
 from codechallenge.models.meta import Base
-from sqlalchemy import Column, Integer, String, select
+from sqlalchemy import Column, ForeignKey, Integer, String, select
 from sqlalchemy.orm import relationship
 
 
@@ -8,10 +9,19 @@ class Question(Base):
     __tablename__ = "question"
 
     uid = Column(Integer, primary_key=True)
+    game_uid = Column(Integer, ForeignKey("game.uid"), nullable=True)
+    game = relationship("Game", back_populates="questions")
+    answers = relationship("Answer")
     text = Column(String(400), nullable=False)
     position = Column(Integer, nullable=False)
     code = Column(String(5000))
-    answers = relationship("Answer")
+
+    def __init__(self, **kwargs):
+        # To replace with db.events that aren't working now (08/12)
+        if kwargs.get("game_uid") is None:
+            new_game = Game(index=1).create()
+            kwargs["game_uid"] = new_game.uid
+        super().__init__(**kwargs)
 
     @property
     def session(self):
