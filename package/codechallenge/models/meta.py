@@ -1,7 +1,17 @@
+from datetime import datetime
+
 import zope.sqlalchemy
 from pyramid.authorization import Allow, Everyone
-from sqlalchemy import engine_from_config
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy import Column, DateTime, Integer, engine_from_config
+from sqlalchemy.orm import (
+    declarative_base,
+    declarative_mixin,
+    declared_attr,
+    sessionmaker,
+)
+
+# from sqlalchemy.types import DateTime
+
 
 NAMING_CONVENTION = {
     "ix": "ix_%(column_0_label)s",
@@ -14,6 +24,22 @@ NAMING_CONVENTION = {
 cache = {}
 Base = declarative_base()
 Base.metadata.naming_convention = NAMING_CONVENTION
+
+
+@declarative_mixin
+class TableMixin:
+    @declared_attr
+    def __tablename__(self):
+        return self.__name__.lower()
+
+    __mapper_args__ = {"always_refresh": True}
+
+    uid = Column(Integer, primary_key=True)
+    create_timestamp = Column(
+        DateTime(timezone=True), nullable=False, default=datetime.utcnow
+    )
+    # TODO: to fix/update using db.event
+    update_timestamp = Column(DateTime(timezone=True), nullable=True)
 
 
 def get_engine(settings, prefix="sqlalchemy."):

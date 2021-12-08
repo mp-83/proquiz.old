@@ -22,6 +22,7 @@ class TestCaseModels:
     def t_theQuestionAtPosition(self, fillTestingDB):
         question = Question().at_position(1)
         assert question.text == "q1.text"
+        assert question.create_timestamp is not None
 
     def t_newCreatedAnswersShouldBeAvailableFromTheQuestion(self, fillTestingDB):
         question = Question().at_position(1)
@@ -59,6 +60,7 @@ class TestCaseModels:
         new_user.set_password("password")
         new_user.save()
         assert new_user.check_password("password")
+        assert new_user.create_timestamp is not None
 
     def t_questionMustBeBoundToAGame(self, dbsession):
         new_question = Question(text="new-question").save()

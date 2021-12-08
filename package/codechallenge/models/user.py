@@ -1,12 +1,12 @@
 import bcrypt
 from codechallenge.app import StoreConfig
-from codechallenge.models.meta import Base
-from sqlalchemy import Column, Integer, String, select
+from codechallenge.models.meta import Base, TableMixin
+from sqlalchemy import Column, String, select
 
 
-class User(Base):
+class User(TableMixin, Base):
     __tablename__ = "user"
-    uid = Column(Integer, primary_key=True)
+
     email = Column(String, nullable=False, unique=True)
     name = Column(String, nullable=True)
     password_hash = Column(String)

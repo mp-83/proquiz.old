@@ -1,20 +1,21 @@
 from codechallenge.app import StoreConfig
 from codechallenge.models.game import Game
-from codechallenge.models.meta import Base
+from codechallenge.models.meta import Base, TableMixin
 from sqlalchemy import Column, ForeignKey, Integer, String, select
 from sqlalchemy.orm import relationship
 
 
-class Question(Base):
+class Question(TableMixin, Base):
     __tablename__ = "question"
 
-    uid = Column(Integer, primary_key=True)
     game_uid = Column(Integer, ForeignKey("game.uid"), nullable=True)
     game = relationship("Game", back_populates="questions")
     answers = relationship("Answer")
+
     text = Column(String(400), nullable=False)
     position = Column(Integer, nullable=False)
     code = Column(String(5000))
+    difficulty = Column(Integer)
 
     def __init__(self, **kwargs):
         # To replace with db.events that aren't working now (08/12)
@@ -53,6 +54,7 @@ class Question(Base):
             if not hasattr(self, k):
                 continue
             setattr(self, k, v)
+
         self.session.flush()
 
     @property

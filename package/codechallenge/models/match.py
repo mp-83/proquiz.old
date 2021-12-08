@@ -1,15 +1,14 @@
 from uuid import uuid1
 
 from codechallenge.app import StoreConfig
-from codechallenge.models.meta import Base
-from sqlalchemy import Column, Integer, String
+from codechallenge.models.meta import Base, TableMixin
+from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
 
 
-class Match(Base):
+class Match(TableMixin, Base):
     __tablename__ = "match"
 
-    uid = Column(Integer, primary_key=True)
     name = Column(String, nullable=False, unique=True)
     games = relationship("Game")
 

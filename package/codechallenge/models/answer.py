@@ -1,14 +1,13 @@
 from codechallenge.app import StoreConfig
-from codechallenge.models.meta import Base
+from codechallenge.models.meta import Base, TableMixin
 from sqlalchemy import Column, ForeignKey, Integer, String, select
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import UniqueConstraint
 
 
-class Answer(Base):
+class Answer(TableMixin, Base):
     __tablename__ = "answer"
 
-    uid = Column(Integer, primary_key=True)
     question_uid = Column(Integer, ForeignKey("question.uid"), nullable=False)
     question = relationship("Question", back_populates="answers")
     position = Column(Integer, nullable=False)
