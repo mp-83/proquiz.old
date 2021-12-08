@@ -100,7 +100,7 @@ class TestCaseTutorialView:
 
 
 class TestCaseLoginRequired:
-    def t_checkViewsAreDecorated(self, dummy_request, dummy_config):
+    def t_checkViewsAreDecorated(self, dummy_request, simple_config):
         view_obj = CodeChallengeViews(dummy_request)
         for view_name in ["new_question", "edit_question"]:
             view_method = getattr(view_obj, view_name)
@@ -109,14 +109,14 @@ class TestCaseLoginRequired:
 
 
 class TestCaseLogin:
-    def t_retrieveLoginPage(self, dummy_request, dummy_config):
+    def t_retrieveLoginPage(self, dummy_request, simple_config):
         next_url = "new_question"
         view_obj = CodeChallengeViews(dummy_request)
         response = view_obj.login()
         assert response["next_url"].endswith(next_url)
         assert response["url"].endswith("login")
 
-    def t_failedLoginAttempt(self, dummy_request, dummy_config):
+    def t_failedLoginAttempt(self, dummy_request, simple_config):
         request = dummy_request
         request.method = "POST"
         request.params = {
@@ -127,7 +127,7 @@ class TestCaseLogin:
         with pytest.raises(HTTPBadRequest):
             view_obj.login()
 
-    def t_successfulLogin(self, dummy_request, dummy_config):
+    def t_successfulLogin(self, dummy_request, simple_config):
         credentials = {
             "email": "user@test.com",
             "password": "p@ss",
@@ -138,4 +138,13 @@ class TestCaseLogin:
         request.params = credentials
         view_obj = CodeChallengeViews(request)
         response = view_obj.login()
+        assert isinstance(response, HTTPSeeOther)
+
+
+class TestCaseLogOut:
+    def t_successfulLogout(self, dummy_request, simple_config):
+        request = dummy_request
+        request.method = "POST"
+        view_obj = CodeChallengeViews(request)
+        response = view_obj.logout()
         assert isinstance(response, HTTPSeeOther)

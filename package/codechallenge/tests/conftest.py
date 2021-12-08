@@ -9,6 +9,7 @@ import webtest
 from codechallenge.app import StoreConfig, main
 from codechallenge.models import Question
 from codechallenge.models.meta import Base, get_engine, get_tm_session
+from codechallenge.security import SecurityPolicy
 from pyramid.paster import get_appsettings
 from pyramid.testing import DummyRequest, testConfig
 from webob.cookies import Cookie
@@ -183,7 +184,7 @@ def dummy_request(tm, dbsession):
 
 
 @pytest.fixture
-def dummy_config(dummy_request):
+def simple_config(dummy_request):
     """
     A dummy :class:`pyramid.config.Configurator` object.  This allows for
     mock configuration, including configuration for ``dummy_request``, as well
@@ -192,7 +193,21 @@ def dummy_config(dummy_request):
     """
     with testConfig(request=dummy_request) as config:
         config.add_route("login", "/login")
+        config.add_route("logout", "/logout")
         config.add_route("start", "/start")
         config.add_route("new_question", "/new_question")
         config.add_route("edit_question", "/edit_question/{uid}")
+        yield config
+
+
+@pytest.fixture
+def functional_config(dummy_request, app_settings):
+    with testConfig(request=dummy_request) as config:
+        config.add_route("login", "/login")
+        config.add_route("logout", "/logout")
+        config.add_route("start", "/start")
+        config.add_route("new_question", "/new_question")
+        config.add_route("edit_question", "/edit_question/{uid}")
+
+        config.set_security_policy(SecurityPolicy(app_settings["auth.secret"]))
         yield config
