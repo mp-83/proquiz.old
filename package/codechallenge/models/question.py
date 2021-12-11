@@ -11,6 +11,7 @@ class Question(TableMixin, Base):
     game_uid = Column(Integer, ForeignKey("game.uid"), nullable=True)
     game = relationship("Game", back_populates="questions")
     answers = relationship("Answer")
+    reactions = relationship("Reaction")
 
     text = Column(String(400), nullable=False)
     position = Column(Integer, nullable=False)

@@ -1,7 +1,9 @@
+from datetime import datetime
+
 import pytest
 from codechallenge.app import StoreConfig
 from codechallenge.db import count
-from codechallenge.models import Answer, Game, Question, User
+from codechallenge.models import Answer, Game, Question, Reaction, User
 from sqlalchemy.exc import IntegrityError, InvalidRequestError
 
 
@@ -75,3 +77,19 @@ class TestCaseModels:
         new_game = Game(index=1).create()
         with pytest.raises((IntegrityError, InvalidRequestError)):
             Game(index=1, match_uid=new_game.match.uid).create()
+
+    def t_cannotExistsTwoReactionsOfTheSameUserAtSameTime(self, dbsession):
+        user = User(email="user@test.project").create()
+        question = Question(text="new-question").save()
+        answer = Answer(
+            question=question, text="question2.answer1", position=1
+        ).create()
+
+        now = datetime.now()
+        with pytest.raises((IntegrityError, InvalidRequestError)):
+            Reaction(
+                question=question, answer=answer, user=user, create_timestamp=now
+            ).create()
+            Reaction(
+                question=question, answer=answer, user=user, create_timestamp=now
+            ).create()

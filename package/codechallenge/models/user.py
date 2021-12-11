@@ -2,6 +2,7 @@ import bcrypt
 from codechallenge.app import StoreConfig
 from codechallenge.models.meta import Base, TableMixin
 from sqlalchemy import Column, String, select
+from sqlalchemy.orm import relationship
 
 
 class User(TableMixin, Base):
@@ -10,6 +11,7 @@ class User(TableMixin, Base):
     email = Column(String, nullable=False, unique=True)
     name = Column(String, nullable=True)
     password_hash = Column(String)
+    reactions = relationship("Reaction")
 
     def __init__(self, **kwargs):
         password = kwargs.pop("password", "")

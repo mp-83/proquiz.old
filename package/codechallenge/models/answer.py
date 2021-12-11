@@ -10,6 +10,8 @@ class Answer(TableMixin, Base):
 
     question_uid = Column(Integer, ForeignKey("question.uid"), nullable=False)
     question = relationship("Question", back_populates="answers")
+    reactions = relationship("Reaction")
+
     position = Column(Integer, nullable=False)
     text = Column(String(3000), nullable=False)
     __table_args__ = (UniqueConstraint("question_uid", "text"),)
