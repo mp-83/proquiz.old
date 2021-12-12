@@ -58,6 +58,11 @@ class Question(TableMixin, Base):
 
         self.session.flush()
 
+    @classmethod
+    def create_many(cls, questions, game):
+        # session = StoreConfig().session
+        return
+
     @property
     def json(self):
         return {"text": self.text, "code": self.code, "position": self.position}

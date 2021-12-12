@@ -12,7 +12,7 @@ class Game(TableMixin, Base):
     match_uid = Column(Integer, ForeignKey("match.uid"), nullable=False)
     match = relationship("Match", back_populates="games")
     questions = relationship("Question")
-    index = Column(Integer, nullable=False)
+    index = Column(Integer, default=1)
     __table_args__ = (UniqueConstraint("match_uid", "index"),)
 
     def __init__(self, **kwargs):

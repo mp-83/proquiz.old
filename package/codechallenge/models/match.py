@@ -2,7 +2,7 @@ from uuid import uuid1
 
 from codechallenge.app import StoreConfig
 from codechallenge.models.meta import Base, TableMixin
-from sqlalchemy import Column, String
+from sqlalchemy import Column, String, select
 from sqlalchemy.orm import relationship
 
 
@@ -35,3 +35,15 @@ class Match(TableMixin, Base):
         self.session.add(self)
         self.session.flush()
         return self
+
+    def with_name(self, name):
+        matched_row = self.session.execute(select(Match).where(Match.name == name))
+
+        return matched_row.scalar_one_or_none()
+
+    @property
+    def questions(self):
+        result = []
+        for g in self.games:
+            result.extend(g.questions)
+        return result

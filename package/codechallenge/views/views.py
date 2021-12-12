@@ -1,6 +1,6 @@
 import logging
 
-from codechallenge.models import Question, User
+from codechallenge.models import Game, Match, Question, User
 from codechallenge.security import login_required
 from pyramid.csrf import new_csrf_token
 from pyramid.httpexceptions import HTTPBadRequest, HTTPSeeOther
@@ -107,4 +107,8 @@ class CodeChallengeViews:
         request_method="POST",
     )
     def create_match(self):
-        return {}
+        data = self.request.json
+        new_match = Match(name=data.get("name")).create()
+        new_game = Game(match_uid=new_match.uid).create()
+        Question.create_many(data.get("questions", []), new_game)
+        return {"name": data["name"]}

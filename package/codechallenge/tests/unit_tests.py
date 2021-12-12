@@ -70,13 +70,19 @@ class TestCaseModels:
 
 
 class TestCaseMatchModel:
-    def t_create_new_match(self, dbsession):
-        assert Match().create()
+    def t_questionsPropertyReturnsTheExpectedResults(self, dbsession):
+        match = Match().create()
+        first_game = Game(match_uid=match.uid, index=1).create()
+        Question(text="Where is London?", game_uid=first_game.uid).save()
+        second_game = Game(match_uid=match.uid, index=2).create()
+        Question(text="Where is Vienna?", game_uid=second_game.uid).save()
+        assert match.questions[0].text == "Where is London?"
+        assert match.questions[1].text == "Where is Vienna?"
 
 
 class TestCaseGameModel:
     def t_gameMustBeBoundToAMatch(self, dbsession):
-        new_game = Game(index=1).create()
+        new_game = Game().create()
         assert new_game.match is not None
         assert new_game.match.name != ""
 

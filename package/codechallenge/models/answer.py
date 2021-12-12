@@ -1,6 +1,6 @@
 from codechallenge.app import StoreConfig
 from codechallenge.models.meta import Base, TableMixin
-from sqlalchemy import Column, ForeignKey, Integer, String, select
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, select
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import UniqueConstraint
 
@@ -14,6 +14,7 @@ class Answer(TableMixin, Base):
 
     position = Column(Integer, nullable=False)
     text = Column(String(3000), nullable=False)
+    is_correct = Column(Boolean, default=False)
     __table_args__ = (UniqueConstraint("question_uid", "text"),)
 
     @property

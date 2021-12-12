@@ -1,27 +1,28 @@
 import pytest
 from codechallenge.db import count
-from codechallenge.models import Question, User
+from codechallenge.models import Match, Question, User
+from codechallenge.tests.fixtures import TEST_1
 from codechallenge.views.views import CodeChallengeViews
-from pyramid import testing
 from pyramid.httpexceptions import HTTPBadRequest, HTTPSeeOther
 
 
 class TestCaseTutorialView:
-    def t_start_view(self):
-        request = testing.DummyRequest()
-        view_obj = CodeChallengeViews(request)
+    def t_start_view(self, dummy_request):
+        view_obj = CodeChallengeViews(dummy_request)
         response = view_obj.start()
         assert response == {}
 
-    def t_textCodeAndPositionAreReturnedWhenQuestionIsFound(self, fillTestingDB):
-        request = testing.DummyRequest()
+    def t_textCodeAndPositionAreReturnedWhenQuestionIsFound(
+        self, fillTestingDB, dummy_request
+    ):
+        request = dummy_request
         request.params.update(index=2)
         view_obj = CodeChallengeViews(request)
         response = view_obj.question()
         assert response == {"text": "q2.text", "code": "q2.code", "position": 2}
 
-    def t_whenQuestionIsNoneEmptyDictIsReturned(self, fillTestingDB):
-        request = testing.DummyRequest()
+    def t_whenQuestionIsNoneEmptyDictIsReturned(self, fillTestingDB, dummy_request):
+        request = dummy_request
         request.params.update(index=30)
         view_obj = CodeChallengeViews(request)
         response = view_obj.question()
@@ -100,13 +101,15 @@ class TestCaseLogOut:
 
 
 class TestCaseMatch:
-    def t_successfulCreationOfAMatch(self, dummy_request, simple_config):
-        request = dummy_request
+    def t_successfulCreationOfAMatch(self, auth_request, simple_config):
+        request = auth_request
         request.method = "POST"
         view_obj = CodeChallengeViews(request)
 
         match_name = "New Sunday Match"
-        request.params = {"name": match_name, "questions": [{"text": "what time "}]}
+        request.json = {"name": match_name, "questions": TEST_1}
         view_obj = CodeChallengeViews(request)
         response = view_obj.create_match()
-        assert response["name"] == match_name
+        match = Match().with_name(match_name)
+        assert len(match.questions) == 0
+        assert "match" in response.json

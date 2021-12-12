@@ -155,6 +155,14 @@ def fillTestingDB(app):
     yield
 
 
+class AuthenticatedRequest(DummyRequest):
+    """"""
+
+    @property
+    def is_authenticated(self):
+        return True
+
+
 @pytest.fixture
 def dummy_request(tm, dbsession):
     """
@@ -174,6 +182,17 @@ def dummy_request(tm, dbsession):
     request.dbsession = dbsession
     request.tm = tm
 
+    return request
+
+
+@pytest.fixture
+def auth_request(tm, dbsession):
+    """
+    Bypass authentication decorator
+    """
+    request = AuthenticatedRequest()
+    request.dbsession = dbsession
+    request.tm = tm
     return request
 
 
