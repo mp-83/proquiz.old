@@ -97,3 +97,16 @@ class TestCaseLogOut:
         view_obj = CodeChallengeViews(request)
         response = view_obj.logout()
         assert isinstance(response, HTTPSeeOther)
+
+
+class TestCaseMatch:
+    def t_successfulCreationOfAMatch(self, dummy_request, simple_config):
+        request = dummy_request
+        request.method = "POST"
+        view_obj = CodeChallengeViews(request)
+
+        match_name = "New Sunday Match"
+        request.params = {"name": match_name, "questions": [{"text": "what time "}]}
+        view_obj = CodeChallengeViews(request)
+        response = view_obj.create_match()
+        assert response["name"] == match_name
