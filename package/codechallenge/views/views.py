@@ -63,7 +63,6 @@ class CodeChallengeViews:
         route_name="start", renderer="codechallenge:templates/start_page.jinja2"
     )
     def start(self):
-        logger.info("Start page")
         return {}
 
     @view_config(
@@ -99,4 +98,13 @@ class CodeChallengeViews:
         data = getattr(self.request, "json", None)
         if not data:
             return {}
+        return {}
+
+    @login_required
+    @view_config(
+        route_name="match",
+        renderer="codechallenge:templates/new_question.jinja2",  # TODO: to fix
+        request_method="POST",
+    )
+    def create_match(self):
         return {}

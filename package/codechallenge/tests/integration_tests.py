@@ -44,8 +44,14 @@ class TestCaseTutorialView:
 
 class TestCaseLoginRequired:
     def t_checkViewsAreDecorated(self, dummy_request, simple_config):
+        protected_views = (
+            "new_question",
+            "edit_question",
+            "create_match",
+            # "edit_match",
+        )
         view_obj = CodeChallengeViews(dummy_request)
-        for view_name in ["new_question", "edit_question"]:
+        for view_name in protected_views:
             view_method = getattr(view_obj, view_name)
             response = view_method()
             assert isinstance(response, HTTPSeeOther)

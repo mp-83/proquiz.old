@@ -3,7 +3,7 @@ from datetime import datetime
 import pytest
 from codechallenge.app import StoreConfig
 from codechallenge.db import count
-from codechallenge.models import Answer, Game, Question, Reaction, User
+from codechallenge.models import Answer, Game, Match, Question, Reaction, User
 from sqlalchemy.exc import IntegrityError, InvalidRequestError
 
 
@@ -68,6 +68,13 @@ class TestCaseModels:
         new_question = Question(text="new-question").save()
         assert new_question.game is not None
 
+
+class TestCaseMatchModel:
+    def t_create_new_match(self, dbsession):
+        assert Match().create()
+
+
+class TestCaseGameModel:
     def t_gameMustBeBoundToAMatch(self, dbsession):
         new_game = Game(index=1).create()
         assert new_game.match is not None
@@ -78,6 +85,8 @@ class TestCaseModels:
         with pytest.raises((IntegrityError, InvalidRequestError)):
             Game(index=1, match_uid=new_game.match.uid).create()
 
+
+class TestCaseReactionModel:
     def t_cannotExistsTwoReactionsOfTheSameUserAtSameTime(self, dbsession):
         user = User(email="user@test.project").create()
         question = Question(text="new-question").save()
@@ -93,3 +102,13 @@ class TestCaseModels:
             Reaction(
                 question=question, answer=answer, user=user, create_timestamp=now
             ).create()
+
+    def t_ifQuestionChangesThenAlsoFKIsUpdatedAndAffectsReaction(self, dbsession):
+        user = User(email="user@test.project").create()
+        question = Question(text="1+1 is = to").save()
+        answer = Answer(question=question, text="2", position=1).create()
+        reaction = Reaction(question=question, answer=answer, user=user).create()
+        question.text = "1+2 is = to"
+        question.save()
+
+        assert reaction.question.text == "1+2 is = to"

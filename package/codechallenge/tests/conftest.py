@@ -197,11 +197,7 @@ def simple_config(dummy_request):
 @pytest.fixture
 def functional_config(dummy_request, app_settings):
     with testConfig(request=dummy_request) as config:
-        config.add_route("login", "/login")
-        config.add_route("logout", "/logout")
-        config.add_route("start", "/start")
-        config.add_route("new_question", "/new_question")
-        config.add_route("edit_question", "/edit_question/{uid}")
+        config.include("codechallenge.views.routes")
 
         config.set_security_policy(SecurityPolicy(app_settings["auth.secret"]))
         yield config
