@@ -38,7 +38,6 @@ class Match(TableMixin, Base):
 
     def with_name(self, name):
         matched_row = self.session.execute(select(Match).where(Match.name == name))
-
         return matched_row.scalar_one_or_none()
 
     @property
@@ -47,3 +46,7 @@ class Match(TableMixin, Base):
         for g in self.games:
             result.extend(g.questions)
         return result
+
+    @property
+    def json(self):
+        return {"name": self.name, "questions": [q.json for q in self.questions]}

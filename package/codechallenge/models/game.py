@@ -30,3 +30,7 @@ class Game(TableMixin, Base):
         self.session.add(self)
         self.session.flush()
         return self
+
+    @property
+    def json(self):
+        return {"index": self.index}

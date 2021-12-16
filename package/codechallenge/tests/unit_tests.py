@@ -55,7 +55,7 @@ class TestCaseModels:
             question.save()
 
         current_session = StoreConfig().session
-        current_session.rollback
+        current_session.rollback()
 
     def t_createNewUserAndSetPassword(self, dbsession):
         new_user = User(email="user@test.project").create()
@@ -67,6 +67,25 @@ class TestCaseModels:
     def t_questionMustBeBoundToAGame(self, dbsession):
         new_question = Question(text="new-question").save()
         assert new_question.game is not None
+
+    def t_createManyQuestionsAtOnce(self, dbsession):
+        data = {
+            "text": "Following the machine’s debut, Kempelen was reluctant to display the Turk because",
+            "answers": [
+                {"text": "The machine was undergoing repair"},
+                {
+                    "text": "He had dismantled it following its match with Sir Robert Murray Keith."
+                },
+                {"text": "He preferred to spend time on his other projects."},
+                {"text": "It had been destroyed by fire."},
+            ],
+            "position": 1,
+        }
+        new_question = Question(
+            text=data["text"], position=data["position"]
+        ).create_with_answers(data["answers"])
+        assert new_question
+        assert len(new_question.answers)
 
 
 class TestCaseMatchModel:
@@ -91,6 +110,8 @@ class TestCaseGameModel:
         with pytest.raises((IntegrityError, InvalidRequestError)):
             Game(index=1, match_uid=new_game.match.uid).create()
 
+        dbsession.rollback()
+
 
 class TestCaseReactionModel:
     def t_cannotExistsTwoReactionsOfTheSameUserAtSameTime(self, dbsession):
@@ -108,6 +129,7 @@ class TestCaseReactionModel:
             Reaction(
                 question=question, answer=answer, user=user, create_timestamp=now
             ).create()
+        dbsession.rollback()
 
     def t_ifQuestionChangesThenAlsoFKIsUpdatedAndAffectsReaction(self, dbsession):
         user = User(email="user@test.project").create()

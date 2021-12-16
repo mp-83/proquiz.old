@@ -39,8 +39,8 @@ class TestCaseTutorialView:
         view_obj = CodeChallengeViews(request)
         response = view_obj.new_question()
         assert count(Question) == 1
-        assert response["text"] == "eleven pm"
-        assert response["position"] == 2
+        assert response.json["text"] == "eleven pm"
+        assert response.json["position"] == 2
 
 
 class TestCaseLoginRequired:
@@ -111,5 +111,6 @@ class TestCaseMatch:
         view_obj = CodeChallengeViews(request)
         response = view_obj.create_match()
         match = Match().with_name(match_name)
-        assert len(match.questions) == 0
-        assert "match" in response.json
+        assert len(match.questions) == 4
+        questions = response.json["match"]["questions"]
+        assert questions[0]["text"] == TEST_1[0]["text"]

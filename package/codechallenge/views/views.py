@@ -4,6 +4,7 @@ from codechallenge.models import Game, Match, Question, User
 from codechallenge.security import login_required
 from pyramid.csrf import new_csrf_token
 from pyramid.httpexceptions import HTTPBadRequest, HTTPSeeOther
+from pyramid.response import Response
 from pyramid.security import forget, remember
 from pyramid.view import view_config, view_defaults
 
@@ -84,9 +85,7 @@ class CodeChallengeViews:
         if not data:
             return {}
         new_question = Question(**data).save()
-        # TODO - future
-        # return Response(json=new_question.json)
-        return new_question.json
+        return Response(json=new_question.json)
 
     @login_required
     @view_config(
@@ -110,5 +109,9 @@ class CodeChallengeViews:
         data = self.request.json
         new_match = Match(name=data.get("name")).create()
         new_game = Game(match_uid=new_match.uid).create()
-        Question.create_many(data.get("questions", []), new_game)
-        return {"name": data["name"]}
+        for position, question in enumerate(data.get("questions", [])):
+            new = Question(
+                game_uid=new_game.uid, text=question["text"], position=position
+            )
+            new.create_with_answers(question.get("answers"))
+        return Response(json={"match": new_match.json})

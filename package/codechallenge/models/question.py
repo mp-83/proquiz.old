@@ -1,4 +1,5 @@
 from codechallenge.app import StoreConfig
+from codechallenge.models import Answer
 from codechallenge.models.game import Game
 from codechallenge.models.meta import Base, TableMixin
 from sqlalchemy import Column, ForeignKey, Integer, String, select
@@ -59,9 +60,26 @@ class Question(TableMixin, Base):
         self.session.flush()
 
     @classmethod
-    def create_many(cls, questions, game):
-        # session = StoreConfig().session
-        return
+    def with_text(cls, text):
+        session = StoreConfig().session
+        matched_row = session.execute(select(cls).where(cls.text == text))
+        return matched_row.scalar_one_or_none()
+
+    def create_with_answers(self, answers):
+        _answers = answers or []
+        self.session.add(self)
+        self.session.flush()
+        for position, _answer in enumerate(_answers):
+            self.session.add(
+                Answer(
+                    question_uid=self.uid,
+                    text=_answer["text"],
+                    position=position,
+                    is_correct=position == 0,
+                )
+            )
+        self.session.flush()
+        return self
 
     @property
     def json(self):
