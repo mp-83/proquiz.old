@@ -1,5 +1,5 @@
 from codechallenge.app import StoreConfig
-from codechallenge.models.meta import Base, TableMixin
+from codechallenge.models.meta import Base, TableMixin, classproperty
 from sqlalchemy import Column, ForeignKey, Integer
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import UniqueConstraint
@@ -30,3 +30,13 @@ class Reaction(TableMixin, Base):
     @property
     def json(self):
         return {"text": self.text, "code": self.code, "position": self.position}
+
+
+class Reactions:
+    @classproperty
+    def session(self):
+        return StoreConfig().session
+
+    @classmethod
+    def count(cls):
+        return cls.session.query(Reaction).count()

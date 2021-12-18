@@ -3,7 +3,16 @@ from datetime import datetime
 import pytest
 from codechallenge.app import StoreConfig
 from codechallenge.db import count
-from codechallenge.models import Answer, Game, Match, Question, Reaction, User
+from codechallenge.models import (
+    Answer,
+    Game,
+    Match,
+    Question,
+    Reaction,
+    Reactions,
+    User,
+)
+from codechallenge.play.single_player import SinglePlayer
 from sqlalchemy.exc import IntegrityError, InvalidRequestError
 
 
@@ -142,3 +151,37 @@ class TestCaseReactionModel:
         question.save()
 
         assert reaction.question.text == "1+2 is = to"
+
+
+class TestCaseSinglePlayer:
+    def t_startGame(self, dbsession):
+        match = Match().create()
+        first_game = Game(match_uid=match.uid, index=1).create()
+        question = Question(text="Where is London?", game_uid=first_game.uid).save()
+        user = User(email="user@test.project").create()
+
+        player = SinglePlayer(user)
+        question_displayed = player.start(match)
+        assert question_displayed == question
+
+    def t_currentQuestion(self, dbsession):
+        match = Match().create()
+        first_game = Game(match_uid=match.uid, index=1).create()
+        question = Question(text="Where is London?", game_uid=first_game.uid).save()
+        user = User(email="user@test.project").create()
+
+        player = SinglePlayer(user)
+        player.start(match)
+        assert player.current_question == question
+
+    def t_reactToOneQuestion(self, dbsession):
+        match = Match().create()
+        first_game = Game(match_uid=match.uid, index=1).create()
+        question = Question(text="Where is London?", game_uid=first_game.uid).save()
+        answer = Answer(question=question, text="UK", position=1).create()
+        user = User(email="user@test.project").create()
+
+        player = SinglePlayer(user)
+        player.start(match)
+        player.react(answer)
+        assert Reactions.count() == 1

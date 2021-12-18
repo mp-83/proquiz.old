@@ -31,6 +31,11 @@ class Game(TableMixin, Base):
         self.session.flush()
         return self
 
+    def first_question(self):
+        for q in self.questions:
+            if q.position == 1:
+                return q
+
     @property
     def json(self):
         return {"index": self.index}

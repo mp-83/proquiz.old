@@ -40,6 +40,11 @@ class Match(TableMixin, Base):
         matched_row = self.session.execute(select(Match).where(Match.name == name))
         return matched_row.scalar_one_or_none()
 
+    def first_game(self):
+        for g in self.games:
+            if g.index == 1:
+                return g
+
     @property
     def questions(self):
         result = []
