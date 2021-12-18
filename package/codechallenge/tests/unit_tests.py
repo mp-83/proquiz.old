@@ -81,11 +81,13 @@ class TestCaseModels:
             ],
             "position": 1,
         }
-        new_question = Question(
-            text=data["text"], position=data["position"]
-        ).create_with_answers(data["answers"])
+        new_question = Question(text=data["text"], position=data["position"])
+        new_question.create_with_answers(data["answers"])
+
+        expected = {e["text"] for e in data["answers"]}
         assert new_question
-        assert len(new_question.answers)
+        assert {e.text for e in new_question.answers} == expected
+        assert Answer.with_text("The machine was undergoing repair").is_correct
 
 
 class TestCaseMatchModel:

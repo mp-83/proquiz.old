@@ -28,9 +28,6 @@ Base.metadata.naming_convention = NAMING_CONVENTION
 
 @declarative_mixin
 class TableMixin:
-    @declared_attr
-    def __tablename__(self):
-        return self.__name__.lower()
 
     __mapper_args__ = {"always_refresh": True}
 
@@ -40,6 +37,10 @@ class TableMixin:
     )
     # TODO: to fix/update using db.event
     update_timestamp = Column(DateTime(timezone=True), nullable=True)
+
+    @declared_attr
+    def __tablename__(self):
+        return self.__name__.lower()
 
 
 def get_engine(settings, prefix="sqlalchemy."):
