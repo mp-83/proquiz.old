@@ -44,7 +44,7 @@ class TestCaseTutorialView:
 
 
 class TestCaseLoginRequired:
-    def t_checkViewsAreDecorated(self, dummy_request, simple_config):
+    def t_checkViewsAreDecorated(self, dummy_request, config):
         protected_views = (
             "new_question",
             "edit_question",
@@ -59,14 +59,14 @@ class TestCaseLoginRequired:
 
 
 class TestCaseLogin:
-    def t_retrieveLoginPage(self, dummy_request, simple_config):
+    def t_retrieveLoginPage(self, dummy_request, config):
         next_url = "new_question"
         view_obj = CodeChallengeViews(dummy_request)
         response = view_obj.login()
         assert response["next_url"].endswith(next_url)
         assert response["url"].endswith("login")
 
-    def t_failedLoginAttempt(self, dummy_request, simple_config):
+    def t_failedLoginAttempt(self, dummy_request, config):
         request = dummy_request
         request.method = "POST"
         request.params = {
@@ -77,7 +77,7 @@ class TestCaseLogin:
         with pytest.raises(HTTPBadRequest):
             view_obj.login()
 
-    def t_successfulLogin(self, dummy_request, simple_config):
+    def t_successfulLogin(self, dummy_request, config):
         credentials = {
             "email": "user@test.com",
             "password": "p@ss",
@@ -92,7 +92,7 @@ class TestCaseLogin:
 
 
 class TestCaseLogOut:
-    def t_successfulLogout(self, dummy_request, simple_config):
+    def t_successfulLogout(self, dummy_request, config):
         request = dummy_request
         request.method = "POST"
         view_obj = CodeChallengeViews(request)
@@ -101,7 +101,7 @@ class TestCaseLogOut:
 
 
 class TestCaseMatch:
-    def t_successfulCreationOfAMatch(self, auth_request, simple_config):
+    def t_successfulCreationOfAMatch(self, auth_request, config):
         request = auth_request
         request.method = "POST"
         view_obj = CodeChallengeViews(request)
@@ -114,3 +114,8 @@ class TestCaseMatch:
         assert len(match.questions) == 4
         questions = response.json["match"]["questions"]
         assert questions[0]["text"] == TEST_1[0]["text"]
+
+
+class TestCasePlayViews:
+    def t_startGame(self, auth_request, config):
+        pass

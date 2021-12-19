@@ -31,7 +31,7 @@ class TestCaseCodeChallengeFunctional:
         )
         assert b"/login" in res.body
 
-    def t_malformedLoginPayload(self, functional_config):
+    def t_malformedLoginPayload(self, config):
         self.testapp.post(
             "/login",
             status=400,
@@ -39,7 +39,7 @@ class TestCaseCodeChallengeFunctional:
             headers={"X-CSRF-Token": self.testapp.get_csrf_token()},
         )
 
-    def t_cookiesAfterLogoutCompletedSuccessfully(self, functional_config):
+    def t_cookiesAfterLogoutCompletedSuccessfully(self, config):
         response = self.testapp.post(
             "/logout",
             status=303,
@@ -47,7 +47,7 @@ class TestCaseCodeChallengeFunctional:
         )
         assert "Set-Cookie" in dict(response.headers)
 
-    def t_usingGetInsteadOfPostWhenCallingLogout(self, functional_config):
+    def t_usingGetInsteadOfPostWhenCallingLogout(self, config):
         response = self.testapp.get("/logout", status=303)
         assert "Set-Cookie" not in dict(response.headers)
 

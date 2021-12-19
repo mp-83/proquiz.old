@@ -196,24 +196,7 @@ def auth_request(tm, dbsession):
 
 
 @pytest.fixture
-def simple_config(dummy_request):
-    """
-    A dummy :class:`pyramid.config.Configurator` object.  This allows for
-    mock configuration, including configuration for ``dummy_request``, as well
-    as pushing the appropriate threadlocals.
-
-    """
-    with testConfig(request=dummy_request) as config:
-        config.add_route("login", "/login")
-        config.add_route("logout", "/logout")
-        config.add_route("start", "/start")
-        config.add_route("new_question", "/new_question")
-        config.add_route("edit_question", "/edit_question/{uid}")
-        yield config
-
-
-@pytest.fixture
-def functional_config(dummy_request, app_settings):
+def config(dummy_request, app_settings):
     with testConfig(request=dummy_request) as config:
         config.include("codechallenge.views.routes")
 
