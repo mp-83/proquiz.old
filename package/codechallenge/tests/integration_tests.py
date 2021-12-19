@@ -2,6 +2,7 @@ import pytest
 from codechallenge.db import count
 from codechallenge.models import Match, Question, User
 from codechallenge.tests.fixtures import TEST_1
+from codechallenge.views.play import PlayViews
 from codechallenge.views.views import CodeChallengeViews
 from pyramid.httpexceptions import HTTPBadRequest, HTTPSeeOther
 
@@ -9,7 +10,7 @@ from pyramid.httpexceptions import HTTPBadRequest, HTTPSeeOther
 class TestCaseTutorialView:
     def t_start_view(self, dummy_request):
         view_obj = CodeChallengeViews(dummy_request)
-        response = view_obj.start()
+        response = view_obj.home()
         assert response == {}
 
     def t_textCodeAndPositionAreReturnedWhenQuestionIsFound(
@@ -44,14 +45,21 @@ class TestCaseTutorialView:
 
 
 class TestCaseLoginRequired:
-    def t_checkViewsAreDecorated(self, dummy_request, config):
+    def t_checkDefaultViewsAreDecorated(self, dummy_request, config):
         protected_views = (
             "new_question",
             "edit_question",
             "create_match",
-            # "edit_match",
         )
         view_obj = CodeChallengeViews(dummy_request)
+        for view_name in protected_views:
+            view_method = getattr(view_obj, view_name)
+            response = view_method()
+            assert isinstance(response, HTTPSeeOther)
+
+    def t_checkPlayViewsAreDecorated(self, dummy_request, config):
+        protected_views = ("start",)
+        view_obj = PlayViews(dummy_request)
         for view_name in protected_views:
             view_method = getattr(view_obj, view_name)
             response = view_method()
@@ -117,5 +125,12 @@ class TestCaseMatch:
 
 
 class TestCasePlayViews:
-    def t_startGame(self, auth_request, config):
-        pass
+    def t_startGame(self, auth_request, config, trivia_match):
+        request = auth_request
+        request.method = "POST"
+        request.json = {"name": trivia_match.name}
+        view_obj = PlayViews(request)
+
+        response = view_obj.start()
+        assert response.json["question"] == TEST_1[0]["text"]
+        assert len(response.json["answers"]) == 4

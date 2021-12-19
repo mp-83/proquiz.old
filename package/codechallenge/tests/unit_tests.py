@@ -7,6 +7,7 @@ from codechallenge.models import (
     Answer,
     Game,
     Match,
+    Matches,
     Question,
     Reaction,
     Reactions,
@@ -108,6 +109,11 @@ class TestCaseMatchModel:
         Question(text="Where is Vienna?", game_uid=second_game.uid).save()
         assert match.questions[0].text == "Where is London?"
         assert match.questions[1].text == "Where is Vienna?"
+
+    def t_matchWithName(self, dbsession):
+        original = Match().create()
+        found = Matches.with_name(original.name)
+        assert found == original
 
 
 class TestCaseGameModel:

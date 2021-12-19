@@ -52,7 +52,7 @@ class CodeChallengeViews:
     @view_config(route_name="logout", request_method="GET")
     @view_config(route_name="logout", request_method="POST")
     def logout(self):
-        next_url = self.request.route_url("start")
+        next_url = self.request.route_url("home")
         if self.request.method == "POST":
             new_csrf_token(self.request)
             headers = forget(self.request)
@@ -60,10 +60,8 @@ class CodeChallengeViews:
 
         return HTTPSeeOther(location=next_url)
 
-    @view_config(
-        route_name="start", renderer="codechallenge:templates/start_page.jinja2"
-    )
-    def start(self):
+    @view_config(route_name="home", renderer="codechallenge:templates/home_page.jinja2")
+    def home(self):
         return {}
 
     @view_config(
@@ -87,6 +85,7 @@ class CodeChallengeViews:
         new_question = Question(**data).save()
         return Response(json=new_question.json)
 
+    # TODO to complete
     @login_required
     @view_config(
         route_name="edit_question",

@@ -7,9 +7,10 @@ import pytest
 import transaction
 import webtest
 from codechallenge.app import main
-from codechallenge.models import Question
+from codechallenge.models import Game, Match, Question
 from codechallenge.models.meta import Base, get_engine, get_tm_session
 from codechallenge.security import SecurityPolicy
+from codechallenge.tests.fixtures import TEST_1
 from pyramid.paster import get_appsettings
 from pyramid.testing import DummyRequest, testConfig
 from sqlalchemy import event
@@ -230,5 +231,23 @@ def count_database_queries(dbengine):
     event.listen(dbengine, "after_cursor_execute", after_cursor_execute)
 
     yield queries
+
     event.remove(dbengine, "before_cursor_execute", before_cursor_execute)
     event.listen(dbengine, "after_cursor_execute", after_cursor_execute)
+
+
+@pytest.fixture(name="trivia_match")
+def create_fixture_test(dbsession):
+    match = Match().create()
+    first_game = Game(match_uid=match.uid, index=1).create()
+    second_game = Game(match_uid=match.uid, index=2).create()
+    for i, q in enumerate(TEST_1, start=1):
+        if i < 3:
+            new_question = Question(game_uid=first_game.uid, text=q["text"], position=i)
+        else:
+            new_question = Question(
+                game_uid=second_game.uid, text=q["text"], position=(i - 2)
+            )
+        new_question.create_with_answers(q["answers"])
+
+    yield match

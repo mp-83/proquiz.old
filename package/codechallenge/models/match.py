@@ -1,7 +1,7 @@
 from uuid import uuid1
 
 from codechallenge.app import StoreConfig
-from codechallenge.models.meta import Base, TableMixin
+from codechallenge.models.meta import Base, TableMixin, classproperty
 from sqlalchemy import Column, String, select
 from sqlalchemy.orm import relationship
 
@@ -55,3 +55,17 @@ class Match(TableMixin, Base):
     @property
     def json(self):
         return {"name": self.name, "questions": [q.json for q in self.questions]}
+
+
+class Matches:
+    @classproperty
+    def session(self):
+        return StoreConfig().session
+
+    @classmethod
+    def count(cls):
+        return cls.session.query(Match).count()
+
+    @classmethod
+    def with_name(cls, name):
+        return cls.session.query(Match).filter_by(name=name).one_or_none()
