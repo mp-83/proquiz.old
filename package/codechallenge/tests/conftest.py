@@ -221,8 +221,8 @@ def functional_config(dummy_request, app_settings):
         yield config
 
 
-@pytest.fixture(name="queries_count")
-def count_database_queries(dbsession):
+@pytest.fixture(name="emitted_queries")
+def count_database_queries(dbengine):
     """
     Return a list of the SQL statement executed by the code under test
 
@@ -230,12 +230,22 @@ def count_database_queries(dbsession):
     executed
     """
     queries = []
-    conn = dbsession.connection()
 
-    def before_cursor_execute(*args):
-        statement = args[2]
-        queries.append(statement)
+    def before_cursor_execute(
+        conn, cursor, statement, parameters, context, executemany
+    ):
+        sql_t = (statement, parameters)
+        if sql_t not in queries:
+            queries.append(sql_t)
 
-    event.listen(conn, "before_cursor_execute", before_cursor_execute)
+    def after_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+        sql_t = (statement, parameters)
+        if sql_t not in queries:
+            queries.append(sql_t)
+
+    event.listen(dbengine, "before_cursor_execute", before_cursor_execute)
+    event.listen(dbengine, "after_cursor_execute", after_cursor_execute)
+
     yield queries
-    event.remove(conn, "before_cursor_execute", before_cursor_execute)
+    event.remove(dbengine, "before_cursor_execute", before_cursor_execute)
+    event.listen(dbengine, "after_cursor_execute", after_cursor_execute)
