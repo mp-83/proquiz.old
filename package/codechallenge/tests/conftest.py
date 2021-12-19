@@ -12,6 +12,7 @@ from codechallenge.models.meta import Base, get_engine, get_tm_session
 from codechallenge.security import SecurityPolicy
 from pyramid.paster import get_appsettings
 from pyramid.testing import DummyRequest, testConfig
+from sqlalchemy import event
 from webob.cookies import Cookie
 
 
@@ -156,8 +157,6 @@ def fillTestingDB(app):
 
 
 class AuthenticatedRequest(DummyRequest):
-    """"""
-
     @property
     def is_authenticated(self):
         return True
@@ -220,3 +219,23 @@ def functional_config(dummy_request, app_settings):
 
         config.set_security_policy(SecurityPolicy(app_settings["auth.secret"]))
         yield config
+
+
+@pytest.fixture(name="queries_count")
+def count_database_queries(dbsession):
+    """
+    Return a list of the SQL statement executed by the code under test
+
+    To be used in accordance with len() to count the number of queries
+    executed
+    """
+    queries = []
+    conn = dbsession.connection()
+
+    def before_cursor_execute(*args):
+        statement = args[2]
+        queries.append(statement)
+
+    event.listen(conn, "before_cursor_execute", before_cursor_execute)
+    yield queries
+    event.remove(conn, "before_cursor_execute", before_cursor_execute)
