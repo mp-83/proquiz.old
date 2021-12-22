@@ -7,6 +7,7 @@ requires = [
     "bcrypt",
     "pymysql",
     "cryptography",
+    "marshmallow",
     "pyramid",
     "pyramid_jinja2",
     "pyramid_tm",
