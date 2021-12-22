@@ -9,6 +9,7 @@ from codechallenge.models import (
     Match,
     Matches,
     Question,
+    Questions,
     Reaction,
     Reactions,
     User,
@@ -74,10 +75,6 @@ class TestCaseModels:
         assert new_user.check_password("password")
         assert new_user.create_timestamp is not None
 
-    def t_questionMustBeBoundToAGame(self, dbsession):
-        new_question = Question(text="new-question").save()
-        assert new_question.game is not None
-
     def t_createManyQuestionsAtOnce(self, dbsession):
         data = {
             "text": "Following the machine’s debut, Kempelen was reluctant to display the Turk because",
@@ -115,15 +112,21 @@ class TestCaseMatchModel:
         found = Matches.with_name(original.name)
         assert found == original
 
+    def t_createMatchUsingTemplateQuestions(self, dbsession):
+        question_ids = [
+            Question(text="Where is London?").save().uid,
+            Question(text="Where is Vienna?").save().uid,
+        ]
+        new_match = Match().create()
+        before = Questions.count()
+        new_match.import_template_questions(*question_ids)
+        assert Questions.count() == before + 2
+
 
 class TestCaseGameModel:
-    def t_gameMustBeBoundToAMatch(self, dbsession):
-        new_game = Game().create()
-        assert new_game.match is not None
-        assert new_game.match.name != ""
-
     def t_raiseErrorWhenTwoGamesOfMatchHaveSamePosition(self, dbsession):
-        new_game = Game(index=1).create()
+        new_match = Match().create()
+        new_game = Game(index=1, match_uid=new_match.uid).create()
         with pytest.raises((IntegrityError, InvalidRequestError)):
             Game(index=1, match_uid=new_game.match.uid).create()
 

@@ -85,7 +85,6 @@ class CodeChallengeViews:
         new_question = Question(**data).save()
         return Response(json=new_question.json)
 
-    # TODO to complete
     @login_required
     @view_config(
         route_name="edit_question",
@@ -94,6 +93,8 @@ class CodeChallengeViews:
     )
     def edit_question(self):
         data = getattr(self.request, "json", None)
+        # TODO to complete
+
         if not data:
             return {}
         return {}

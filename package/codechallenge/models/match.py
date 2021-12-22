@@ -1,7 +1,9 @@
 from uuid import uuid1
 
 from codechallenge.app import StoreConfig
+from codechallenge.models.game import Game
 from codechallenge.models.meta import Base, TableMixin, classproperty
+from codechallenge.models.question import Question, Questions
 from sqlalchemy import Column, String, select
 from sqlalchemy.orm import relationship
 
@@ -31,6 +33,13 @@ class Match(TableMixin, Base):
     def session(self):
         return StoreConfig().session
 
+    @property
+    def questions(self):
+        result = []
+        for g in self.games:
+            result.extend(g.questions)
+        return result
+
     def create(self):
         self.session.add(self)
         self.session.flush()
@@ -45,11 +54,23 @@ class Match(TableMixin, Base):
             if g.index == 1:
                 return g
 
-    @property
-    def questions(self):
+    def import_template_questions(self, *ids):
+        if not ids:
+            return
+        questions = Questions.questions_with_ids(*ids).all()
         result = []
-        for g in self.games:
-            result.extend(g.questions)
+        new_game = Game(index=1, match_uid=self.uid).create()
+        for question in questions:
+            new = Question(
+                game_uid=new_game.uid,
+                text=question.text,
+                position=question.position,
+                code=question.code,
+                difficulty=question.text,
+            )
+            self.session.add(new)
+            result.append(new)
+        self.session.flush()
         return result
 
     @property

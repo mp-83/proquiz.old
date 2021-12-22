@@ -1,5 +1,4 @@
 from codechallenge.app import StoreConfig
-from codechallenge.models.match import Match
 from codechallenge.models.meta import Base, TableMixin
 from sqlalchemy import Column, ForeignKey, Integer
 from sqlalchemy.orm import relationship
@@ -14,13 +13,6 @@ class Game(TableMixin, Base):
     questions = relationship("Question")
     index = Column(Integer, default=1)
     __table_args__ = (UniqueConstraint("match_uid", "index"),)
-
-    def __init__(self, **kwargs):
-        # To replace with db.events that aren't working now (08/12)
-        if kwargs.get("match_uid") is None:
-            new_match = Match().create()
-            kwargs["match_uid"] = new_match.uid
-        super().__init__(**kwargs)
 
     @property
     def session(self):

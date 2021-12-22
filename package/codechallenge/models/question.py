@@ -1,7 +1,6 @@
 from codechallenge.app import StoreConfig
-from codechallenge.models import Answer
-from codechallenge.models.game import Game
-from codechallenge.models.meta import Base, TableMixin
+from codechallenge.models.answer import Answer
+from codechallenge.models.meta import Base, TableMixin, classproperty
 from sqlalchemy import Column, ForeignKey, Integer, String, select
 from sqlalchemy.orm import relationship
 
@@ -19,13 +18,6 @@ class Question(TableMixin, Base):
     code = Column(String(5000))
     difficulty = Column(Integer)
 
-    def __init__(self, **kwargs):
-        # To replace with db.events that aren't working now (08/12)
-        if kwargs.get("game_uid") is None:
-            new_game = Game(index=1).create()
-            kwargs["game_uid"] = new_game.uid
-        super().__init__(**kwargs)
-
     @property
     def session(self):
         return StoreConfig().session
@@ -33,6 +25,10 @@ class Question(TableMixin, Base):
     @property
     def is_open(self):
         return len(self.answers) == 0
+
+    @property
+    def is_template(self):
+        return self.game_uid is None
 
     def all(self):
         return self.session.execute(select(Question)).all()
@@ -59,12 +55,6 @@ class Question(TableMixin, Base):
 
         self.session.flush()
 
-    @classmethod
-    def with_text(cls, text):
-        session = StoreConfig().session
-        matched_row = session.execute(select(cls).where(cls.text == text))
-        return matched_row.scalar_one_or_none()
-
     def create_with_answers(self, answers):
         _answers = answers or []
         self.session.add(self)
@@ -84,3 +74,22 @@ class Question(TableMixin, Base):
     @property
     def json(self):
         return {"text": self.text, "code": self.code, "position": self.position}
+
+
+class Questions:
+    @classproperty
+    def session(self):
+        return StoreConfig().session
+
+    @classmethod
+    def count(cls):
+        return cls.session.query(Question).count()
+
+    @classmethod
+    def questions_with_ids(cls, *ids):
+        return cls.session.query(Question).filter(Question.uid.in_(ids))
+
+    @classmethod
+    def with_text(cls, text):
+        matched_row = cls.session.execute(select(cls).where(cls.text == text))
+        return matched_row.scalar_one_or_none()
