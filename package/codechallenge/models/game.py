@@ -12,7 +12,9 @@ class Game(TableMixin, Base):
     match = relationship("Match", back_populates="games")
     questions = relationship("Question")
     index = Column(Integer, default=1)
-    __table_args__ = (UniqueConstraint("match_uid", "index"),)
+    __table_args__ = (
+        UniqueConstraint("match_uid", "index", name="ck_game_match_uid_question"),
+    )
 
     @property
     def session(self):

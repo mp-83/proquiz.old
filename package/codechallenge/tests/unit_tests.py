@@ -3,6 +3,7 @@ from datetime import datetime
 import pytest
 from codechallenge.app import StoreConfig
 from codechallenge.db import count
+from codechallenge.exceptions import NotUsableQuestion
 from codechallenge.models import (
     Answer,
     Game,
@@ -51,8 +52,8 @@ class TestCaseModels:
 
     def t_createQuestionWithoutPosition(self, fillTestingDB):
         new_question = Question(text="new-question").save()
-        assert new_question.position == 4
         assert new_question.is_open
+        assert new_question.is_template
 
     def t_allAnswersOfAQuestionMustDiffer(self, fillTestingDB):
         question = Question().at_position(2)
@@ -121,6 +122,16 @@ class TestCaseMatchModel:
         before = Questions.count()
         new_match.import_template_questions(*question_ids)
         assert Questions.count() == before + 2
+
+    def t_cannotAssociateQuestionsUsedInAnotherMatch(self, dbsession):
+        match = Match().create()
+        first_game = Game(match_uid=match.uid, index=2).create()
+        question = Question(
+            text="Where is London?", game_uid=first_game.uid, position=3
+        ).save()
+        question_ids = [question.uid]
+        with pytest.raises(NotUsableQuestion):
+            match.import_template_questions(*question_ids)
 
 
 class TestCaseGameModel:

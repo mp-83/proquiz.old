@@ -1,6 +1,7 @@
 from uuid import uuid1
 
 from codechallenge.app import StoreConfig
+from codechallenge.exceptions import NotUsableQuestion
 from codechallenge.models.game import Game
 from codechallenge.models.meta import Base, TableMixin, classproperty
 from codechallenge.models.question import Question, Questions
@@ -61,6 +62,11 @@ class Match(TableMixin, Base):
         result = []
         new_game = Game(index=1, match_uid=self.uid).create()
         for question in questions:
+            if question.game_uid:
+                raise NotUsableQuestion(
+                    f"Question with id {question.uid} is already in use"
+                )
+
             new = Question(
                 game_uid=new_game.uid,
                 text=question.text,
