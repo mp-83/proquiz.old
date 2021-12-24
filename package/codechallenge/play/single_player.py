@@ -1,3 +1,4 @@
+from codechallenge.exceptions import EmptyMatchError
 from codechallenge.models import Reaction
 
 
@@ -15,6 +16,9 @@ class SinglePlayer:
     def start(self, match):
         self._current_match = match
         game = match.first_game()
+        if not game:
+            raise EmptyMatchError(f"Match {match.name} contains no Game")
+
         self._current_game = game
         self._current_question = game.first_question()
         return self._current_question

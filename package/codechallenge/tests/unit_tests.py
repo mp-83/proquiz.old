@@ -3,7 +3,7 @@ from datetime import datetime
 import pytest
 from codechallenge.app import StoreConfig
 from codechallenge.db import count
-from codechallenge.exceptions import NotUsableQuestion
+from codechallenge.exceptions import EmptyMatchError, NotUsableQuestionError
 from codechallenge.models import (
     Answer,
     Answers,
@@ -148,7 +148,7 @@ class TestCaseMatchModel:
             text="Where is London?", game_uid=first_game.uid, position=3
         ).save()
         question_ids = [question.uid]
-        with pytest.raises(NotUsableQuestion):
+        with pytest.raises(NotUsableQuestionError):
             match.import_template_questions(*question_ids)
 
 
@@ -257,6 +257,14 @@ class TestCaseSinglePlayerSingleGame:
         player = SinglePlayer(user)
         assert player.game_is_over()
         assert player.match_is_over()
+
+    def t_anyQuestionShouldBeLinkedToAGameWhenMatchStarts(self, dbsession):
+        match = Match().create()
+        user = User(email="user@test.project").create()
+
+        player = SinglePlayer(user)
+        with pytest.raises(EmptyMatchError):
+            player.start(match)
 
 
 class TestCaseSinglePlayerMultipleGames:
