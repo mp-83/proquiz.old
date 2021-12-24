@@ -38,9 +38,9 @@ class User(TableMixin, Base):
 
     def create(self):
         self.session.add(self)
-        self.session.flush()
+        self.session.commit()
         return self
 
     def save(self):
-        self.session.flush()
+        self.session.commit()
         return self

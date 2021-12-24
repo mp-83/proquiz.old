@@ -22,7 +22,7 @@ class Game(TableMixin, Base):
 
     def create(self):
         self.session.add(self)
-        self.session.flush()
+        self.session.commit()
         return self
 
     def first_question(self):

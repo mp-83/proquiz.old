@@ -24,7 +24,7 @@ class Reaction(TableMixin, Base):
 
     def create(self):
         self.session.add(self)
-        self.session.flush()
+        self.session.commit()
         return self
 
     @property

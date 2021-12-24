@@ -44,7 +44,7 @@ class Question(TableMixin, Base):
             n = self.session.query(Question).count()
             self.position = n + 1
         self.session.add(self)
-        self.session.flush()
+        self.session.commit()
         return self
 
     def update(self, **kwargs):
@@ -53,7 +53,7 @@ class Question(TableMixin, Base):
                 continue
             setattr(self, k, v)
 
-        self.session.flush()
+        self.session.commit()
 
     def create_with_answers(self, answers):
         _answers = answers or []

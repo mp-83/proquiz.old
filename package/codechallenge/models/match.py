@@ -43,7 +43,7 @@ class Match(TableMixin, Base):
 
     def create(self):
         self.session.add(self)
-        self.session.flush()
+        self.session.commit()
         return self
 
     def with_name(self, name):
@@ -76,7 +76,7 @@ class Match(TableMixin, Base):
             )
             self.session.add(new)
             result.append(new)
-        self.session.flush()
+        self.session.commit()
         return result
 
     @property
