@@ -58,7 +58,10 @@ class Question(TableMixin, Base):
     def create_with_answers(self, answers):
         _answers = answers or []
         self.session.add(self)
-        self.session.flush()
+        # this commit might be avoided, as it is done in the .clone()
+        # method but without it, fails
+        # https://docs.sqlalchemy.org/en/14/tutorial/orm_related_objects.html#cascading-objects-into-the-session
+        self.session.commit()
         for position, _answer in enumerate(_answers):
             self.session.add(
                 Answer(
@@ -68,8 +71,30 @@ class Question(TableMixin, Base):
                     is_correct=position == 0,
                 )
             )
-        self.session.flush()
+        self.session.commit()
         return self
+
+    def clone(self, many=False):
+        new = self.__class__(
+            game_uid=self.game.uid if self.game else None,
+            text=self.text,
+            position=self.position,
+            code=self.code,
+            difficulty=self.difficulty,
+        )
+        self.session.add(new)
+        for _answer in self.answers:
+            self.session.add(
+                Answer(
+                    question_uid=new.uid,
+                    text=_answer.text,
+                    position=_answer.position,
+                    is_correct=_answer.position,
+                )
+            )
+        if not many:
+            self.session.commit()
+        return new
 
     @property
     def json(self):

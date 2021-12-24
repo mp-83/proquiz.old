@@ -6,6 +6,7 @@ from codechallenge.db import count
 from codechallenge.exceptions import NotUsableQuestion
 from codechallenge.models import (
     Answer,
+    Answers,
     Game,
     Match,
     Matches,
@@ -29,7 +30,7 @@ class TestCaseConfigSingleton:
             assert sc.config is settings_mock
 
 
-class TestCaseModels:
+class TestCaseQuestion:
     def t_countMethodReturnsTheCorrectValue(self, fillTestingDB):
         assert count(Question) == 3
 
@@ -97,6 +98,17 @@ class TestCaseModels:
         assert {e.text for e in new_question.answers} == expected
         assert Answer.with_text("The machine was undergoing repair").is_correct
 
+    def t_cloningQuestion(self, dbsession):
+        new_question = Question(text="new-question").save()
+        Answer(
+            question_uid=new_question.uid,
+            text="The machine was undergoing repair",
+            position=1,
+        ).create()
+        cloned = new_question.clone()
+        assert new_question.uid != cloned.uid
+        assert new_question.answers[0] != cloned.answers[0]
+
 
 class TestCaseMatchModel:
     def t_questionsPropertyReturnsTheExpectedResults(self, dbsession):
@@ -118,10 +130,16 @@ class TestCaseMatchModel:
             Question(text="Where is London?").save().uid,
             Question(text="Where is Vienna?").save().uid,
         ]
+        Answer(
+            question_uid=question_ids[0], text="question2.answer1", position=1
+        ).create()
+
         new_match = Match().create()
-        before = Questions.count()
+        questions_cnt = Questions.count()
+        answers_cnt = Answers.count()
         new_match.import_template_questions(*question_ids)
-        assert Questions.count() == before + 2
+        assert Questions.count() == questions_cnt + 2
+        assert Answers.count() == answers_cnt + 0
 
     def t_cannotAssociateQuestionsUsedInAnotherMatch(self, dbsession):
         match = Match().create()
