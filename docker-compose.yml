@@ -3,20 +3,29 @@ services:
   serverdb:
     image: "mysql"
     env_file:
-     - ".env"
+     - "./be/.env"
     volumes:
       - "interviewdb:/var/lib/mysql"
 
   server:
     env_file:
-     - ".env"
+     - "./be/.env"
     build:
-      context: "./"
+      context: "./be"
     volumes:
-      - "./package:/package"
+      - "./be/package:/package"
     ports:
       - "5500:5500"
 
+  frontend:
+    env_file:
+     - "./fe/.env"
+    build:
+      context: "./fe"
+    volumes:
+      - "./fe/webapp:/webapp"
+    ports:
+      - "8080:3000"
 
 volumes:
   interviewdb:
