@@ -5,15 +5,20 @@ from codechallenge.exceptions import NotUsableQuestionError
 from codechallenge.models.game import Game
 from codechallenge.models.meta import Base, TableMixin, classproperty
 from codechallenge.models.question import Question, Questions
-from sqlalchemy import Column, String, select
+from sqlalchemy import Boolean, Column, DateTime, String, select
 from sqlalchemy.orm import relationship
 
 
 class Match(TableMixin, Base):
     __tablename__ = "match"
 
-    name = Column(String, nullable=False, unique=True)
     games = relationship("Game")
+    name = Column(String, nullable=False, unique=True)
+    url = Column(String, nullable=True)
+    is_open = Column(Boolean, server_default="0")
+    expires = Column(DateTime(timezone=True), nullable=True)
+    # indicates whether questions order matters
+    order = Column(Boolean, default=False)
 
     def __init__(self, **kwargs):
         """

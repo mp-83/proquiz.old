@@ -11,6 +11,7 @@ from codechallenge.models import (
     Match,
     Matches,
     Question,
+    QuestionContent,
     Questions,
     Reaction,
     Reactions,
@@ -162,6 +163,13 @@ class TestCaseGameModel:
         dbsession.rollback()
 
 
+class TestCaseQuestionContentModel:
+    def t_contentTextOrUrlMustBeValue(self, dbsession):
+        question = Question(text="new-question").save()
+        with pytest.raises((IntegrityError, InvalidRequestError)):
+            QuestionContent(question_uid=question.uid).create()
+
+
 class TestCaseReactionModel:
     def t_cannotExistsTwoReactionsOfTheSameUserAtSameTime(self, dbsession):
         user = User(email="user@test.project").create()
@@ -184,11 +192,27 @@ class TestCaseReactionModel:
         user = User(email="user@test.project").create()
         question = Question(text="1+1 is = to").save()
         answer = Answer(question=question, text="2", position=1).create()
-        reaction = Reaction(question=question, answer=answer, user=user).create()
+        reaction = Reaction(
+            question=question,
+            answer=answer,
+            user=user,
+        ).create()
         question.text = "1+2 is = to"
         question.save()
 
         assert reaction.question.text == "1+2 is = to"
+
+    def t_computeReactionTiming(self, dbsession):
+        user = User(email="user@test.project").create()
+        question = Question(text="1+1 is = to").save()
+        reaction = Reaction(question=question, user=user).create()
+
+        answer = Answer(question=question, text="2", position=1).create()
+        reaction.answer = answer
+        reaction.save()
+
+        expected = (reaction.update_timestamp - reaction.create_timestamp).seconds
+        assert reaction.timing == expected
 
 
 class TestCaseSinglePlayerSingleGame:

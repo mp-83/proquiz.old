@@ -12,9 +12,11 @@ class Question(TableMixin, Base):
     game = relationship("Game", back_populates="questions")
     answers = relationship("Answer")
     reactions = relationship("Reaction")
+    question_content = relationship("QuestionContent")
 
     text = Column(String(400), nullable=False)
     position = Column(Integer, nullable=False)
+    time = Column(Integer)
     code = Column(String(5000))
     difficulty = Column(Integer)
 

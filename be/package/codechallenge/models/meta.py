@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 import zope.sqlalchemy
 from pyramid.authorization import Allow, Everyone
@@ -26,17 +26,19 @@ Base = declarative_base()
 Base.metadata.naming_convention = NAMING_CONVENTION
 
 
+def t_now():
+    return datetime.now(timezone.utc)
+
+
 @declarative_mixin
 class TableMixin:
 
     __mapper_args__ = {"always_refresh": True}
 
     uid = Column(Integer, primary_key=True)
-    create_timestamp = Column(
-        DateTime(timezone=True), nullable=False, default=datetime.utcnow
-    )
+    create_timestamp = Column(DateTime(timezone=True), nullable=False, default=t_now)
     # TODO: to fix/update using db.event
-    update_timestamp = Column(DateTime(timezone=True), nullable=True)
+    update_timestamp = Column(DateTime(timezone=True), nullable=True, onupdate=t_now)
 
     @declared_attr
     def __tablename__(self):
