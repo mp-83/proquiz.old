@@ -12,6 +12,7 @@ class User(TableMixin, Base):
     name = Column(String, nullable=True)
     password_hash = Column(String)
     reactions = relationship("Reaction")
+    user_rankings = relationship("Ranking")
 
     def __init__(self, **kwargs):
         password = kwargs.pop("password", "")

@@ -11,7 +11,6 @@ from codechallenge.models import (
     Match,
     Matches,
     Question,
-    QuestionContent,
     Questions,
     Reaction,
     Reactions,
@@ -161,13 +160,6 @@ class TestCaseGameModel:
             Game(index=1, match_uid=new_game.match.uid).create()
 
         dbsession.rollback()
-
-
-class TestCaseQuestionContentModel:
-    def t_contentTextOrUrlMustBeValue(self, dbsession):
-        question = Question(text="new-question").save()
-        with pytest.raises((IntegrityError, InvalidRequestError)):
-            QuestionContent(question_uid=question.uid).create()
 
 
 class TestCaseReactionModel:

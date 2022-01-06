@@ -14,6 +14,7 @@ class Answer(TableMixin, Base):
 
     position = Column(Integer, nullable=False)
     text = Column(String(3000), nullable=False)
+    content_url = Column(String)
     is_correct = Column(Boolean, default=False)
     __table_args__ = (UniqueConstraint("question_uid", "text"),)
 

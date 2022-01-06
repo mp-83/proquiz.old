@@ -8,16 +8,16 @@ from sqlalchemy.orm import relationship
 class Question(TableMixin, Base):
     __tablename__ = "question"
 
-    game_uid = Column(Integer, ForeignKey("game.uid"), nullable=True)
+    game_uid = Column(Integer, ForeignKey("game.uid"))
     game = relationship("Game", back_populates="questions")
     answers = relationship("Answer")
     reactions = relationship("Reaction")
-    question_content = relationship("QuestionContent")
 
     text = Column(String(400), nullable=False)
     position = Column(Integer, nullable=False)
     time = Column(Integer)
-    code = Column(String(5000))
+    content_url = Column(String)
+    code = Column(String)
     difficulty = Column(Integer)
 
     @property

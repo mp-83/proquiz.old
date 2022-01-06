@@ -5,7 +5,7 @@ from codechallenge.exceptions import NotUsableQuestionError
 from codechallenge.models.game import Game
 from codechallenge.models.meta import Base, TableMixin, classproperty
 from codechallenge.models.question import Question, Questions
-from sqlalchemy import Boolean, Column, DateTime, String, select
+from sqlalchemy import Boolean, Column, DateTime, Integer, String, select
 from sqlalchemy.orm import relationship
 
 
@@ -13,10 +13,14 @@ class Match(TableMixin, Base):
     __tablename__ = "match"
 
     games = relationship("Game")
+    rankings = relationship("Ranking")
+
     name = Column(String, nullable=False, unique=True)
     url = Column(String, nullable=True)
-    is_open = Column(Boolean, server_default="0")
+    is_open = Column(Boolean, default=True)
     expires = Column(DateTime(timezone=True), nullable=True)
+    # how many times a match can be played
+    times = Column(Integer, default=1)
     # indicates whether questions order matters
     order = Column(Boolean, default=False)
 
