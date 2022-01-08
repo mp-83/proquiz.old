@@ -182,14 +182,13 @@ class TestCaseReactionModel:
 
         assert reaction.question.text == "1+2 is = to"
 
+    # TODO reuse this test for something more useful
     def t_computeReactionTiming(self, dbsession):
         user = User(email="user@test.project").create()
         question = Question(text="1+1 is = to").save()
         reaction = Reaction(question=question, user=user).create()
 
         answer = Answer(question=question, text="2", position=1).create()
-        reaction.answer = answer
-        reaction.save()
+        reaction.record_answer(answer)
 
-        expected = (reaction.update_timestamp - reaction.create_timestamp).seconds
-        assert reaction.timing == expected
+        assert reaction.answer_time

@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 from codechallenge.app import StoreConfig
 from codechallenge.models.meta import Base, TableMixin, classproperty
-from sqlalchemy import Boolean, Column, Float, ForeignKey, Integer
+from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import UniqueConstraint
 
@@ -19,8 +19,7 @@ class Reaction(TableMixin, Base):
 
     # used to mark reactions of a user when drops out of a match
     dirty = Column(Boolean, default=False)
-    # measured in seconds
-    timing = Column(Integer)
+    answer_time = Column(DateTime(timezone=True), nullable=True)
     score = Column(Float)
 
     __table_args__ = (
@@ -37,9 +36,14 @@ class Reaction(TableMixin, Base):
         return self
 
     def save(self):
-        self.update_timestamp = datetime.now(tz=timezone.utc)
-        self.timing = (self.update_timestamp - self.create_timestamp).seconds
         self.session.add(self)
+        self.session.commit()
+        return self
+
+    def record_answer(self, answer):
+        self.answer = answer
+        self.update_timestamp = datetime.now(tz=timezone.utc)
+        self.answer_time = self.update_timestamp
         self.session.commit()
         return self
 
@@ -56,3 +60,11 @@ class Reactions:
     @classmethod
     def count(cls):
         return cls.session.query(Reaction).count()
+
+    @classmethod
+    def reaction_of_user_to_question(cls, user, question):
+        return (
+            cls.session.query(Reaction)
+            .filter_by(user=user, question=question)
+            .one_or_none()
+        )

@@ -7,7 +7,7 @@ import pytest
 import transaction
 import webtest
 from codechallenge.app import main
-from codechallenge.models import Game, Match, Question
+from codechallenge.models import Game, Match, Question, User
 from codechallenge.models.meta import Base, get_engine, get_tm_session
 from codechallenge.security import SecurityPolicy
 from codechallenge.tests.fixtures import TEST_1
@@ -161,6 +161,14 @@ class AuthenticatedRequest(DummyRequest):
     @property
     def is_authenticated(self):
         return True
+
+    @property
+    def identity(self):
+        credentials = {
+            "email": "testing_user@test.com",
+            "password": "p@ss",
+        }
+        return User(**credentials).create()
 
 
 @pytest.fixture

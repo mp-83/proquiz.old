@@ -17,8 +17,8 @@ class Match(TableMixin, Base):
 
     name = Column(String, nullable=False, unique=True)
     url = Column(String, nullable=True)
-    # indicates whether this match is not link protected
-    is_open = Column(Boolean, default=True)
+    # if true, this match is playable only by users with the link
+    is_restricted = Column(Boolean, default=True)
     # after this time match is no longer playable
     expires = Column(DateTime(timezone=True), nullable=True)
     # how many times a match can be played

@@ -15,7 +15,7 @@ class Question(TableMixin, Base):
 
     text = Column(String(400), nullable=False)
     position = Column(Integer, nullable=False)
-    time = Column(Integer)
+    time = Column(Integer)  # in seconds
     content_url = Column(String)
     code = Column(String)
     difficulty = Column(Integer)

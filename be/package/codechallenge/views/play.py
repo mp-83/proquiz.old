@@ -24,8 +24,8 @@ class PlayViews:
         # TODO the match value should be returned by the validation
         match = Matches.with_name(data["name"])
         user = self.request.identity
-        player = SinglePlayer(user)
-        current_question = player.start(match)
+        player = SinglePlayer(user, match)
+        current_question = player.start()
         match_data = {
             "question": current_question.text,
             "answers": [a.text for a in current_question.answers],
