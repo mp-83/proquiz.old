@@ -69,7 +69,7 @@ class TestCaseSinglePlayerSingleGame:
         player = SinglePlayer(user, match)
         player.start()
         player.react(answer)
-        assert player.game_is_over()
+        assert player.game_is_over
 
     def t_whenThereAreNoQuestionGameIsOver(self, dbsession):
         match = Match().create()
@@ -77,7 +77,7 @@ class TestCaseSinglePlayerSingleGame:
         user = User(email="user@test.project").create()
 
         player = SinglePlayer(user, match)
-        assert player.game_is_over()
+        assert player.game_is_over
 
     def t_whenLastGameIsOverAlsoMatchIsOver(self, dbsession):
         match = Match().create()
@@ -85,7 +85,7 @@ class TestCaseSinglePlayerSingleGame:
         user = User(email="user@test.project").create()
 
         player = SinglePlayer(user, match)
-        assert player.match_is_over()
+        assert player.match_is_over
 
     def t_nextGameButMatchIsEmpty(self, dbsession):
         match = Match().create()

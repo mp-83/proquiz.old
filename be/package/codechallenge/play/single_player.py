@@ -44,6 +44,7 @@ class SinglePlayer:
         self._current_reaction.record_answer(answer)
         return self.next_question()
 
+    @property
     def game_is_over(self):
         return self.next_question() is None
 
@@ -57,7 +58,7 @@ class SinglePlayer:
                 return g
 
     def match_is_over(self):
-        return self.next_question() is None
+        return self.game_is_over and not self.next_game()
 
     def match_started(self):
         return self._current_question is not None
