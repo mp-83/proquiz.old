@@ -120,3 +120,6 @@ class Questions:
     def with_text(cls, text):
         matched_row = cls.session.execute(select(cls).where(cls.text == text))
         return matched_row.scalar_one_or_none()
+
+    # @classmethod
+    # def ordered_questions(cls, )

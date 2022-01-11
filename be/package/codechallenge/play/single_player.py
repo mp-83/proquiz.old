@@ -1,4 +1,4 @@
-from codechallenge.exceptions import EmptyMatchError
+from codechallenge.exceptions import EmptyMatchError, GameError, MatchNotPlayableError
 from codechallenge.models import Reaction
 
 
@@ -9,18 +9,26 @@ class PlayException(Exception):
 class SinglePlayer:
     def __init__(self, user, match):
         self._user = user
-        self._current_question = None
         self._current_match = match
+        self._current_question = None
         self._current_game = None
+        self._question_counter = 1
 
     def start(self):
-        game = self.next_game()
-        if not game:
+        self._current_match.refresh()
+
+        if self._current_match.left_attempts(self._user) == 0:
+            raise MatchNotPlayableError(
+                f"User {self._user} has no left attempts for Match {self._current_match.name}"
+            )
+
+        self.next_game()
+        if not self._current_game:
             raise EmptyMatchError(f"Match {self._current_match.name} contains no Game")
 
-        self._current_game = game
-        self._current_question = game.first_question()
+        self.next_question()
         self._current_reaction = Reaction(
+            match_uid=self._current_match.uid,
             question_uid=self._current_question.uid,
             user_uid=self._user.uid,
         ).create()
@@ -31,18 +39,18 @@ class SinglePlayer:
         return self._current_question
 
     def next_question(self):
-        _next = None
         if not self._current_game:
-            return _next
+            raise GameError(f"Unexistent game for match {self._current_match}")
 
-        for q in self._current_game.questions:
-            if q.position == self._current_question.position + 1:
-                _next = q
-        return _next
+        self._current_question = self._current_game.ordered_questions[
+            self._question_counter
+        ]
+        self._question_counter += 1
 
     def react(self, answer):
         self._current_reaction.record_answer(answer)
-        return self.next_question()
+        self.next_question()
+        return self._current_question
 
     @property
     def game_is_over(self):
@@ -53,7 +61,7 @@ class SinglePlayer:
             if not self._current_game and g.index == 1:
                 self._current_game = g
                 return g
-            if g.index == self._current_game.index + 1:
+            if self._current_game and g.index == self._current_game.index + 1:
                 self._current_game = g
                 return g
 

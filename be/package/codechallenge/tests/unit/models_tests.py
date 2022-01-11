@@ -19,9 +19,6 @@ from sqlalchemy.exc import IntegrityError, InvalidRequestError
 
 
 class TestCaseQuestion:
-    def t_countMethodReturnsTheCorrectValue(self, fillTestingDB):
-        assert count(Question) == 3
-
     def t_theQuestionAtPosition(self, fillTestingDB):
         question = Question().at_position(1)
         assert question.text == "q1.text"
@@ -139,6 +136,16 @@ class TestCaseMatchModel:
         with pytest.raises(NotUsableQuestionError):
             match.import_template_questions(*question_ids)
 
+    def t_matchCannotBePlayedIfAreNoLeftAttempts(self, dbsession):
+        match = Match().create()
+        Game(match_uid=match.uid, index=2).create()
+        user = User(email="user@test.project").create()
+        question = Question(text="1+1 is = to").save()
+        Reaction(question=question, user=user, match=match).create()
+
+        assert match.reactions[0].user == user
+        assert match.left_attempts(user) == 0
+
 
 class TestCaseGameModel:
     def t_raiseErrorWhenTwoGamesOfMatchHaveSamePosition(self, dbsession):
@@ -149,9 +156,33 @@ class TestCaseGameModel:
 
         dbsession.rollback()
 
+    def t_orderedQuestions(self, dbsession, emitted_queries):
+        match = Match().create()
+        game = Game(match_uid=match.uid, index=1).create()
+        question_2 = Question(
+            text="Where is London?", game_uid=game.uid, position=2
+        ).save()
+        question_1 = Question(
+            text="Where is Lisboa?", game_uid=game.uid, position=1
+        ).save()
+        question_4 = Question(
+            text="Where is Paris?", game_uid=game.uid, position=4
+        ).save()
+        question_3 = Question(
+            text="Where is Berlin?", game_uid=game.uid, position=3
+        ).save()
+
+        assert len(emitted_queries) == 6
+        assert game.ordered_questions[1] == question_1
+        assert game.ordered_questions[2] == question_2
+        assert game.ordered_questions[3] == question_3
+        assert game.ordered_questions[4] == question_4
+        assert len(emitted_queries) == 7
+
 
 class TestCaseReactionModel:
     def t_cannotExistsTwoReactionsOfTheSameUserAtSameTime(self, dbsession):
+        match = Match().create()
         user = User(email="user@test.project").create()
         question = Question(text="new-question").save()
         answer = Answer(
@@ -161,18 +192,29 @@ class TestCaseReactionModel:
         now = datetime.now()
         with pytest.raises((IntegrityError, InvalidRequestError)):
             Reaction(
-                question=question, answer=answer, user=user, create_timestamp=now
+                match=match,
+                question=question,
+                answer=answer,
+                user=user,
+                create_timestamp=now,
             ).create()
             Reaction(
-                question=question, answer=answer, user=user, create_timestamp=now
+                match=match,
+                question=question,
+                answer=answer,
+                user=user,
+                create_timestamp=now,
             ).create()
         dbsession.rollback()
 
+    # TODO: clarify does this test makes sense?
     def t_ifQuestionChangesThenAlsoFKIsUpdatedAndAffectsReaction(self, dbsession):
+        match = Match().create()
         user = User(email="user@test.project").create()
         question = Question(text="1+1 is = to").save()
         answer = Answer(question=question, text="2", position=1).create()
         reaction = Reaction(
+            match=match,
             question=question,
             answer=answer,
             user=user,
@@ -182,13 +224,25 @@ class TestCaseReactionModel:
 
         assert reaction.question.text == "1+2 is = to"
 
-    # TODO reuse this test for something more useful
-    def t_computeReactionTiming(self, dbsession):
+    def t_recordAnswerOutOfTime(self, dbsession):
+        match = Match().create()
         user = User(email="user@test.project").create()
-        question = Question(text="1+1 is = to").save()
-        reaction = Reaction(question=question, user=user).create()
+        question = Question(text="1+1 is = to", time=0).save()
+        reaction = Reaction(match=match, question=question, user=user).create()
 
         answer = Answer(question=question, text="2", position=1).create()
         reaction.record_answer(answer)
 
+        assert reaction.answer is None
+
+    def t_recordAnswerInTime(self, dbsession):
+        match = Match().create()
+        user = User(email="user@test.project").create()
+        question = Question(text="1+1 is = to", time=1).save()
+        reaction = Reaction(match=match, question=question, user=user).create()
+
+        answer = Answer(question=question, text="2", position=1).create()
+        reaction.record_answer(answer)
+
+        assert reaction.answer
         assert reaction.answer_time

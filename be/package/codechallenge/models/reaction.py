@@ -10,6 +10,8 @@ from sqlalchemy.schema import UniqueConstraint
 class Reaction(TableMixin, Base):
     __tablename__ = "reaction"
 
+    match_uid = Column(Integer, ForeignKey("match.uid"), nullable=False)
+    match = relationship("Match", back_populates="reactions")
     question_uid = Column(Integer, ForeignKey("question.uid"), nullable=False)
     question = relationship("Question", back_populates="reactions")
     answer_uid = Column(Integer, ForeignKey("answer.uid"), nullable=True)
@@ -23,7 +25,9 @@ class Reaction(TableMixin, Base):
     score = Column(Float)
 
     __table_args__ = (
-        UniqueConstraint("question_uid", "answer_uid", "user_uid", "create_timestamp"),
+        UniqueConstraint(
+            "question_uid", "answer_uid", "user_uid", "match_uid", "create_timestamp"
+        ),
     )
 
     @property
@@ -41,8 +45,19 @@ class Reaction(TableMixin, Base):
         return self
 
     def record_answer(self, answer):
+        response_datetime = datetime.now(tz=timezone.utc)
+        response_time_in_secs = (
+            response_datetime - self.create_timestamp
+        ).total_seconds()
+        if (
+            self.question.time is not None
+            and self.question.time - response_time_in_secs < 0
+        ):
+            return self
+
+        # TODO to fix. The update_timestamp should be updated via handler
+        self.update_timestamp = response_datetime
         self.answer = answer
-        self.update_timestamp = datetime.now(tz=timezone.utc)
         self.answer_time = self.update_timestamp
         self.session.commit()
         return self

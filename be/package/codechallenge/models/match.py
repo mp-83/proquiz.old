@@ -3,6 +3,8 @@ from uuid import uuid1
 from codechallenge.app import StoreConfig
 from codechallenge.exceptions import NotUsableQuestionError
 from codechallenge.models.game import Game
+
+# from codechallenge.models.reaction import Reactions
 from codechallenge.models.meta import Base, TableMixin, classproperty
 from codechallenge.models.question import Question, Questions
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, select
@@ -14,6 +16,7 @@ class Match(TableMixin, Base):
 
     games = relationship("Game")
     rankings = relationship("Ranking")
+    reactions = relationship("Reaction")
 
     name = Column(String, nullable=False, unique=True)
     url = Column(String, nullable=True)
@@ -52,6 +55,10 @@ class Match(TableMixin, Base):
             result.extend(g.questions)
         return result
 
+    def refresh(self):
+        self.session.refresh(self)
+        return self
+
     def create(self):
         self.session.add(self)
         self.session.commit()
@@ -89,6 +96,9 @@ class Match(TableMixin, Base):
             result.append(new)
         self.session.commit()
         return result
+
+    def left_attempts(self, user):
+        return len([r for r in self.reactions if r.user.uid == user.uid]) - self.times
 
     @property
     def json(self):
