@@ -32,6 +32,26 @@ class QuestionFactory:
         return self._question
 
 
+class GameFactory:
+    def __init__(self, match):
+        self._match = match
+        self._counter = 1
+        self._game = None
+
+    def next_game(self):
+        if self._match.order:
+            self._game = self._match.ordered_games[self._counter]
+        else:
+            self._game = self._match.games[self._counter - 1]
+
+        self._counter += 1
+        return self._game
+
+    @property
+    def current(self):
+        return self._game
+
+
 class SinglePlayer:
     def __init__(self, user, match):
         self._user = user

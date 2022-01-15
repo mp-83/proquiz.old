@@ -7,7 +7,7 @@ from codechallenge.exceptions import (
     MatchOver,
 )
 from codechallenge.models import Answer, Game, Match, Question, Reactions, User
-from codechallenge.play.single_player import QuestionFactory, SinglePlayer
+from codechallenge.play.single_player import GameFactory, QuestionFactory, SinglePlayer
 
 
 class TestCaseQuestionFactory:
@@ -27,7 +27,7 @@ class TestCaseQuestionFactory:
         assert factory.current == q_zurich
 
     def t_nextQuestionWhenOrdered(self, dbsession):
-        """Questions are intentionally created
+        """Questions are inversely created
         to make the ordering meaningful.
         """
         match = Match().create()
@@ -38,6 +38,17 @@ class TestCaseQuestionFactory:
         factory = QuestionFactory(game)
         assert factory.next_question() == first
         assert factory.next_question() == second
+
+
+class TestCaseGameFactory:
+    def t_nextGameWhenOrdered(self, dbsession):
+        match = Match(order=True).create()
+        second = Game(match_uid=match.uid, index=2).create()
+        first = Game(match_uid=match.uid, index=1).create()
+
+        factory = GameFactory(match)
+        assert factory.next_game() == first
+        assert factory.next_game() == second
 
 
 class TestCaseCheckStatus:
