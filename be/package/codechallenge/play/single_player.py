@@ -1,9 +1,35 @@
-from codechallenge.exceptions import EmptyMatchError, GameError, MatchNotPlayableError
+from codechallenge.exceptions import (
+    EmptyMatchError,
+    GameError,
+    GameOver,
+    MatchNotPlayableError,
+    MatchOver,
+)
 from codechallenge.models import Reaction
 
 
 class PlayException(Exception):
     """"""
+
+
+class QuestionFactory:
+    def __init__(self, game):
+        self._game = game
+        self._counter = 1
+        self._question = None
+
+    def next_question(self):
+        if self._game.order:
+            self._question = self._game.ordered_questions[self._counter]
+        else:
+            self._question = self._game.questions[self._counter - 1]
+
+        self._counter += 1
+        return self._question
+
+    @property
+    def current(self):
+        return self._question
 
 
 class SinglePlayer:
@@ -12,7 +38,14 @@ class SinglePlayer:
         self._current_match = match
         self._current_question = None
         self._current_game = None
-        self._question_counter = 1
+        self._question_counter = 0
+        self._game_counter = 0
+
+    def _status_check(self):
+        if not self._current_game and self._game_counter == 0:
+            raise EmptyMatchError("")
+        if not self._current_question and self._question_counter == 0:
+            raise GameOver("")
 
     def start(self):
         self._current_match.refresh()
@@ -37,15 +70,6 @@ class SinglePlayer:
     @property
     def current_question(self):
         return self._current_question
-
-    def next_question(self):
-        if not self._current_game:
-            raise GameError(f"Unexistent game for match {self._current_match}")
-
-        self._current_question = self._current_game.ordered_questions[
-            self._question_counter
-        ]
-        self._question_counter += 1
 
     def react(self, answer):
         self._current_reaction.record_answer(answer)

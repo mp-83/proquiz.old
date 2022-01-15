@@ -70,7 +70,7 @@ class Question(TableMixin, Base):
                     question_uid=self.uid,
                     text=_answer["text"],
                     position=position,
-                    is_correct=position == 0,
+                    is_correct=position == 1,
                 )
             )
         self.session.commit()

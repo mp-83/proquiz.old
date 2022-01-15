@@ -1,7 +1,80 @@
 import pytest
-from codechallenge.exceptions import EmptyMatchError, GameError, MatchNotPlayableError
+from codechallenge.exceptions import (
+    EmptyMatchError,
+    GameError,
+    GameOver,
+    MatchNotPlayableError,
+    MatchOver,
+)
 from codechallenge.models import Answer, Game, Match, Question, Reactions, User
-from codechallenge.play.single_player import SinglePlayer
+from codechallenge.play.single_player import QuestionFactory, SinglePlayer
+
+
+class TestCaseQuestionFactory:
+    def t_nextQuestionWhenNotOrdered(self, dbsession):
+        match = Match().create()
+        game = Game(match_uid=match.uid, index=1, order=False).create()
+        q_berlin = Question(
+            text="Where is Berlin?", game_uid=game.uid, position=2
+        ).save()
+        q_zurich = Question(
+            text="Where is Zurich?", game_uid=game.uid, position=1
+        ).save()
+
+        factory = QuestionFactory(game)
+        assert factory.next_question() == q_berlin
+        assert factory.next_question() == q_zurich
+        assert factory.current == q_zurich
+
+    def t_nextQuestionWhenOrdered(self, dbsession):
+        """Questions are intentionally created
+        to make the ordering meaningful.
+        """
+        match = Match().create()
+        game = Game(match_uid=match.uid, index=1).create()
+        second = Question(text="Where is London?", game_uid=game.uid, position=2).save()
+        first = Question(text="Where is Paris?", game_uid=game.uid, position=1).save()
+
+        factory = QuestionFactory(game)
+        assert factory.next_question() == first
+        assert factory.next_question() == second
+
+
+class TestCaseCheckStatus:
+    def t_whenThereAreNoQuestionGameIsOver(self, dbsession):
+        match = Match().create()
+        Game(match_uid=match.uid, index=1).create()
+        user = User(email="user@test.project").create()
+
+        player = SinglePlayer(user, match)
+        with pytest.raises(GameOver):
+            player.status_check()
+
+        dbsession.rollback()
+
+    @pytest.mark.skip("TO BE IMPLEMENTED, i am not even sure this is the right place")
+    def t_afterLastQuestionGameIsOver(self, dbsession):
+        match = Match().create()
+        first_game = Game(match_uid=match.uid, index=1).create()
+        Question(text="Where is London?", game_uid=first_game.uid).save()
+        user = User(email="user@test.project").create()
+
+        player = SinglePlayer(user, match)
+        player.next_question()
+        with pytest.raises(GameOver):
+            player.next_question()
+
+        dbsession.rollback()
+
+    def t_matchWithoutGamesThrowsError(self, dbsession):
+        match = Match().create()
+        user = User(email="user@test.project").create()
+        player = SinglePlayer(user, match)
+
+        with pytest.raises(EmptyMatchError):
+            player.status_check()
+
+        dbsession.rollback()
 
 
 class TestCaseSinglePlayerSingleGame:
@@ -32,7 +105,7 @@ class TestCaseSinglePlayerSingleGame:
         assert Reactions.count() == 1
         assert next_q == second
 
-    @pytest.mark.skip("")
+    @pytest.mark.skip("TO BE FIXED")
     def t_whenNoQuestionsAreLeftGameIsOver(self, dbsession):
         match = Match().create()
         first_game = Game(match_uid=match.uid, index=1).create()
@@ -44,33 +117,6 @@ class TestCaseSinglePlayerSingleGame:
         player.start()
         player.react(answer)
         assert player.game_is_over
-
-    @pytest.mark.skip("")
-    def t_whenThereAreNoQuestionGameIsOver(self, dbsession):
-        match = Match().create()
-        Game(match_uid=match.uid, index=1).create()
-        user = User(email="user@test.project").create()
-
-        player = SinglePlayer(user, match)
-        with pytest.raises(GameError):
-            player.start()
-
-        assert player.game_is_over
-
-    def t_whenLastGameIsOverAlsoMatchIsOver(self, dbsession):
-        match = Match().create()
-        Game(match_uid=match.uid, index=1).create()
-        user = User(email="user@test.project").create()
-
-        player = SinglePlayer(user, match)
-        assert player.match_is_over
-
-    def t_nextGameButMatchIsEmpty(self, dbsession):
-        match = Match().create()
-        user = User(email="user@test.project").create()
-
-        player = SinglePlayer(user, match)
-        assert player.next_game() is None
 
     def t_nextGame(self, dbsession):
         match = Match().create()
@@ -106,15 +152,6 @@ class TestCaseSinglePlayerSingleGame:
             player.next_question()
 
         assert err.value.message == f"Unexistent game for match {match}"
-
-        dbsession.rollback()
-
-    def t_matchWithoutGamesThrowsError(self, dbsession):
-        match = Match().create()
-        user = User(email="user@test.project").create()
-        player = SinglePlayer(user, match)
-        with pytest.raises(EmptyMatchError):
-            player.start()
 
         dbsession.rollback()
 

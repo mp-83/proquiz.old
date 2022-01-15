@@ -12,8 +12,9 @@ class NotUsableQuestionError(BaseException):
     """"""
 
 
+# NOT USED
 class EmptyMatchError(BaseException):
-    """Match is started but contains not games"""
+    """"""
 
 
 class MatchNotPlayableError(BaseException):
@@ -22,3 +23,11 @@ class MatchNotPlayableError(BaseException):
 
 class GameError(BaseException):
     """Generic exception occuring during Match"""
+
+
+class GameOver(BaseException):
+    """"""
+
+
+class MatchOver(BaseException):
+    """Match is started but contains not games"""

@@ -26,7 +26,7 @@ class Match(TableMixin, Base):
     expires = Column(DateTime(timezone=True), nullable=True)
     # how many times a match can be played
     times = Column(Integer, default=1)
-    # indicates whether questions order matters
+    # when True games should be played in order
     order = Column(Boolean, default=False)
 
     def __init__(self, **kwargs):
