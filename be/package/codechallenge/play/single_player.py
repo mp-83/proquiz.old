@@ -118,6 +118,16 @@ class SinglePlayer:
     def can_be_resumed(self):
         return self._game_factory
 
+    @property
+    def match_can_be_resumed(self):
+        """Determine if this match can be restored
+
+        By counting the reactions it is possible to
+        determine if all questions were displayed
+        """
+        m = self._current_match
+        return m.is_restricted and len(m.reactions) < len(m.questions)
+
     def react(self, answer):
         self._current_reaction.record_answer(answer)
         self.next_question()
@@ -137,9 +147,3 @@ class SinglePlayer:
 
     def next_game(self):
         return self._game_factory.next_game()
-
-    def match_can_be_resumed(self):
-        return (
-            not self._game_factory.is_last_game
-            or not self._question_factory.is_last_question
-        )

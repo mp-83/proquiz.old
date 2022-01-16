@@ -3,8 +3,6 @@ from uuid import uuid1
 from codechallenge.app import StoreConfig
 from codechallenge.exceptions import NotUsableQuestionError
 from codechallenge.models.game import Game
-
-# from codechallenge.models.reaction import Reactions
 from codechallenge.models.meta import Base, TableMixin, classproperty
 from codechallenge.models.question import Question, Questions
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, select
@@ -67,11 +65,6 @@ class Match(TableMixin, Base):
     def with_name(self, name):
         matched_row = self.session.execute(select(Match).where(Match.name == name))
         return matched_row.scalar_one_or_none()
-
-    def first_game(self):
-        for g in self.games:
-            if g.index == 1:
-                return g
 
     @property
     def ordered_games(self):

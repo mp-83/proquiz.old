@@ -45,14 +45,21 @@ class Reaction(TableMixin, Base):
         return self
 
     def record_answer(self, answer):
+        """Save the answer given by the user
+
+        If question is expired discard the answer
+        Store the answer for bot, open or timed
+        questions.
+        """
         response_datetime = datetime.now(tz=timezone.utc)
         response_time_in_secs = (
             response_datetime - self.create_timestamp
         ).total_seconds()
-        if (
+        question_expired = (
             self.question.time is not None
             and self.question.time - response_time_in_secs < 0
-        ):
+        )
+        if question_expired:
             return self
 
         # TODO to fix. The update_timestamp should be updated via handler

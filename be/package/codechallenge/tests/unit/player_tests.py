@@ -176,11 +176,13 @@ class TestCaseSinglePlayerSingleGame:
         with pytest.raises(MatchOver):
             player.react(answer)
 
-    def t_matchCanBeResumed(self, dbsession):
+
+class TestCaseResumeMatch:
+    def t_matchCanBeResumedWhenThereIsStillOneQuestionToDisplay(self, dbsession):
         match = Match().create()
         first_game = Game(match_uid=match.uid, index=0).create()
-        Game(match_uid=match.uid, index=1).create()
         question = Question(text="Where is London?", game_uid=first_game.uid).save()
+        Question(text="Where is Moscow?", game_uid=first_game.uid).save()
         answer = Answer(question=question, text="UK", position=1).create()
         user = User(email="user@test.project").create()
 
@@ -188,3 +190,10 @@ class TestCaseSinglePlayerSingleGame:
         player.start()
         player.react(answer)
         assert player.match_can_be_resumed
+
+    def t_matchCanNotBeResumedBecausePublic(self, dbsession):
+        match = Match(is_restricted=False).create()
+        user = User(email="user@test.project").create()
+
+        player = SinglePlayer(user, match)
+        assert not player.match_can_be_resumed
