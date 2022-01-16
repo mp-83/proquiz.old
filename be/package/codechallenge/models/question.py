@@ -44,7 +44,7 @@ class Question(TableMixin, Base):
     def save(self):
         if self.position is None:
             n = self.session.query(Question).count()
-            self.position = n + 1
+            self.position = n + 1 if n > 0 else 0
         self.session.add(self)
         self.session.commit()
         return self
@@ -70,7 +70,7 @@ class Question(TableMixin, Base):
                     question_uid=self.uid,
                     text=_answer["text"],
                     position=position,
-                    is_correct=position == 1,
+                    is_correct=position == 0,
                 )
             )
         self.session.commit()
@@ -120,6 +120,3 @@ class Questions:
     def with_text(cls, text):
         matched_row = cls.session.execute(select(cls).where(cls.text == text))
         return matched_row.scalar_one_or_none()
-
-    # @classmethod
-    # def ordered_questions(cls, )

@@ -15,14 +15,19 @@ class PlayException(Exception):
 class QuestionFactory:
     def __init__(self, game):
         self._game = game
-        self._counter = 1
+        self._counter = 0
         self._question = None
 
     def next_question(self):
+        if (not self._game.questions and self._counter == 0) or (
+            self._counter == len(self._game.questions)
+        ):
+            raise GameOver(f"Game {self._game} has not questions")
+
         if self._game.order:
             self._question = self._game.ordered_questions[self._counter]
         else:
-            self._question = self._game.questions[self._counter - 1]
+            self._question = self._game.questions[self._counter]
 
         self._counter += 1
         return self._question
@@ -35,15 +40,19 @@ class QuestionFactory:
 class GameFactory:
     def __init__(self, match):
         self._match = match
-        self._counter = 1
+        self._counter = 0
         self._game = None
 
     def next_game(self):
         if self._match.order:
-            self._game = self._match.ordered_games[self._counter]
+            games = self._match.ordered_games
         else:
-            self._game = self._match.games[self._counter - 1]
+            games = self._match.games
 
+        if self._counter == 0 and not games:
+            raise EmptyMatchError(f"Match {self._match.name} contains no Game")
+
+        self._game = games[self._counter]
         self._counter += 1
         return self._game
 
@@ -51,71 +60,61 @@ class GameFactory:
     def current(self):
         return self._game
 
+    @property
+    def match_started(self):
+        return self._game is not None
+
 
 class SinglePlayer:
     def __init__(self, user, match):
         self._user = user
         self._current_match = match
-        self._current_question = None
-        self._current_game = None
         self._question_counter = 0
         self._game_counter = 0
-
-    def _status_check(self):
-        if not self._current_game and self._game_counter == 0:
-            raise EmptyMatchError("")
-        if not self._current_question and self._question_counter == 0:
-            raise GameOver("")
+        self._current_game = None
+        self._game_factory = GameFactory(match)
+        self._question_factory = None
 
     def start(self):
         self._current_match.refresh()
-
         if self._current_match.left_attempts(self._user) == 0:
             raise MatchNotPlayableError(
                 f"User {self._user} has no left attempts for Match {self._current_match.name}"
             )
 
-        self.next_game()
-        if not self._current_game:
-            raise EmptyMatchError(f"Match {self._current_match.name} contains no Game")
-
-        self.next_question()
+        self._current_game = self.next_game()
+        question = self.next_question()
         self._current_reaction = Reaction(
             match_uid=self._current_match.uid,
-            question_uid=self._current_question.uid,
+            question_uid=question.uid,
             user_uid=self._user.uid,
         ).create()
-        return self._current_question
+        return question
 
     @property
     def current_question(self):
-        return self._current_question
+        return self._question_factory.current
+
+    @property
+    def match_started(self):
+        return self._game_factory.match_started
+
+    @property
+    def current_game(self):
+        return self._game_factory.current
 
     def react(self, answer):
         self._current_reaction.record_answer(answer)
         self.next_question()
-        return self._current_question
+        return self.current_question
 
-    @property
-    def game_is_over(self):
-        return self.next_question() is None
+    def next_question(self):
+        if not self.current_game:
+            raise GameError(f"Match {self._current_match.name} is not started")
+
+        if not self._question_factory:
+            self._question_factory = QuestionFactory(self.current_game)
+        return self._question_factory.next_question()
 
     def next_game(self):
-        for g in self._current_match.games:
-            if not self._current_game and g.index == 1:
-                self._current_game = g
-                return g
-            if self._current_game and g.index == self._current_game.index + 1:
-                self._current_game = g
-                return g
-
-    def match_is_over(self):
-        return self.game_is_over and not self.next_game()
-
-    def match_started(self):
-        return self._current_question is not None
-
-    def current_game(self):
-        if not self.match_started:
-            raise PlayException("Match not started")
-        return self._current_game
+        return self._game_factory.next_game()

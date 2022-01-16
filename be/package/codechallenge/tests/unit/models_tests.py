@@ -160,23 +160,23 @@ class TestCaseGameModel:
         match = Match().create()
         game = Game(match_uid=match.uid, index=1).create()
         question_2 = Question(
-            text="Where is London?", game_uid=game.uid, position=2
+            text="Where is London?", game_uid=game.uid, position=1
         ).save()
         question_1 = Question(
-            text="Where is Lisboa?", game_uid=game.uid, position=1
+            text="Where is Lisboa?", game_uid=game.uid, position=0
         ).save()
         question_4 = Question(
-            text="Where is Paris?", game_uid=game.uid, position=4
+            text="Where is Paris?", game_uid=game.uid, position=3
         ).save()
         question_3 = Question(
-            text="Where is Berlin?", game_uid=game.uid, position=3
+            text="Where is Berlin?", game_uid=game.uid, position=2
         ).save()
 
         assert len(emitted_queries) == 6
-        assert game.ordered_questions[1] == question_1
-        assert game.ordered_questions[2] == question_2
-        assert game.ordered_questions[3] == question_3
-        assert game.ordered_questions[4] == question_4
+        assert game.ordered_questions[0] == question_1
+        assert game.ordered_questions[1] == question_2
+        assert game.ordered_questions[2] == question_3
+        assert game.ordered_questions[3] == question_4
         assert len(emitted_queries) == 7
 
 

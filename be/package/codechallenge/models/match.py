@@ -77,7 +77,7 @@ class Match(TableMixin, Base):
     def ordered_games(self):
         games = {g.index: g for g in self.games}
         _sorted = sorted(games)
-        return {i: games[i] for i in _sorted}
+        return [games[i] for i in _sorted]
 
     def import_template_questions(self, *ids):
         if not ids:

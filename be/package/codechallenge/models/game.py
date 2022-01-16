@@ -37,7 +37,7 @@ class Game(TableMixin, Base):
     def ordered_questions(self):
         questions = {q.position: q for q in self.questions}
         _sorted = sorted(questions)
-        return {i: questions[i] for i in _sorted}
+        return [questions[i] for i in _sorted]
 
     @property
     def json(self):
