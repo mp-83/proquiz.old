@@ -57,6 +57,18 @@ class TestCaseQuestionFactory:
         with pytest.raises(GameOver):
             factory.next_question()
 
+    def t_isLastQuestion(self, dbsession):
+        match = Match().create()
+        game = Game(match_uid=match.uid, index=1).create()
+        Question(text="Where is Amsterdam?", game_uid=game.uid, position=1).save()
+        Question(text="Where is Lion?", game_uid=game.uid, position=2).save()
+
+        factory = QuestionFactory(game)
+        factory.next_question()
+        assert not factory.is_last_question
+        factory.next_question()
+        assert factory.is_last_question
+
 
 class TestCaseGameFactory:
     def t_nextGameWhenOrdered(self, dbsession):
@@ -83,6 +95,17 @@ class TestCaseGameFactory:
         factory = GameFactory(match)
 
         assert not factory.match_started
+
+    def t_isLastGame(self, dbsession):
+        match = Match().create()
+        Game(match_uid=match.uid, index=0).create()
+        Game(match_uid=match.uid, index=1).create()
+        factory = GameFactory(match)
+
+        factory.next_game()
+        assert not factory.is_last_game
+        factory.next_game()
+        assert factory.is_last_game
 
 
 class TestCaseSinglePlayerSingleGame:
@@ -140,3 +163,28 @@ class TestCaseSinglePlayerSingleGame:
 
         assert match.reactions
         dbsession.rollback()
+
+    def t_matchOver(self, dbsession):
+        match = Match().create()
+        first_game = Game(match_uid=match.uid, index=0).create()
+        question = Question(text="Where is London?", game_uid=first_game.uid).save()
+        answer = Answer(question=question, text="UK", position=1).create()
+        user = User(email="user@test.project").create()
+
+        player = SinglePlayer(user, match)
+        player.start()
+        with pytest.raises(MatchOver):
+            player.react(answer)
+
+    def t_matchCanBeResumed(self, dbsession):
+        match = Match().create()
+        first_game = Game(match_uid=match.uid, index=0).create()
+        Game(match_uid=match.uid, index=1).create()
+        question = Question(text="Where is London?", game_uid=first_game.uid).save()
+        answer = Answer(question=question, text="UK", position=1).create()
+        user = User(email="user@test.project").create()
+
+        player = SinglePlayer(user, match)
+        player.start()
+        player.react(answer)
+        assert player.match_can_be_resumed

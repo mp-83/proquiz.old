@@ -36,6 +36,10 @@ class QuestionFactory:
     def current(self):
         return self._question
 
+    @property
+    def is_last_question(self):
+        return self._counter == len(self._game.questions)
+
 
 class GameFactory:
     def __init__(self, match):
@@ -52,6 +56,9 @@ class GameFactory:
         if self._counter == 0 and not games:
             raise EmptyMatchError(f"Match {self._match.name} contains no Game")
 
+        if len(games) == self._counter:
+            raise MatchOver(f"Match {self._match.name}")
+
         self._game = games[self._counter]
         self._counter += 1
         return self._game
@@ -63,6 +70,10 @@ class GameFactory:
     @property
     def match_started(self):
         return self._game is not None
+
+    @property
+    def is_last_game(self):
+        return self._counter == len(self._match.games)
 
 
 class SinglePlayer:
@@ -103,6 +114,10 @@ class SinglePlayer:
     def current_game(self):
         return self._game_factory.current
 
+    @property
+    def can_be_resumed(self):
+        return self._game_factory
+
     def react(self, answer):
         self._current_reaction.record_answer(answer)
         self.next_question()
@@ -114,7 +129,17 @@ class SinglePlayer:
 
         if not self._question_factory:
             self._question_factory = QuestionFactory(self.current_game)
-        return self._question_factory.next_question()
+
+        try:
+            return self._question_factory.next_question()
+        except GameOver:
+            self._current_game = self.next_game()
 
     def next_game(self):
         return self._game_factory.next_game()
+
+    def match_can_be_resumed(self):
+        return (
+            not self._game_factory.is_last_game
+            or not self._question_factory.is_last_question
+        )
