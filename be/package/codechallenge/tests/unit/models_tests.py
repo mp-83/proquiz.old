@@ -10,6 +10,7 @@ from codechallenge.models import (
     Game,
     Match,
     Matches,
+    OpenAnswer,
     Question,
     Questions,
     Reaction,
@@ -192,17 +193,17 @@ class TestCaseReactionModel:
         now = datetime.now()
         with pytest.raises((IntegrityError, InvalidRequestError)):
             Reaction(
-                match=match,
-                question=question,
-                answer=answer,
-                user=user,
+                match_uid=match.uid,
+                question_uid=question.uid,
+                answer_uid=answer.uid,
+                user_uid=user.uid,
                 create_timestamp=now,
             ).create()
             Reaction(
-                match=match,
-                question=question,
-                answer=answer,
-                user=user,
+                match_uid=match.uid,
+                question_uid=question.uid,
+                answer_uid=answer.uid,
+                user_uid=user.uid,
                 create_timestamp=now,
             ).create()
         dbsession.rollback()
@@ -214,17 +215,17 @@ class TestCaseReactionModel:
         question = Question(text="1+1 is = to").save()
         answer = Answer(question=question, text="2", position=1).create()
         reaction = Reaction(
-            match=match,
-            question=question,
-            answer=answer,
-            user=user,
+            match_uid=match.uid,
+            question_uid=question.uid,
+            answer_uid=answer.uid,
+            user_uid=user.uid,
         ).create()
         question.text = "1+2 is = to"
         question.save()
 
         assert reaction.question.text == "1+2 is = to"
 
-    def t_recordAnswerOutOfTime(self, dbsession):
+    def t_whenQuestionIsElapsedAnswerIsNotRecorded(self, dbsession):
         match = Match().create()
         user = User(email="user@test.project").create()
         question = Question(text="1+1 is = to", time=0).save()
@@ -244,5 +245,17 @@ class TestCaseReactionModel:
         answer = Answer(question=question, text="2", position=1).create()
         reaction.record_answer(answer)
 
+        assert reaction.answer
+        assert reaction.answer_time
+
+    def t_reactionTimingIsRecordedAlsoForOpenQuestions(self, dbsession):
+        match = Match().create()
+        user = User(email="user@test.project").create()
+        question = Question(text="Where is Miame").save()
+        reaction = Reaction(match=match, question=question, user=user).create()
+
+        open_answer = OpenAnswer(text="Florida").create()
+        reaction.record_answer(open_answer)
+        assert question.is_open
         assert reaction.answer
         assert reaction.answer_time

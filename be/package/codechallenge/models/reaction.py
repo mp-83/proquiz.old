@@ -15,7 +15,9 @@ class Reaction(TableMixin, Base):
     question_uid = Column(Integer, ForeignKey("question.uid"), nullable=False)
     question = relationship("Question", back_populates="reactions")
     answer_uid = Column(Integer, ForeignKey("answer.uid"), nullable=True)
-    answer = relationship("Answer", back_populates="reactions")
+    _answer = relationship("Answer", back_populates="reactions")
+    open_answer_uid = Column(Integer, ForeignKey("open_answer.uid"), nullable=True)
+    _open_answer = relationship("OpenAnswer", back_populates="reactions")
     user_uid = Column(Integer, ForeignKey("user.uid"), nullable=False)
     user = relationship("User", back_populates="reactions")
 
@@ -33,6 +35,14 @@ class Reaction(TableMixin, Base):
     @property
     def session(self):
         return StoreConfig().session
+
+    @property
+    def answer(self):
+        return self._open_answer if self.question.is_open else self._answer
+
+    def refresh(self):
+        self.session.refresh(self)
+        return self
 
     def create(self):
         self.session.add(self)
@@ -64,7 +74,10 @@ class Reaction(TableMixin, Base):
 
         # TODO to fix. The update_timestamp should be updated via handler
         self.update_timestamp = response_datetime
-        self.answer = answer
+        if self.question.is_open:
+            self.open_answer_uid = answer.uid
+        else:
+            self.answer_uid = answer.uid
         self.answer_time = self.update_timestamp
         self.session.commit()
         return self
