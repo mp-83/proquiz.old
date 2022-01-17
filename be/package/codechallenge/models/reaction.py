@@ -87,6 +87,20 @@ class Reaction(TableMixin, Base):
         return {"text": self.text, "code": self.code, "position": self.position}
 
 
+class ReactionScore:
+    def __init__(self, timing, question_time=None, answer_level=0):
+        self.timing = timing
+        self.question_time = question_time
+        self.answer_level = answer_level
+
+    def value(self):
+        v = self.question_time - self.timing
+        v = v / self.question_time
+        if self.answer_level:
+            v *= self.answer_level
+        return round(v, 3)
+
+
 class Reactions:
     @classproperty
     def session(self):

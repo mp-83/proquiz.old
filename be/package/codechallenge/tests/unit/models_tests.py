@@ -1,4 +1,5 @@
 from datetime import datetime
+from math import isclose
 
 import pytest
 from codechallenge.app import StoreConfig
@@ -16,6 +17,7 @@ from codechallenge.models import (
     Reaction,
     User,
 )
+from codechallenge.models.reaction import ReactionScore
 from sqlalchemy.exc import IntegrityError, InvalidRequestError
 
 
@@ -228,10 +230,10 @@ class TestCaseReactionModel:
     def t_whenQuestionIsElapsedAnswerIsNotRecorded(self, dbsession):
         match = Match().create()
         user = User(email="user@test.project").create()
-        question = Question(text="1+1 is = to", time=0).save()
+        question = Question(text="3*3 = ", time=0).save()
         reaction = Reaction(match=match, question=question, user=user).create()
 
-        answer = Answer(question=question, text="2", position=1).create()
+        answer = Answer(question=question, text="9", position=1).create()
         reaction.record_answer(answer)
 
         assert reaction.answer is None
@@ -239,7 +241,7 @@ class TestCaseReactionModel:
     def t_recordAnswerInTime(self, dbsession):
         match = Match().create()
         user = User(email="user@test.project").create()
-        question = Question(text="1+1 is = to", time=1).save()
+        question = Question(text="1+1 =", time=1).save()
         reaction = Reaction(match=match, question=question, user=user).create()
 
         answer = Answer(question=question, text="2", position=1).create()
@@ -251,7 +253,7 @@ class TestCaseReactionModel:
     def t_reactionTimingIsRecordedAlsoForOpenQuestions(self, dbsession):
         match = Match().create()
         user = User(email="user@test.project").create()
-        question = Question(text="Where is Miame").save()
+        question = Question(text="Where is Miami").save()
         reaction = Reaction(match=match, question=question, user=user).create()
 
         open_answer = OpenAnswer(text="Florida").create()
@@ -259,3 +261,13 @@ class TestCaseReactionModel:
         assert question.is_open
         assert reaction.answer
         assert reaction.answer_time
+
+
+class TestCaseReactionScore:
+    def t_computeWithOnlyOnTiming(self):
+        rs = ReactionScore(timing=0.2, question_time=3, answer_level=None)
+        assert rs.value() == 0.933
+
+    def t_computeWithTimingAndLevel(self):
+        rs = ReactionScore(timing=0.2, question_time=3, answer_level=2)
+        assert isclose(rs.value(), 0.93 * 2, rel_tol=0.05)
