@@ -210,7 +210,6 @@ class TestCaseReactionModel:
             ).create()
         dbsession.rollback()
 
-    # TODO: clarify does this test makes sense?
     def t_ifQuestionChangesThenAlsoFKIsUpdatedAndAffectsReaction(self, dbsession):
         match = Match().create()
         user = User(email="user@test.project").create()
@@ -241,7 +240,7 @@ class TestCaseReactionModel:
     def t_recordAnswerInTime(self, dbsession):
         match = Match().create()
         user = User(email="user@test.project").create()
-        question = Question(text="1+1 =", time=1).save()
+        question = Question(text="1+1 =", time=2).save()
         reaction = Reaction(match=match, question=question, user=user).create()
 
         answer = Answer(question=question, text="2", position=1).create()
@@ -249,6 +248,7 @@ class TestCaseReactionModel:
 
         assert reaction.answer
         assert reaction.answer_time
+        assert reaction.score == 0.999
 
     def t_reactionTimingIsRecordedAlsoForOpenQuestions(self, dbsession):
         match = Match().create()
@@ -261,6 +261,8 @@ class TestCaseReactionModel:
         assert question.is_open
         assert reaction.answer
         assert reaction.answer_time
+        # no score should be computed for open questions
+        assert not reaction.score
 
 
 class TestCaseReactionScore:
@@ -271,3 +273,7 @@ class TestCaseReactionScore:
     def t_computeWithTimingAndLevel(self):
         rs = ReactionScore(timing=0.2, question_time=3, answer_level=2)
         assert isclose(rs.value(), 0.93 * 2, rel_tol=0.05)
+
+    def t_computeScoreForOpenQuestion(self):
+        rs = ReactionScore(timing=0.2, question_time=None, answer_level=None)
+        assert rs.value() == 0

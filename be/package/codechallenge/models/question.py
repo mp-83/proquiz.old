@@ -18,7 +18,6 @@ class Question(TableMixin, Base):
     time = Column(Integer)  # in seconds
     content_url = Column(String)
     code = Column(String)
-    difficulty = Column(Integer)
 
     @property
     def session(self):
@@ -82,7 +81,6 @@ class Question(TableMixin, Base):
             text=self.text,
             position=self.position,
             code=self.code,
-            difficulty=self.difficulty,
         )
         self.session.add(new)
         for _answer in self.answers:
@@ -92,6 +90,7 @@ class Question(TableMixin, Base):
                     text=_answer.text,
                     position=_answer.position,
                     is_correct=_answer.position,
+                    level=_answer.level,
                 )
             )
         if not many:

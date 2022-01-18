@@ -13,6 +13,10 @@ class OpenAnswer(TableMixin, Base):
     content_url = Column(String)
 
     @property
+    def level(self):
+        return
+
+    @property
     def session(self):
         return StoreConfig().session
 

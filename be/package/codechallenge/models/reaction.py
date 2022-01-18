@@ -72,6 +72,9 @@ class Reaction(TableMixin, Base):
         if question_expired:
             return self
 
+        rs = ReactionScore(response_time_in_secs, self.question.time, answer.level)
+        self.score = rs.value()
+
         # TODO to fix. The update_timestamp should be updated via handler
         self.update_timestamp = response_datetime
         if self.question.is_open:
@@ -88,12 +91,15 @@ class Reaction(TableMixin, Base):
 
 
 class ReactionScore:
-    def __init__(self, timing, question_time=None, answer_level=0):
+    def __init__(self, timing, question_time=None, answer_level=None):
         self.timing = timing
         self.question_time = question_time
         self.answer_level = answer_level
 
     def value(self):
+        if not self.question_time:
+            return 0
+
         v = self.question_time - self.timing
         v = v / self.question_time
         if self.answer_level:

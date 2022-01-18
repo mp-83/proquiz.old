@@ -89,7 +89,6 @@ class Match(TableMixin, Base):
                 text=question.text,
                 position=question.position,
                 code=question.code,
-                difficulty=question.difficulty,
             )
             self.session.add(new)
             result.append(new)
