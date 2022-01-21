@@ -11,8 +11,8 @@ class User(TableMixin, Base):
     email = Column(String, nullable=False, unique=True)
     name = Column(String, nullable=True)
     password_hash = Column(String)
-    reactions = relationship("Reaction")
-    user_rankings = relationship("Ranking")
+    # reactions: implicit backward relation
+    # user_rankings: implicit backward relation
 
     def __init__(self, **kwargs):
         password = kwargs.pop("password", "")

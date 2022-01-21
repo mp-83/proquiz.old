@@ -14,7 +14,7 @@ class Match(TableMixin, Base):
 
     games = relationship("Game")
     rankings = relationship("Ranking")
-    reactions = relationship("Reaction")
+    # reactions: implicit backward relation
 
     name = Column(String, nullable=False, unique=True)
     url = Column(String, nullable=True)

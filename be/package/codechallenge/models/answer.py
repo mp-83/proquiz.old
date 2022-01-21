@@ -9,8 +9,8 @@ class Answer(TableMixin, Base):
     __tablename__ = "answer"
 
     question_uid = Column(Integer, ForeignKey("question.uid"), nullable=False)
-    question = relationship("Question", back_populates="answers")
-    reactions = relationship("Reaction")
+    question = relationship("Question", backref="answers")
+    # reactions: implicit backward relation
 
     position = Column(Integer, nullable=False)
     text = Column(String(3000), nullable=False)

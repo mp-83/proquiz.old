@@ -11,15 +11,15 @@ class Reaction(TableMixin, Base):
     __tablename__ = "reaction"
 
     match_uid = Column(Integer, ForeignKey("match.uid"), nullable=False)
-    match = relationship("Match", back_populates="reactions")
+    match = relationship("Match", backref="reactions")
     question_uid = Column(Integer, ForeignKey("question.uid"), nullable=False)
-    question = relationship("Question", back_populates="reactions")
+    question = relationship("Question", backref="reactions")
     answer_uid = Column(Integer, ForeignKey("answer.uid"), nullable=True)
-    _answer = relationship("Answer", back_populates="reactions")
+    _answer = relationship("Answer", backref="reactions")
     open_answer_uid = Column(Integer, ForeignKey("open_answer.uid"), nullable=True)
-    _open_answer = relationship("OpenAnswer", back_populates="reactions")
+    _open_answer = relationship("OpenAnswer", backref="reactions")
     user_uid = Column(Integer, ForeignKey("user.uid"), nullable=False)
-    user = relationship("User", back_populates="reactions")
+    user = relationship("User", backref="reactions")
 
     # used to mark reactions of a user when drops out of a match
     dirty = Column(Boolean, default=False)

@@ -8,9 +8,9 @@ from sqlalchemy.schema import UniqueConstraint
 class OpenAnswer(TableMixin, Base):
     __tablename__ = "open_answer"
 
-    reactions = relationship("Reaction")
     text = Column(String(3000), nullable=False)
     content_url = Column(String)
+    # reactions: implicit backward relation
 
     @property
     def level(self):

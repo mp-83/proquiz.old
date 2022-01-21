@@ -10,8 +10,7 @@ class Question(TableMixin, Base):
 
     game_uid = Column(Integer, ForeignKey("game.uid"))
     game = relationship("Game", back_populates="questions")
-    answers = relationship("Answer")
-    reactions = relationship("Reaction")
+    # reactions: implicit backward relation
 
     text = Column(String(400), nullable=False)
     position = Column(Integer, nullable=False)
