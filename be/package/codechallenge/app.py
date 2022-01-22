@@ -15,6 +15,8 @@ DB_DSN = "{sql_protocol}://{user}:{pwd}@{host}/{db}?charset=utf8mb4".format(
     db=os.getenv("MYSQL_DATABASE"),
 )
 
+REDIS_CONF = {"host": "redis", "port": "6379", "password": os.getenv("REDIS_PW")}
+
 
 class StoreConfig:
     _instance = None

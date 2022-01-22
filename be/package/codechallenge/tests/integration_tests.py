@@ -1,6 +1,5 @@
 import pytest
-from codechallenge.db import count
-from codechallenge.models import Match, Question, User
+from codechallenge.models import Match, Question, Questions, User
 from codechallenge.tests.fixtures import TEST_1
 from codechallenge.views.play import PlayViews
 from codechallenge.views.views import CodeChallengeViews
@@ -39,7 +38,7 @@ class TestCaseTutorialView:
         }
         view_obj = CodeChallengeViews(request)
         response = view_obj.new_question()
-        assert count(Question) == 1
+        assert Questions.count() == 1
         assert response.json["text"] == "eleven pm"
         assert response.json["position"] == 2
 

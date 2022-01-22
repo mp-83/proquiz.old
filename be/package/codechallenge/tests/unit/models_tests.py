@@ -3,7 +3,6 @@ from math import isclose
 
 import pytest
 from codechallenge.app import StoreConfig
-from codechallenge.db import count
 from codechallenge.exceptions import NotUsableQuestionError
 from codechallenge.models import (
     Answer,
@@ -31,7 +30,7 @@ class TestCaseQuestion:
         question = Question().at_position(1)
         Answer(question=question, text="question2.answer1", position=1).create()
         Answer(question=question, text="question2.answer2", position=2).create()
-        assert count(Answer) == 2
+        assert Answers.count() == 2
         assert question.answers[0].question_uid == question.uid
 
     def t_editingTextOfExistingQuestion(self, fillTestingDB):
