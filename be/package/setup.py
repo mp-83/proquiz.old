@@ -12,6 +12,7 @@ requires = [
     "pyramid_jinja2",
     "pyramid_tm",
     "pyramid_retry",
+    "redis",
     "sqlalchemy",
     "waitress",
     "zope.sqlalchemy",
