@@ -1,4 +1,13 @@
 import pytest
+from codechallenge.play.cache import ClientFactory
+
+
+class TestCaseCache:
+    def t_connectionSetupAndValueStore(self):
+        rclient = ClientFactory().new_client()
+        rclient.set("test_key", "test_value")
+        v = rclient.get("test_key")
+        assert v == b"test_value"
 
 
 class TestCaseCodeChallengeFunctional:
