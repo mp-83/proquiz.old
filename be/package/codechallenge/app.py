@@ -57,7 +57,7 @@ def main(global_config, **settings):
         root_factory="codechallenge.models.meta.Root",
     )
     config.include("pyramid_jinja2")
-    config.include("codechallenge.views.routes")
+    config.include("codechallenge.endpoints.routes")
     config.include("codechallenge.models.meta")
     config.include("codechallenge.security")
 

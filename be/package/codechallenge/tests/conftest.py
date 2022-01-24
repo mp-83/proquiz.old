@@ -207,7 +207,7 @@ def auth_request(tm, dbsession):
 @pytest.fixture
 def config(dummy_request, app_settings):
     with testConfig(request=dummy_request) as config:
-        config.include("codechallenge.views.routes")
+        config.include("codechallenge.endpoints.routes")
 
         config.set_security_policy(SecurityPolicy(app_settings["auth.secret"]))
         yield config

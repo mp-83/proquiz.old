@@ -1,8 +1,8 @@
 import pytest
+from codechallenge.endpoints.ep_match import CodeChallengeViews
+from codechallenge.endpoints.ep_play import PlayViews
 from codechallenge.models import Match, Question, Questions, User
 from codechallenge.tests.fixtures import TEST_1
-from codechallenge.views.play import PlayViews
-from codechallenge.views.views import CodeChallengeViews
 from pyramid.httpexceptions import HTTPBadRequest, HTTPSeeOther
 
 
@@ -44,24 +44,24 @@ class TestCaseTutorialView:
 
 
 class TestCaseLoginRequired:
-    def t_checkDefaultViewsAreDecorated(self, dummy_request, config):
-        protected_views = (
+    def t_checkDefaultEndPointsAreDecorated(self, dummy_request, config):
+        protected_endpoints = (
             "new_question",
             "edit_question",
             "create_match",
         )
-        view_obj = CodeChallengeViews(dummy_request)
-        for view_name in protected_views:
-            view_method = getattr(view_obj, view_name)
-            response = view_method()
+        endpoint_obj = CodeChallengeViews(dummy_request)
+        for endpoint_name in protected_endpoints:
+            endpoint_method = getattr(endpoint_obj, endpoint_name)
+            response = endpoint_method()
             assert isinstance(response, HTTPSeeOther)
 
     def t_checkPlayViewsAreDecorated(self, dummy_request, config):
-        protected_views = ("start",)
-        view_obj = PlayViews(dummy_request)
-        for view_name in protected_views:
-            view_method = getattr(view_obj, view_name)
-            response = view_method()
+        protected_endpoints = ("start",)
+        endpoint_obj = PlayViews(dummy_request)
+        for endpoint_name in protected_endpoints:
+            endpoint_method = getattr(endpoint_obj, endpoint_name)
+            response = endpoint_method()
             assert isinstance(response, HTTPSeeOther)
 
 
