@@ -5,6 +5,7 @@ from setuptools import setup
 requires = [
     "alembic",
     "bcrypt",
+    "cerberus",
     "pymysql",
     "cryptography",
     "marshmallow",
