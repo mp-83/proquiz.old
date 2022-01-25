@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 @view_defaults(request_method="GET")
-class PlayViews:
+class PlayEndPoints:
     def __init__(self, request):
         self.request = request
 

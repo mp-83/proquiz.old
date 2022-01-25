@@ -1,4 +1,4 @@
-from codechallenge.endpoints.ep_play import PlayViews
+from codechallenge.endpoints.play import PlayEndPoints
 from codechallenge.tests.fixtures import TEST_1
 
 
@@ -7,7 +7,7 @@ class TestCasePlay:
         request = auth_request
         request.method = "POST"
         request.json = {"name": trivia_match.name}
-        view_obj = PlayViews(request)
+        view_obj = PlayEndPoints(request)
 
         response = view_obj.start()
         assert response.json["question"] == TEST_1[0]["text"]

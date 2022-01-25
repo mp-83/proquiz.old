@@ -18,5 +18,7 @@ def includeme(config):
 
     config.add_static_view(name="static", path="codechallenge:static")
 
-    config.scan("codechallenge.endpoints.ep_match")
-    config.scan("codechallenge.endpoints.ep_play")
+    config.scan("codechallenge.endpoints.login")
+    config.scan("codechallenge.endpoints.match")
+    config.scan("codechallenge.endpoints.question")
+    config.scan("codechallenge.endpoints.play")
