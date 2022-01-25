@@ -1,6 +1,6 @@
 from codechallenge.app import StoreConfig
-from codechallenge.models.answer import Answer
-from codechallenge.models.meta import Base, TableMixin, classproperty
+from codechallenge.entities.answer import Answer
+from codechallenge.entities.meta import Base, TableMixin, classproperty
 from sqlalchemy import Column, ForeignKey, Integer, String, select
 from sqlalchemy.orm import relationship
 

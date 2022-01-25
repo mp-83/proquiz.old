@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from codechallenge.app import StoreConfig
-from codechallenge.models.meta import Base, TableMixin, classproperty
+from codechallenge.entities.meta import Base, TableMixin, classproperty
 from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import UniqueConstraint

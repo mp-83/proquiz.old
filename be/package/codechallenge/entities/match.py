@@ -1,10 +1,10 @@
 from uuid import uuid1
 
 from codechallenge.app import StoreConfig
+from codechallenge.entities.game import Game
+from codechallenge.entities.meta import Base, TableMixin, classproperty
+from codechallenge.entities.question import Question, Questions
 from codechallenge.exceptions import NotUsableQuestionError
-from codechallenge.models.game import Game
-from codechallenge.models.meta import Base, TableMixin, classproperty
-from codechallenge.models.question import Question, Questions
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, select
 from sqlalchemy.orm import relationship
 

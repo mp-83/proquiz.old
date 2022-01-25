@@ -1,6 +1,6 @@
 import logging
 
-from codechallenge.models import Game, Match, Question, User
+from codechallenge.entities import Game, Match, Question, User
 from codechallenge.security import login_required
 from pyramid.csrf import new_csrf_token
 from pyramid.httpexceptions import HTTPBadRequest, HTTPSeeOther

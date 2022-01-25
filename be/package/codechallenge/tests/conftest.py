@@ -7,8 +7,8 @@ import pytest
 import transaction
 import webtest
 from codechallenge.app import main
-from codechallenge.models import Game, Match, Question, User
-from codechallenge.models.meta import Base, get_engine, get_tm_session
+from codechallenge.entities import Game, Match, Question, User
+from codechallenge.entities.meta import Base, get_engine, get_tm_session
 from codechallenge.security import SecurityPolicy
 from codechallenge.tests.fixtures import TEST_1
 from pyramid.paster import get_appsettings

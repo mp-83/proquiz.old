@@ -54,11 +54,11 @@ def main(global_config, **settings):
     config = Configurator(
         settings=settings,
         session_factory=session_factory,
-        root_factory="codechallenge.models.meta.Root",
+        root_factory="codechallenge.entities.meta.Root",
     )
     config.include("pyramid_jinja2")
     config.include("codechallenge.endpoints.routes")
-    config.include("codechallenge.models.meta")
+    config.include("codechallenge.entities.meta")
     config.include("codechallenge.security")
 
     StoreConfig().config = config

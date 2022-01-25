@@ -1,7 +1,7 @@
 import pytest
 from codechallenge.endpoints.ep_match import CodeChallengeViews
 from codechallenge.endpoints.ep_play import PlayViews
-from codechallenge.models import Match, Question, Questions, User
+from codechallenge.entities import Match, Question, Questions, User
 from codechallenge.tests.fixtures import TEST_1
 from pyramid.httpexceptions import HTTPBadRequest, HTTPSeeOther
 

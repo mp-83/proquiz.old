@@ -1,3 +1,4 @@
+from codechallenge.entities import Reaction
 from codechallenge.exceptions import (
     EmptyMatchError,
     GameError,
@@ -5,7 +6,6 @@ from codechallenge.exceptions import (
     MatchNotPlayableError,
     MatchOver,
 )
-from codechallenge.models import Reaction
 
 
 class PlayException(Exception):

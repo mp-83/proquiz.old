@@ -1,4 +1,4 @@
-from codechallenge.models import User
+from codechallenge.entities import User
 from pyramid.authentication import AuthTktCookieHelper
 from pyramid.csrf import CookieCSRFStoragePolicy
 from pyramid.httpexceptions import HTTPSeeOther

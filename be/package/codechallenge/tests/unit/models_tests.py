@@ -3,8 +3,7 @@ from math import isclose
 
 import pytest
 from codechallenge.app import StoreConfig
-from codechallenge.exceptions import NotUsableQuestionError
-from codechallenge.models import (
+from codechallenge.entities import (
     Answer,
     Answers,
     Game,
@@ -16,7 +15,8 @@ from codechallenge.models import (
     Reaction,
     User,
 )
-from codechallenge.models.reaction import ReactionScore
+from codechallenge.entities.reaction import ReactionScore
+from codechallenge.exceptions import NotUsableQuestionError
 from sqlalchemy.exc import IntegrityError, InvalidRequestError
 
 

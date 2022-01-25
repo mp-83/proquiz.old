@@ -1,4 +1,5 @@
 import pytest
+from codechallenge.entities import Answer, Game, Match, Question, Reactions, User
 from codechallenge.exceptions import (
     EmptyMatchError,
     GameError,
@@ -6,7 +7,6 @@ from codechallenge.exceptions import (
     MatchNotPlayableError,
     MatchOver,
 )
-from codechallenge.models import Answer, Game, Match, Question, Reactions, User
 from codechallenge.play.single_player import GameFactory, QuestionFactory, SinglePlayer
 
 

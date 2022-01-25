@@ -1,7 +1,7 @@
 import logging
 
 # TODO remove the Match model when the validation is implemented
-from codechallenge.models import Matches
+from codechallenge.entities import Matches
 from codechallenge.play.single_player import SinglePlayer
 from codechallenge.security import login_required
 from pyramid.response import Response

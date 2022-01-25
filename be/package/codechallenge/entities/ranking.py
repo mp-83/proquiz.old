@@ -1,5 +1,5 @@
 from codechallenge.app import StoreConfig
-from codechallenge.models.meta import Base, TableMixin
+from codechallenge.entities.meta import Base, TableMixin
 from sqlalchemy import Column, ForeignKey, Integer
 from sqlalchemy.orm import relationship
 
