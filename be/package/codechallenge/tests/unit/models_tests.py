@@ -105,7 +105,9 @@ class TestCaseMatchModel:
         second_game = Game(match_uid=match.uid, index=2).create()
         Question(text="Where is Vienna?", game_uid=second_game.uid).save()
         assert match.questions[0].text == "Where is London?"
+        assert match.questions[0].game == first_game
         assert match.questions[1].text == "Where is Vienna?"
+        assert match.questions[1].game == second_game
 
     def t_matchWithName(self, dbsession):
         original = Match().create()
