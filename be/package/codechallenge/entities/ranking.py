@@ -11,7 +11,7 @@ class Ranking(TableMixin, Base):
     user = relationship("User", backref="user_rankings")
 
     match_uid = Column(Integer, ForeignKey("match.uid"))
-    match = relationship("Match", back_populates="rankings")
+    match = relationship("Match", backref="rankings")
 
     score = Column(Integer, nullable=False)
 

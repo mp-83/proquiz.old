@@ -9,7 +9,7 @@ class Question(TableMixin, Base):
     __tablename__ = "question"
 
     game_uid = Column(Integer, ForeignKey("game.uid"))
-    game = relationship("Game", back_populates="questions")
+    game = relationship("Game", backref="questions")
     # reactions: implicit backward relation
 
     text = Column(String(400), nullable=False)

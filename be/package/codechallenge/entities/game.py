@@ -9,8 +9,7 @@ class Game(TableMixin, Base):
     __tablename__ = "game"
 
     match_uid = Column(Integer, ForeignKey("match.uid"), nullable=False)
-    match = relationship("Match", back_populates="games")
-    questions = relationship("Question")
+    match = relationship("Match", backref="games")
     index = Column(Integer, default=0)
     # when True question should be returned in order
     order = Column(Boolean, default=True)

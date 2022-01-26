@@ -6,15 +6,13 @@ from codechallenge.entities.meta import Base, TableMixin, classproperty
 from codechallenge.entities.question import Question, Questions
 from codechallenge.exceptions import NotUsableQuestionError
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, select
-from sqlalchemy.orm import relationship
 
 
 class Match(TableMixin, Base):
     __tablename__ = "match"
 
-    games = relationship("Game")
-    rankings = relationship("Ranking")
-    # reactions: implicit backward relation
+    # implicit backward relations
+    # games: rankings: reactions:
 
     name = Column(String, nullable=False, unique=True)
     url = Column(String, nullable=True)
