@@ -103,7 +103,7 @@ def app(app_settings, dbengine):
 
 
 @pytest.fixture
-def testapp(app, tm, dbsession):
+def testapp(app, tm, dbsession, mocker):
     # override request.dbsession and request.tm with our own
     # externally-controlled values that are shared across requests but aborted
     # at the end
@@ -120,7 +120,8 @@ def testapp(app, tm, dbsession):
     # initialize a csrf token instead of running an initial request to get one
     # from the actual app - this only works using the CookieCSRFStoragePolicy
     _testapp.set_cookie("csrf_token", "dummy_csrf_token")
-
+    # stub to bypass authentication check
+    mocker.patch("pyramid.request.Request.is_authenticated", return_value=True)
     return _testapp
 
 

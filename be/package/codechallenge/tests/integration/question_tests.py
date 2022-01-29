@@ -19,16 +19,18 @@ class TestCaseQuestionEP:
         response = view_obj.question()
         assert response == {}
 
-    def t_createNewQuestion(self, dummy_request, mocker):
-        mocker.patch("pyramid.testing.DummyRequest.is_authenticated")
-        request = dummy_request
-        request.json = {
-            "text": "eleven pm",
-            "code": "x = 0; x += 1; print(x)",
-            "position": 2,
-        }
-        view_obj = QuestionEndPoints(request)
-        response = view_obj.new_question()
+    def t_createNewQuestion(self, testapp):
+        # CSRF token is needed also in this case
+        response = testapp.post_json(
+            "/new_question",
+            {
+                "text": "eleven pm",
+                "code": "x = 0; x += 1; print(x)",
+                "position": 2,
+            },
+            status=200,
+            headers={"X-CSRF-Token": testapp.get_csrf_token()},
+        )
         assert Questions.count() == 1
         assert response.json["text"] == "eleven pm"
         assert response.json["position"] == 2

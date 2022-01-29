@@ -3,15 +3,22 @@ import logging
 from codechallenge.entities import Game, Match, Question
 from codechallenge.security import login_required
 from pyramid.response import Response
-from pyramid.view import view_config, view_defaults
+from pyramid.view import view_config
 
 logger = logging.getLogger(__name__)
 
 
-@view_defaults(request_method="GET")
 class MatchEndPoints:
     def __init__(self, request):
         self.request = request
+
+    @login_required
+    @view_config(
+        route_name="match",
+        request_method="GET",
+    )
+    def get_match(self):
+        return Response(json={"match": {}})
 
     @login_required
     @view_config(
