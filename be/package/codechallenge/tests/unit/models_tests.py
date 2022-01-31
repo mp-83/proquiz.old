@@ -104,10 +104,10 @@ class TestCaseMatchModel:
         Question(text="Where is London?", game_uid=first_game.uid).save()
         second_game = Game(match_uid=match.uid, index=2).create()
         Question(text="Where is Vienna?", game_uid=second_game.uid).save()
-        assert match.questions[0].text == "Where is London?"
-        assert match.questions[0].game == first_game
-        assert match.questions[1].text == "Where is Vienna?"
-        assert match.questions[1].game == second_game
+        assert match.questions[0][0].text == "Where is London?"
+        assert match.questions[0][0].game == first_game
+        assert match.questions[1][0].text == "Where is Vienna?"
+        assert match.questions[1][0].game == second_game
 
     def t_matchWithName(self, dbsession):
         original = Match().create()
@@ -249,7 +249,10 @@ class TestCaseReactionModel:
 
         assert reaction.answer
         assert reaction.answer_time
-        assert reaction.score == 0.999
+        # because the score is computed over the response
+        # time and this one variates at each tests run
+        # isclose is used to avoid brittleness
+        assert isclose(reaction.score, 0.999)
 
     def t_reactionTimingIsRecordedAlsoForOpenQuestions(self, dbsession):
         match = Match().create()

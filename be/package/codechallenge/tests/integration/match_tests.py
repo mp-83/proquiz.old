@@ -14,7 +14,7 @@ class TestCaseMatchCreation:
 
         assert Questions.count() == 4
         questions = response.json["match"]["questions"]
-        assert questions[0]["text"] == TEST_1[0]["text"]
+        assert questions[0][0]["text"] == TEST_1[0]["text"]
 
     def t_retriveOneMatchWithAllData(self, testapp):
         match_name = "New Match"
@@ -29,8 +29,8 @@ class TestCaseMatchCreation:
             "match": {
                 "name": match_name,
                 "questions": [
-                    {"code": None, "position": 0, "text": "Where is London?"},
-                    {"code": None, "position": 1, "text": "Where is Vienna?"},
+                    [{"code": None, "position": 0, "text": "Where is London?"}],
+                    [{"code": None, "position": 1, "text": "Where is Vienna?"}],
                 ],
             }
         }

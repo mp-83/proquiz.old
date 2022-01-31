@@ -46,10 +46,7 @@ class Match(TableMixin, Base):
 
     @property
     def questions(self):
-        result = []
-        for g in self.games:
-            result.extend(g.ordered_questions)
-        return result
+        return [list(g.ordered_questions) for g in self.games]
 
     def refresh(self):
         self.session.refresh(self)
@@ -98,7 +95,10 @@ class Match(TableMixin, Base):
 
     @property
     def json(self):
-        return {"name": self.name, "questions": [q.json for q in self.questions]}
+        return {
+            "name": self.name,
+            "questions": [[q.json for q in g.ordered_questions] for g in self.games],
+        }
 
 
 class Matches:
