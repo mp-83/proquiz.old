@@ -42,7 +42,7 @@ class Question(TableMixin, Base):
     def save(self):
         if self.position is None:
             n = self.session.query(Question).count()
-            self.position = n + 1 if n > 0 else 0
+            self.position = n
         self.session.add(self)
         self.session.commit()
         return self

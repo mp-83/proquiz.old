@@ -48,7 +48,7 @@ class Match(TableMixin, Base):
     def questions(self):
         result = []
         for g in self.games:
-            result.extend(g.questions)
+            result.extend(g.ordered_questions)
         return result
 
     def refresh(self):
@@ -113,3 +113,7 @@ class Matches:
     @classmethod
     def with_name(cls, name):
         return cls.session.query(Match).filter_by(name=name).one_or_none()
+
+    @classmethod
+    def get(cls, uid):
+        return cls.session.query(Match).filter_by(uid=uid).one_or_none()

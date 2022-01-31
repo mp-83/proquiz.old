@@ -1,6 +1,6 @@
 import logging
 
-from codechallenge.entities import Game, Match, Question
+from codechallenge.entities import Game, Match, Matches, Question
 from codechallenge.security import login_required
 from pyramid.response import Response
 from pyramid.view import view_config
@@ -14,15 +14,17 @@ class MatchEndPoints:
 
     @login_required
     @view_config(
-        route_name="match",
+        route_name="single_match",
         request_method="GET",
     )
     def get_match(self):
-        return Response(json={"match": {}})
+        uid = self.request.matchdict.get("uid")
+        match = Matches.get(uid=uid)
+        return Response(json={"match": match.json})
 
     @login_required
     @view_config(
-        route_name="match",
+        route_name="new_match",
         renderer="codechallenge:templates/new_question.jinja2",  # TODO: to fix
         request_method="POST",
     )
