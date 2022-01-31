@@ -252,7 +252,7 @@ class TestCaseReactionModel:
         # because the score is computed over the response
         # time and this one variates at each tests run
         # isclose is used to avoid brittleness
-        assert isclose(reaction.score, 0.999)
+        assert isclose(reaction.score, 0.999, rel_tol=0.05)
 
     def t_reactionTimingIsRecordedAlsoForOpenQuestions(self, dbsession):
         match = Match().create()
