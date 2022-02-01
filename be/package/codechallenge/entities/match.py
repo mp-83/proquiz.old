@@ -23,7 +23,7 @@ class Match(TableMixin, Base):
     # how many times a match can be played
     times = Column(Integer, default=1)
     # when True games should be played in order
-    order = Column(Boolean, default=False)
+    order = Column(Boolean, default=True)
 
     def __init__(self, **kwargs):
         """
@@ -66,6 +66,10 @@ class Match(TableMixin, Base):
         games = {g.index: g for g in self.games}
         _sorted = sorted(games)
         return [games[i] for i in _sorted]
+
+    @property
+    def is_started(self):
+        return len(self.reactions)
 
     def import_template_questions(self, *ids):
         if not ids:

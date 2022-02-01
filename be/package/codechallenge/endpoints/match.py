@@ -25,7 +25,7 @@ class MatchEndPoints:
     @login_required
     @view_config(
         route_name="new_match",
-        renderer="codechallenge:templates/new_question.jinja2",  # TODO: to fix
+        # renderer="codechallenge:templates/new_question.jinja2" TODO: to fix
         request_method="POST",
     )
     def create_match(self):
@@ -38,3 +38,15 @@ class MatchEndPoints:
             )
             new.create_with_answers(question.get("answers"))
         return Response(json={"match": new_match.json})
+
+    @login_required
+    @view_config(
+        route_name="edit_match",
+        request_method="PATCH",
+    )
+    def edit_match(self):
+        uid = self.request.matchdict.get("uid")
+        match = Matches.get(uid=uid)
+        if match.is_started:
+            return Response(status=400)
+        return Response()

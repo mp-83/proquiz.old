@@ -22,7 +22,7 @@ class TestCaseQuestionEP:
     def t_createNewQuestion(self, testapp):
         # CSRF token is needed also in this case
         response = testapp.post_json(
-            "/new_question",
+            "/question/new",
             {
                 "text": "eleven pm",
                 "code": "x = 0; x += 1; print(x)",
