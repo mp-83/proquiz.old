@@ -71,12 +71,33 @@ class Match(TableMixin, Base):
     def is_started(self):
         return len(self.reactions)
 
+    def update_questions(self, questions):
+        """Add or update questions for this match
+
+        Question position is determined based on
+        the position within the array
+        """
+        result = []
+        new_game = Game(match_uid=self.uid).create()
+        for pos, question in enumerate(questions):
+            new = Question(
+                game_uid=new_game.uid,
+                text=question.get("text"),
+                position=pos,
+                code=question.get("code"),
+            )
+            self.session.add(new)
+            result.append(new)
+        self.session.commit()
+        return result
+
     def import_template_questions(self, *ids):
+        """Import already existsing questions"""
         if not ids:
             return
         questions = Questions.questions_with_ids(*ids).all()
         result = []
-        new_game = Game(index=1, match_uid=self.uid).create()
+        new_game = Game(match_uid=self.uid).create()
         for question in questions:
             if question.game_uid:
                 raise NotUsableQuestionError(

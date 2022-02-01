@@ -35,7 +35,7 @@ class TestCaseMatchEndpoints:
             }
         }
 
-    def t_gamesOrderCannotBeChangedIfMatchStarted(self, testapp):
+    def t_matchCannotBeChangedIfStarted(self, testapp):
         match_name = "New Match"
         match = Match(name=match_name).create()
         first_game = Game(match_uid=match.uid, index=1).create()
@@ -44,7 +44,30 @@ class TestCaseMatchEndpoints:
         Reaction(match=match, question=question, user=user).create()
         testapp.patch_json(
             f"/match/edit/{match.uid}",
-            {"order": False},
             headers={"X-CSRF-Token": testapp.get_csrf_token()},
             status=400,
         )
+
+    def t_addQuestionToExistingMatch(self, testapp):
+        match = Match(name="New Match").create()
+        payload = {
+            "questions": [
+                {
+                    "text": "What is the capital of Sweden?",
+                    "answers": [
+                        {"text": "Stockolm"},
+                        {"text": "Oslo"},
+                        {"text": "London"},
+                    ],
+                }
+            ],
+            "name": "Another match name",
+        }
+        testapp.patch_json(
+            f"/match/edit/{match.uid}",
+            payload,
+            headers={"X-CSRF-Token": testapp.get_csrf_token()},
+            status=200,
+        )
+        assert match.name == "Another match name"
+        assert len(match.questions) == 1

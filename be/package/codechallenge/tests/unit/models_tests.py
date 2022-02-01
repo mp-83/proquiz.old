@@ -114,6 +114,21 @@ class TestCaseMatchModel:
         found = Matches.with_name(original.name)
         assert found == original
 
+    def t_updateTextExistingQuestion(self, dbsession):
+        match = Match().create()
+        first_game = Game(match_uid=match.uid, index=1).create()
+        question = Question(text="Where is London?", game_uid=first_game.uid).save()
+
+        match.update_questions(
+            [
+                {
+                    "uid": question.uid,
+                    "text": "What is the capital of Norway?",
+                }
+            ],
+        )
+        assert question.text == "What is the capital of Norway?"
+
     def t_createMatchUsingTemplateQuestions(self, dbsession):
         question_ids = [
             Question(text="Where is London?").save().uid,

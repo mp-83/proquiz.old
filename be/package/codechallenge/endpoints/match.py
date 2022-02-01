@@ -49,4 +49,8 @@ class MatchEndPoints:
         match = Matches.get(uid=uid)
         if match.is_started:
             return Response(status=400)
+
+        data = self.request.json
+        match.name = data.get("name")
+        match.update_questions(data.get("questions", []))
         return Response()
