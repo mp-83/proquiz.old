@@ -78,16 +78,27 @@ class Match(TableMixin, Base):
         the position within the array
         """
         result = []
+        ids = [q.get("uid") for q in questions if q.get("uid")]
+        existing = {}
+        if ids:
+            existing = {q.uid: q for q in Questions.questions_with_ids(*ids).all()}
+
         new_game = Game(match_uid=self.uid).create()
-        for pos, question in enumerate(questions):
-            new = Question(
-                game_uid=new_game.uid,
-                text=question.get("text"),
-                position=pos,
-                code=question.get("code"),
-            )
-            self.session.add(new)
-            result.append(new)
+        for pos, q in enumerate(questions):
+            if q.get("uid") in existing:
+                question = existing.get(q.get("uid"))
+                question.text = q.get("text", question.text)
+                question.position = q.get("position", question.position)
+                question.code = q.get("code", question.code)
+            else:
+                question = Question(
+                    game_uid=new_game.uid,
+                    text=q.get("text"),
+                    position=pos,
+                    code=q.get("code"),
+                )
+            self.session.add(question)
+            result.append(question)
         self.session.commit()
         return result
 

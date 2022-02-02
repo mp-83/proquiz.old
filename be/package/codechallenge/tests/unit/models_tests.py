@@ -119,6 +119,7 @@ class TestCaseMatchModel:
         first_game = Game(match_uid=match.uid, index=1).create()
         question = Question(text="Where is London?", game_uid=first_game.uid).save()
 
+        n = Questions.count()
         match.update_questions(
             [
                 {
@@ -127,6 +128,8 @@ class TestCaseMatchModel:
                 }
             ],
         )
+        no_new_questions = n == Questions.count()
+        assert no_new_questions
         assert question.text == "What is the capital of Norway?"
 
     def t_createMatchUsingTemplateQuestions(self, dbsession):
