@@ -22,29 +22,29 @@ from sqlalchemy.exc import IntegrityError, InvalidRequestError
 
 class TestCaseQuestion:
     def t_theQuestionAtPosition(self, fillTestingDB):
-        question = Question().at_position(1)
+        question = Question().at_position(0)
         assert question.text == "q1.text"
         assert question.create_timestamp is not None
 
     def t_newCreatedAnswersShouldBeAvailableFromTheQuestion(self, fillTestingDB):
-        question = Question().at_position(1)
+        question = Question().at_position(0)
         Answer(question=question, text="question2.answer1", position=1).create()
         Answer(question=question, text="question2.answer2", position=2).create()
         assert Answers.count() == 2
         assert question.answers[0].question_uid == question.uid
 
     def t_editingTextOfExistingQuestion(self, fillTestingDB):
-        question = Question().at_position(2)
+        question = Question().at_position(1)
         question.update(text="new-text")
         assert question.text == "new-text"
 
     def t_createQuestionWithoutPosition(self, fillTestingDB):
-        new_question = Question(text="new-question").save()
+        new_question = Question(text="new-question", position=1).save()
         assert new_question.is_open
         assert new_question.is_template
 
     def t_allAnswersOfAQuestionMustDiffer(self, fillTestingDB):
-        question = Question().at_position(2)
+        question = Question().at_position(1)
         with pytest.raises((IntegrityError, InvalidRequestError)):
             question.answers.extend(
                 [
@@ -75,7 +75,7 @@ class TestCaseQuestion:
                 {"text": "He preferred to spend time on his other projects."},
                 {"text": "It had been destroyed by fire."},
             ],
-            "position": 1,
+            "position": 0,
         }
         new_question = Question(text=data["text"], position=data["position"])
         new_question.create_with_answers(data["answers"])
@@ -86,11 +86,11 @@ class TestCaseQuestion:
         assert Answer.with_text("The machine was undergoing repair").is_correct
 
     def t_cloningQuestion(self, dbsession):
-        new_question = Question(text="new-question").save()
+        new_question = Question(text="new-question", position=0).save()
         Answer(
             question_uid=new_question.uid,
             text="The machine was undergoing repair",
-            position=1,
+            position=0,
         ).create()
         cloned = new_question.clone()
         assert new_question.uid != cloned.uid
@@ -100,10 +100,10 @@ class TestCaseQuestion:
 class TestCaseMatchModel:
     def t_questionsPropertyReturnsTheExpectedResults(self, dbsession):
         match = Match().create()
-        first_game = Game(match_uid=match.uid, index=1).create()
-        Question(text="Where is London?", game_uid=first_game.uid).save()
-        second_game = Game(match_uid=match.uid, index=2).create()
-        Question(text="Where is Vienna?", game_uid=second_game.uid).save()
+        first_game = Game(match_uid=match.uid, index=0).create()
+        Question(text="Where is London?", game_uid=first_game.uid, position=0).save()
+        second_game = Game(match_uid=match.uid, index=1).create()
+        Question(text="Where is Vienna?", game_uid=second_game.uid, position=0).save()
         assert match.questions[0][0].text == "Where is London?"
         assert match.questions[0][0].game == first_game
         assert match.questions[1][0].text == "Where is Vienna?"
@@ -117,7 +117,9 @@ class TestCaseMatchModel:
     def t_updateTextExistingQuestion(self, dbsession):
         match = Match().create()
         first_game = Game(match_uid=match.uid, index=1).create()
-        question = Question(text="Where is London?", game_uid=first_game.uid).save()
+        question = Question(
+            text="Where is London?", game_uid=first_game.uid, position=0
+        ).save()
 
         n = Questions.count()
         match.update_questions(
@@ -134,8 +136,8 @@ class TestCaseMatchModel:
 
     def t_createMatchUsingTemplateQuestions(self, dbsession):
         question_ids = [
-            Question(text="Where is London?").save().uid,
-            Question(text="Where is Vienna?").save().uid,
+            Question(text="Where is London?", position=0).save().uid,
+            Question(text="Where is Vienna?", position=1).save().uid,
         ]
         Answer(
             question_uid=question_ids[0], text="question2.answer1", position=1
@@ -162,7 +164,7 @@ class TestCaseMatchModel:
         match = Match().create()
         Game(match_uid=match.uid, index=2).create()
         user = User(email="user@test.project").create()
-        question = Question(text="1+1 is = to").save()
+        question = Question(text="1+1 is = to", position=0).save()
         Reaction(question=question, user=user, match=match).create()
 
         assert match.reactions[0].user == user
@@ -206,7 +208,7 @@ class TestCaseReactionModel:
     def t_cannotExistsTwoReactionsOfTheSameUserAtSameTime(self, dbsession):
         match = Match().create()
         user = User(email="user@test.project").create()
-        question = Question(text="new-question").save()
+        question = Question(text="new-question", position=0).save()
         answer = Answer(
             question=question, text="question2.answer1", position=1
         ).create()
@@ -232,7 +234,7 @@ class TestCaseReactionModel:
     def t_ifQuestionChangesThenAlsoFKIsUpdatedAndAffectsReaction(self, dbsession):
         match = Match().create()
         user = User(email="user@test.project").create()
-        question = Question(text="1+1 is = to").save()
+        question = Question(text="1+1 is = to", position=0).save()
         answer = Answer(question=question, text="2", position=1).create()
         reaction = Reaction(
             match_uid=match.uid,
@@ -248,7 +250,7 @@ class TestCaseReactionModel:
     def t_whenQuestionIsElapsedAnswerIsNotRecorded(self, dbsession):
         match = Match().create()
         user = User(email="user@test.project").create()
-        question = Question(text="3*3 = ", time=0).save()
+        question = Question(text="3*3 = ", time=0, position=0).save()
         reaction = Reaction(match=match, question=question, user=user).create()
 
         answer = Answer(question=question, text="9", position=1).create()
@@ -259,7 +261,7 @@ class TestCaseReactionModel:
     def t_recordAnswerInTime(self, dbsession):
         match = Match().create()
         user = User(email="user@test.project").create()
-        question = Question(text="1+1 =", time=2).save()
+        question = Question(text="1+1 =", time=2, position=0).save()
         reaction = Reaction(match=match, question=question, user=user).create()
 
         answer = Answer(question=question, text="2", position=1).create()
@@ -275,7 +277,7 @@ class TestCaseReactionModel:
     def t_reactionTimingIsRecordedAlsoForOpenQuestions(self, dbsession):
         match = Match().create()
         user = User(email="user@test.project").create()
-        question = Question(text="Where is Miami").save()
+        question = Question(text="Where is Miami", position=0).save()
         reaction = Reaction(match=match, question=question, user=user).create()
 
         open_answer = OpenAnswer(text="Florida").create()

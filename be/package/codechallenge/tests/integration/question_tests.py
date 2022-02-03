@@ -7,10 +7,10 @@ class TestCaseQuestionEP:
         self, fillTestingDB, dummy_request
     ):
         request = dummy_request
-        request.params.update(index=2)
+        request.params.update(index=1)
         view_obj = QuestionEndPoints(request)
         response = view_obj.question()
-        assert response == {"text": "q2.text", "code": "q2.code", "position": 2}
+        assert response == {"text": "q2.text", "code": "q2.code", "position": 1}
 
     def t_whenQuestionIsNoneEmptyDictIsReturned(self, fillTestingDB, dummy_request):
         request = dummy_request

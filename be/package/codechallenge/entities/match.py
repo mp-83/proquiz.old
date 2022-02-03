@@ -71,6 +71,13 @@ class Match(TableMixin, Base):
     def is_started(self):
         return len(self.reactions)
 
+    def update_attributes(self, **attrs):
+        for name, value in attrs.items():
+            if name == "questions":
+                continue
+
+            setattr(self, name, value)
+
     def update_questions(self, questions):
         """Add or update questions for this match
 
@@ -83,8 +90,13 @@ class Match(TableMixin, Base):
         if ids:
             existing = {q.uid: q for q in Questions.questions_with_ids(*ids).all()}
 
-        new_game = Game(match_uid=self.uid).create()
-        for pos, q in enumerate(questions):
+        for q in questions:
+            game_idx = q.get("game")
+            if game_idx is None:
+                g = Game(match_uid=self.uid).create()
+            else:
+                g = self.games[game_idx]
+
             if q.get("uid") in existing:
                 question = existing.get(q.get("uid"))
                 question.text = q.get("text", question.text)
@@ -92,9 +104,9 @@ class Match(TableMixin, Base):
                 question.code = q.get("code", question.code)
             else:
                 question = Question(
-                    game_uid=new_game.uid,
+                    game_uid=g.uid,
                     text=q.get("text"),
-                    position=pos,
+                    position=len(g.questions),
                     code=q.get("code"),
                 )
             self.session.add(question)
@@ -131,6 +143,9 @@ class Match(TableMixin, Base):
 
     @property
     def json(self):
+        """
+        Store questions is list, one per game
+        """
         return {
             "name": self.name,
             "questions": [[q.json for q in g.ordered_questions] for g in self.games],

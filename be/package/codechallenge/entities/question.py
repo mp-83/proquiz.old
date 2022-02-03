@@ -3,6 +3,7 @@ from codechallenge.entities.answer import Answer
 from codechallenge.entities.meta import Base, TableMixin, classproperty
 from sqlalchemy import Column, ForeignKey, Integer, String, select
 from sqlalchemy.orm import relationship
+from sqlalchemy.schema import UniqueConstraint
 
 
 class Question(TableMixin, Base):
@@ -17,6 +18,10 @@ class Question(TableMixin, Base):
     time = Column(Integer)  # in seconds
     content_url = Column(String)
     code = Column(String)
+
+    __table_args__ = (
+        UniqueConstraint("game_uid", "position", name="ck_question_game_uid_position"),
+    )
 
     @property
     def session(self):
@@ -40,9 +45,9 @@ class Question(TableMixin, Base):
         return matched_row.scalar_one_or_none()
 
     def save(self):
-        if self.position is None:
-            n = self.session.query(Question).count()
-            self.position = n
+        if self.position is None and self.game:
+            self.position = len(self.game.questions)
+
         self.session.add(self)
         self.session.commit()
         return self

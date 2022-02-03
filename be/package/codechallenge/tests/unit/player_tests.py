@@ -15,7 +15,7 @@ class TestCaseQuestionFactory:
         match = Match().create()
         game = Game(match_uid=match.uid, index=1, order=False).create()
         q_berlin = Question(
-            text="Where is Berlin?", game_uid=game.uid, position=2
+            text="Where is Berlin?", game_uid=game.uid, position=0
         ).save()
         q_zurich = Question(
             text="Where is Zurich?", game_uid=game.uid, position=1
@@ -32,8 +32,8 @@ class TestCaseQuestionFactory:
         """
         match = Match().create()
         game = Game(match_uid=match.uid, index=1).create()
-        second = Question(text="Where is London?", game_uid=game.uid, position=2).save()
-        first = Question(text="Where is Paris?", game_uid=game.uid, position=1).save()
+        second = Question(text="Where is London?", game_uid=game.uid, position=1).save()
+        first = Question(text="Where is Paris?", game_uid=game.uid, position=0).save()
 
         factory = QuestionFactory(game)
         assert factory.next_question() == first
@@ -50,7 +50,7 @@ class TestCaseQuestionFactory:
     def t_gameIsOverAfterLastQuestion(self, dbsession):
         match = Match().create()
         game = Game(match_uid=match.uid, index=1).create()
-        Question(text="Where is Paris?", game_uid=game.uid, position=1).save()
+        Question(text="Where is Paris?", game_uid=game.uid, position=0).save()
 
         factory = QuestionFactory(game)
         factory.next_question()
@@ -60,8 +60,8 @@ class TestCaseQuestionFactory:
     def t_isLastQuestion(self, dbsession):
         match = Match().create()
         game = Game(match_uid=match.uid, index=1).create()
-        Question(text="Where is Amsterdam?", game_uid=game.uid, position=1).save()
-        Question(text="Where is Lion?", game_uid=game.uid, position=2).save()
+        Question(text="Where is Amsterdam?", game_uid=game.uid, position=0).save()
+        Question(text="Where is Lion?", game_uid=game.uid, position=1).save()
 
         factory = QuestionFactory(game)
         factory.next_question()
@@ -112,7 +112,9 @@ class TestCaseSinglePlayerSingleGame:
     def t_reactionIsCreatedAsSoonAsQuestionIsReturned(self, dbsession):
         match = Match().create()
         first_game = Game(match_uid=match.uid, index=1).create()
-        question = Question(text="Where is London?", game_uid=first_game.uid).save()
+        question = Question(
+            text="Where is London?", game_uid=first_game.uid, position=0
+        ).save()
         user = User(email="user@test.project").create()
 
         player = SinglePlayer(user, match)
@@ -125,8 +127,12 @@ class TestCaseSinglePlayerSingleGame:
     def t_reactToOneOpenQuestion(self, dbsession):
         match = Match().create()
         first_game = Game(match_uid=match.uid, index=1).create()
-        question = Question(text="Where is London?", game_uid=first_game.uid).save()
-        second = Question(text="Where is Paris?", game_uid=first_game.uid).save()
+        question = Question(
+            text="Where is London?", game_uid=first_game.uid, position=0
+        ).save()
+        second = Question(
+            text="Where is Paris?", game_uid=first_game.uid, position=1
+        ).save()
         answer = Answer(question=question, text="UK", position=1).create()
         user = User(email="user@test.project").create()
 
@@ -153,7 +159,9 @@ class TestCaseSinglePlayerSingleGame:
         match = Match().create()
         user = User(email="user@test.project").create()
         game = Game(match_uid=match.uid, index=1).create()
-        question = Question(text="Where is London?", game_uid=game.uid).save()
+        question = Question(
+            text="Where is London?", game_uid=game.uid, position=0
+        ).save()
 
         player = SinglePlayer(user, match)
         assert player.start() == question
@@ -167,7 +175,9 @@ class TestCaseSinglePlayerSingleGame:
     def t_matchOver(self, dbsession):
         match = Match().create()
         first_game = Game(match_uid=match.uid, index=0).create()
-        question = Question(text="Where is London?", game_uid=first_game.uid).save()
+        question = Question(
+            text="Where is London?", game_uid=first_game.uid, position=0
+        ).save()
         answer = Answer(question=question, text="UK", position=1).create()
         user = User(email="user@test.project").create()
 
@@ -181,8 +191,10 @@ class TestCaseResumeMatch:
     def t_matchCanBeResumedWhenThereIsStillOneQuestionToDisplay(self, dbsession):
         match = Match().create()
         first_game = Game(match_uid=match.uid, index=0).create()
-        question = Question(text="Where is London?", game_uid=first_game.uid).save()
-        Question(text="Where is Moscow?", game_uid=first_game.uid).save()
+        question = Question(
+            text="Where is London?", game_uid=first_game.uid, position=0
+        ).save()
+        Question(text="Where is Moscow?", game_uid=first_game.uid, position=1).save()
         answer = Answer(question=question, text="UK", position=1).create()
         user = User(email="user@test.project").create()
 
