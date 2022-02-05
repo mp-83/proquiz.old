@@ -20,6 +20,8 @@ class MatchEndPoints:
     def get_match(self):
         uid = self.request.matchdict.get("uid")
         match = Matches.get(uid=uid)
+        if not match:
+            return Response(status=404)
         return Response(json={"match": match.json})
 
     @login_required

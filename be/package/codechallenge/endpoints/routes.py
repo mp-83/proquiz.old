@@ -1,9 +1,11 @@
 def default_routes(config):
+    # /new must come before /{uid} suffixed routes because of
+    # route matching logic
     config.add_route("home", "/")
     config.add_route("login", "/login")
     config.add_route("logout", "/logout")
-    config.add_route("question", "/question")
     config.add_route("new_question", "/question/new")
+    config.add_route("question", "/question/{uid}")
     config.add_route("edit_question", "/question/edit/{uid}")
     config.add_route("new_match", "/match/new")
     config.add_route("single_match", "/match/{uid}")

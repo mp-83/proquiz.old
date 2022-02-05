@@ -38,6 +38,16 @@ class Answer(TableMixin, Base):
         self.session.commit()
         return self
 
+    @property
+    def json(self):
+        return {
+            "text": self.text,
+            "is_correct": self.is_correct,
+            "position": self.position,
+            "level": self.level,
+            "content_url": self.content_url,
+        }
+
 
 class Answers:
     @classproperty

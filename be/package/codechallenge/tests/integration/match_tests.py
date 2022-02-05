@@ -16,6 +16,9 @@ class TestCaseMatchEndpoints:
         questions = response.json["match"]["questions"]
         assert questions[0][0]["text"] == TEST_1[0]["text"]
 
+    def t_requestUnexistentMatch(self, testapp):
+        testapp.get("/match/30", status=404)
+
     def t_retriveOneMatchWithAllData(self, testapp):
         match_name = "New Match"
         match = Match(name=match_name).create()
@@ -29,8 +32,22 @@ class TestCaseMatchEndpoints:
             "match": {
                 "name": match_name,
                 "questions": [
-                    [{"code": None, "position": 0, "text": "Where is London?"}],
-                    [{"code": None, "position": 0, "text": "Where is Vienna?"}],
+                    [
+                        {
+                            "code": None,
+                            "position": 0,
+                            "text": "Where is London?",
+                            "answers": [],
+                        }
+                    ],
+                    [
+                        {
+                            "code": None,
+                            "position": 0,
+                            "text": "Where is Vienna?",
+                            "answers": [],
+                        }
+                    ],
                 ],
             }
         }
@@ -51,7 +68,7 @@ class TestCaseMatchEndpoints:
         )
 
     def t_addQuestionToExistingMatchWithOneGameOnly(self, testapp):
-        match = Match(name="New Match").create()
+        match = Match().create()
         first_game = Game(match_uid=match.uid).create()
         Question(text="Where is London?", game_uid=first_game.uid, position=0).save()
         payload = {
@@ -66,6 +83,22 @@ class TestCaseMatchEndpoints:
                     ],
                 }
             ],
+        }
+        testapp.patch_json(
+            f"/match/edit/{match.uid}",
+            payload,
+            headers={"X-CSRF-Token": testapp.get_csrf_token()},
+            status=200,
+        )
+
+        match.refresh()
+        assert len(match.questions[0]) == 2
+        assert len(first_game.ordered_questions) == 2
+
+    def t_changeNameAndTimesOfAMatch(self, testapp):
+        # showcase that changing the attribute value of a match work
+        match = Match(name="New Match").create()
+        payload = {
             "name": "Another match name",
             "times": 10,
         }
@@ -79,5 +112,3 @@ class TestCaseMatchEndpoints:
         match.refresh()
         assert match.name == "Another match name"
         assert match.times == 10
-        assert len(match.questions[0]) == 2
-        assert len(first_game.ordered_questions) == 2

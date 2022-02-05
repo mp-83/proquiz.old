@@ -1,6 +1,6 @@
 import logging
 
-from codechallenge.entities import Question
+from codechallenge.entities import Question, Questions
 from codechallenge.security import login_required
 from pyramid.response import Response
 from pyramid.view import view_config, view_defaults
@@ -13,18 +13,18 @@ class QuestionEndPoints:
     def __init__(self, request):
         self.request = request
 
-    @view_config(
-        route_name="question", renderer="codechallenge:templates/question_page.jinja2"
-    )
+    @view_config(route_name="question")
     def question(self):
-        index = self.request.params.get("index", 0)
-        result = Question().at_position(int(index))
-        return result.json if result else {}
+        uid = self.request.matchdict.get("uid")
+        question = Questions.get(uid)
+        if not question:
+            return Response(status=404)
+
+        return Response(json=question.json)
 
     @login_required
     @view_config(
         route_name="new_question",
-        renderer="codechallenge:templates/new_question.jinja2",
         request_method="POST",
     )
     def new_question(self):
@@ -37,13 +37,15 @@ class QuestionEndPoints:
     @login_required
     @view_config(
         route_name="edit_question",
-        renderer="codechallenge:templates/new_question.jinja2",
-        request_method="POST",
+        request_method="PATCH",
     )
     def edit_question(self):
+        uid = self.request.matchdict.get("uid")
         data = getattr(self.request, "json", None)
-        # TODO to complete
 
-        if not data:
-            return {}
-        return {}
+        question = Questions.get(uid)
+        if not question:
+            return Response(status=404)
+
+        question.update(**data)
+        return Response(json=question.json)

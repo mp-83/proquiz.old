@@ -103,7 +103,12 @@ class Question(TableMixin, Base):
 
     @property
     def json(self):
-        return {"text": self.text, "code": self.code, "position": self.position}
+        return {
+            "text": self.text,
+            "code": self.code,
+            "position": self.position,
+            "answers": [a.json for a in self.answers],
+        }
 
 
 class Questions:
@@ -119,7 +124,8 @@ class Questions:
     def questions_with_ids(cls, *ids):
         return cls.session.query(Question).filter(Question.uid.in_(ids))
 
+    # TODO to pass *values
     @classmethod
-    def with_text(cls, text):
-        matched_row = cls.session.execute(select(cls).where(cls.text == text))
+    def get(cls, uid):
+        matched_row = cls.session.execute(select(Question).where(Question.uid == uid))
         return matched_row.scalar_one_or_none()
