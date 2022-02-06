@@ -20,6 +20,15 @@ from codechallenge.exceptions import NotUsableQuestionError
 from sqlalchemy.exc import IntegrityError, InvalidRequestError
 
 
+class TestCaseUser:
+    def t_createNewUserAndSetPassword(self, dbsession):
+        new_user = User(email="user@test.project").create()
+        new_user.set_password("password")
+        new_user.save()
+        assert new_user.check_password("password")
+        assert new_user.create_timestamp is not None
+
+
 class TestCaseQuestion:
     def t_theQuestionAtPosition(self, fillTestingDB):
         question = Question().at_position(0)
@@ -57,13 +66,6 @@ class TestCaseQuestion:
         current_session = StoreConfig().session
         current_session.rollback()
 
-    def t_createNewUserAndSetPassword(self, dbsession):
-        new_user = User(email="user@test.project").create()
-        new_user.set_password("password")
-        new_user.save()
-        assert new_user.check_password("password")
-        assert new_user.create_timestamp is not None
-
     def t_createManyQuestionsAtOnce(self, dbsession):
         data = {
             "text": "Following the machine’s debut, Kempelen was reluctant to display the Turk because",
@@ -95,6 +97,28 @@ class TestCaseQuestion:
         cloned = new_question.clone()
         assert new_question.uid != cloned.uid
         assert new_question.answers[0] != cloned.answers[0]
+
+    def t_questionsAnswersAreOrderedByDefault(self, dbsession):
+        # the reverse relation fields .answers is ordered by default
+        question = Question(text="new-question", position=0).save()
+        Answer(question_uid=question.uid, text="Answer1", position=0).create()
+        Answer(question_uid=question.uid, text="Answer2", position=1).create()
+
+        assert question.answers[0].text == "Answer1"
+        assert question.answers[1].text == "Answer2"
+
+    def t_changeAnswerOrder(self, dbsession):
+        question = Question(text="new-question", position=0).save()
+        a1 = Answer(question_uid=question.uid, text="Answer1", position=0).create()
+        a2 = Answer(question_uid=question.uid, text="Answer2", position=1).create()
+        a3 = Answer(question_uid=question.uid, text="Answer3", position=2).create()
+        a4 = Answer(question_uid=question.uid, text="Answer4", position=3).create()
+
+        question.change_answers_order([a2.uid, a4.uid, a1.uid, a3.uid])
+        assert question.answers_by_position[0].text == "Answer2"
+        assert question.answers_by_position[1].text == "Answer4"
+        assert question.answers_by_position[2].text == "Answer1"
+        assert question.answers_by_position[3].text == "Answer3"
 
 
 class TestCaseMatchModel:
@@ -180,7 +204,7 @@ class TestCaseGameModel:
 
         dbsession.rollback()
 
-    def t_orderedQuestions(self, dbsession, emitted_queries):
+    def t_orderedQuestionsMethod(self, dbsession, emitted_queries):
         match = Match().create()
         game = Game(match_uid=match.uid, index=1).create()
         question_2 = Question(

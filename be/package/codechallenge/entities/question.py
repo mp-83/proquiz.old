@@ -52,11 +52,30 @@ class Question(TableMixin, Base):
         self.session.commit()
         return self
 
+    def refresh(self):
+        self.session.refresh(self)
+        return self
+
     def update(self, **kwargs):
         for k, v in kwargs.items():
             if not hasattr(self, k):
                 continue
             setattr(self, k, v)
+
+        self.session.commit()
+
+    @property
+    def answers_by_uid(self):
+        return {a.uid: a for a in self.answers}
+
+    @property
+    def answers_by_position(self):
+        return {a.position: a for a in self.answers}
+
+    def change_answers_order(self, answer_uids):
+        for p, uid in enumerate(answer_uids):
+            _answer = self.answers_by_uid[uid]
+            _answer.position = p
 
         self.session.commit()
 

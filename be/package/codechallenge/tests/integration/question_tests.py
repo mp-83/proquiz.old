@@ -1,4 +1,4 @@
-from codechallenge.entities import Question, Questions
+from codechallenge.entities import Answer, Question, Questions
 
 
 class TestCaseQuestionEP:
@@ -51,3 +51,19 @@ class TestCaseQuestionEP:
             status=404,
             headers={"X-CSRF-Token": testapp.get_csrf_token()},
         )
+
+    def changeAnswersOrder(self, testapp):
+        question = Question(text="new-question", position=0).save()
+        a1 = Answer(question_uid=question.uid, text="Answer1", position=0).create()
+        a2 = Answer(question_uid=question.uid, text="Answer2", position=1).create()
+        a3 = Answer(question_uid=question.uid, text="Answer3", position=2).create()
+
+        new_order = [a2.uid, a3.uid, a1.uid]
+        testapp.patch_json(
+            "/question/edit/{question.uid}",
+            {"new_order_answers": new_order},
+            status=200,
+            headers={"X-CSRF-Token": testapp.get_csrf_token()},
+        )
+
+        assert list(question.answers_by_position.keys()) == []

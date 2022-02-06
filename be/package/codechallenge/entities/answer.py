@@ -38,6 +38,11 @@ class Answer(TableMixin, Base):
         self.session.commit()
         return self
 
+    def save(self):
+        self.session.add(self)
+        self.session.commit()
+        return self
+
     @property
     def json(self):
         return {
