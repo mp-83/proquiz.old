@@ -6,11 +6,15 @@ from pyramid.httpexceptions import HTTPSeeOther
 
 
 class TestCaseLoginRequired:
+    # these tests should
     def t_checkDefaultEndPointsAreDecorated(self, dummy_request, config):
         protected_endpoints = (
             (QuestionEndPoints, "new_question"),
+            (QuestionEndPoints, "get_question"),
             (QuestionEndPoints, "edit_question"),
             (MatchEndPoints, "create_match"),
+            (MatchEndPoints, "edit_match"),
+            (MatchEndPoints, "get_match"),
         )
         for endpoint_cls, endpoint_name in protected_endpoints:
             endpoint_obj = endpoint_cls(dummy_request)

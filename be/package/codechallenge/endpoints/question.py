@@ -13,8 +13,9 @@ class QuestionEndPoints:
     def __init__(self, request):
         self.request = request
 
-    @view_config(route_name="question")
-    def question(self):
+    @login_required
+    @view_config(route_name="get_question")
+    def get_question(self):
         uid = self.request.matchdict.get("uid")
         question = Questions.get(uid)
         if not question:

@@ -14,7 +14,7 @@ class MatchEndPoints:
 
     @login_required
     @view_config(
-        route_name="single_match",
+        route_name="get_match",
         request_method="GET",
     )
     def get_match(self):

@@ -195,17 +195,6 @@ def dummy_request(tm, dbsession):
 
 
 @pytest.fixture
-def auth_request(tm, dbsession):
-    """
-    Bypass authentication decorator
-    """
-    request = AuthenticatedRequest()
-    request.dbsession = dbsession
-    request.tm = tm
-    return request
-
-
-@pytest.fixture
 def config(dummy_request, app_settings):
     with testConfig(request=dummy_request) as config:
         config.include("codechallenge.endpoints.routes")
