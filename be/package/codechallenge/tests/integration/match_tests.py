@@ -31,6 +31,10 @@ class TestCaseMatchEndpoints:
         assert response.json == {
             "match": {
                 "name": match_name,
+                "is_restricted": True,
+                "expires": None,
+                "order": True,
+                "times": 1,
                 "questions": [
                     [
                         {

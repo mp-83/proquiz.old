@@ -53,6 +53,5 @@ class MatchEndPoints:
             return Response(status=400)
 
         data = self.request.json
-        match.update_attributes(**data)
-        match.update_questions(data.get("questions", []))
+        match.update(**data)
         return Response(json={"match": match.json})

@@ -71,14 +71,15 @@ class Match(TableMixin, Base):
     def is_started(self):
         return len(self.reactions)
 
-    def update_attributes(self, **attrs):
+    def update(self, **attrs):
         for name, value in attrs.items():
             if name == "questions":
-                continue
+                self.update_questions(value)
+            else:
+                setattr(self, name, value)
+        self.session.commit()
 
-            setattr(self, name, value)
-
-    def update_questions(self, questions):
+    def update_questions(self, questions, commit=False):
         """Add or update questions for this match
 
         Question position is determined based on
@@ -111,7 +112,9 @@ class Match(TableMixin, Base):
                 )
             self.session.add(question)
             result.append(question)
-        self.session.commit()
+
+        if commit:
+            self.session.commit()
         return result
 
     def import_template_questions(self, *ids):
@@ -148,6 +151,10 @@ class Match(TableMixin, Base):
         """
         return {
             "name": self.name,
+            "is_restricted": self.is_restricted,
+            "expires": self.expires,
+            "order": self.order,
+            "times": self.times,
             "questions": [[q.json for q in g.ordered_questions] for g in self.games],
         }
 
