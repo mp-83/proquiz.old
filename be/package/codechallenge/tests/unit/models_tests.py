@@ -107,18 +107,18 @@ class TestCaseQuestion:
         assert question.answers[0].text == "Answer1"
         assert question.answers[1].text == "Answer2"
 
-    def t_changeAnswerOrder(self, dbsession):
+    def t_updateAnswers(self, dbsession):
         question = Question(text="new-question", position=0).save()
         a1 = Answer(question_uid=question.uid, text="Answer1", position=0).create()
         a2 = Answer(question_uid=question.uid, text="Answer2", position=1).create()
         a3 = Answer(question_uid=question.uid, text="Answer3", position=2).create()
-        a4 = Answer(question_uid=question.uid, text="Answer4", position=3).create()
 
-        question.change_answers_order([a2.uid, a4.uid, a1.uid, a3.uid])
-        assert question.answers_by_position[0].text == "Answer2"
-        assert question.answers_by_position[1].text == "Answer4"
-        assert question.answers_by_position[2].text == "Answer1"
-        assert question.answers_by_position[3].text == "Answer3"
+        ans_2_json = a2.json
+        ans_2_json.update(text="Answer text 2")
+        question.update_answers([a3.json, a1.json, ans_2_json])
+        assert question.answers_by_position[0].text == "Answer3"
+        assert question.answers_by_position[1].text == "Answer1"
+        assert question.answers_by_position[2].text == "Answer text 2"
 
 
 class TestCaseMatchModel:

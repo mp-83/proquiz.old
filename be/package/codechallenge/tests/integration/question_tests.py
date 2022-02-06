@@ -52,18 +52,18 @@ class TestCaseQuestionEP:
             headers={"X-CSRF-Token": testapp.get_csrf_token()},
         )
 
-    def changeAnswersOrder(self, testapp):
+    def t_updateAnswerValueAndPosition(self, testapp):
         question = Question(text="new-question", position=0).save()
         a1 = Answer(question_uid=question.uid, text="Answer1", position=0).create()
         a2 = Answer(question_uid=question.uid, text="Answer2", position=1).create()
-        a3 = Answer(question_uid=question.uid, text="Answer3", position=2).create()
 
-        new_order = [a2.uid, a3.uid, a1.uid]
+        a2_json = a2.json
+        a2_json.update(text="changed answer 2 and moved it to pos 1")
         testapp.patch_json(
-            "/question/edit/{question.uid}",
-            {"new_order_answers": new_order},
+            f"/question/edit/{question.uid}",
+            {"answers": [a2_json, a1.json]},
             status=200,
             headers={"X-CSRF-Token": testapp.get_csrf_token()},
         )
 
-        assert list(question.answers_by_position.keys()) == []
+        assert question.answers_by_position[0].uid == a2.uid

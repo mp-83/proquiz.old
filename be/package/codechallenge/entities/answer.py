@@ -43,9 +43,20 @@ class Answer(TableMixin, Base):
         self.session.commit()
         return self
 
+    def update(self, **kwargs):
+        commit = kwargs.pop("commit", False)
+        for k, v in kwargs.items():
+            if not hasattr(self, k):
+                continue
+            setattr(self, k, v)
+
+        if commit:
+            self.session.commit()
+
     @property
     def json(self):
         return {
+            "uid": self.uid,
             "text": self.text,
             "is_correct": self.is_correct,
             "position": self.position,

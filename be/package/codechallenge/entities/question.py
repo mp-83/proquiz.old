@@ -58,9 +58,10 @@ class Question(TableMixin, Base):
 
     def update(self, **kwargs):
         for k, v in kwargs.items():
-            if not hasattr(self, k):
-                continue
-            setattr(self, k, v)
+            if k == "answers":
+                self.update_answers(v)
+            elif hasattr(self, k):
+                setattr(self, k, v)
 
         self.session.commit()
 
@@ -72,10 +73,11 @@ class Question(TableMixin, Base):
     def answers_by_position(self):
         return {a.position: a for a in self.answers}
 
-    def change_answers_order(self, answer_uids):
-        for p, uid in enumerate(answer_uids):
-            _answer = self.answers_by_uid[uid]
-            _answer.position = p
+    def update_answers(self, answers):
+        for p, data in enumerate(answers):
+            data.update(position=p)
+            _answer = self.answers_by_uid[data["uid"]]
+            _answer.update(**data)
 
         self.session.commit()
 
