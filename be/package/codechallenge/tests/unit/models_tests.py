@@ -28,6 +28,16 @@ class TestCaseUser:
         assert new_user.check_password("password")
         assert new_user.create_timestamp is not None
 
+    def t_createPrivateUser(self, dbsession, mocker):
+        mocker.patch("codechallenge.entities.user.uuid4", return_value="acde48001122")
+        new_user = User(private=True).create()
+        assert new_user.email == "priv-acde48001122@progame.io"
+
+    def t_createPublicUser(self, dbsession, mocker):
+        mocker.patch("codechallenge.entities.user.uuid4", return_value="acde48001122")
+        new_user = User().create()
+        assert new_user.email == "pub-acde48001122@progame.io"
+
 
 class TestCaseQuestion:
     def t_theQuestionAtPosition(self, fillTestingDB):

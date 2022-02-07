@@ -1,5 +1,4 @@
 from codechallenge.endpoints.match import MatchEndPoints
-from codechallenge.endpoints.play import PlayEndPoints
 from codechallenge.endpoints.question import QuestionEndPoints
 from codechallenge.entities import User
 from pyramid.httpexceptions import HTTPSeeOther
@@ -16,14 +15,6 @@ class TestCaseLoginRequired:
             (MatchEndPoints, "edit_match"),
             (MatchEndPoints, "get_match"),
         )
-        for endpoint_cls, endpoint_name in protected_endpoints:
-            endpoint_obj = endpoint_cls(dummy_request)
-            endpoint_method = getattr(endpoint_obj, endpoint_name)
-            response = endpoint_method()
-            assert isinstance(response, HTTPSeeOther)
-
-    def t_checkPlayViewsAreDecorated(self, dummy_request, config):
-        protected_endpoints = ((PlayEndPoints, "start"),)
         for endpoint_cls, endpoint_name in protected_endpoints:
             endpoint_obj = endpoint_cls(dummy_request)
             endpoint_method = getattr(endpoint_obj, endpoint_name)

@@ -1,8 +1,9 @@
+from uuid import uuid4
+
 import bcrypt
 from codechallenge.app import StoreConfig
 from codechallenge.entities.meta import Base, TableMixin
-from sqlalchemy import Column, String, select
-from sqlalchemy.orm import relationship
+from sqlalchemy import Boolean, Column, String, select
 
 
 class User(TableMixin, Base):
@@ -13,6 +14,7 @@ class User(TableMixin, Base):
     password_hash = Column(String)
     # reactions: implicit backward relation
     # user_rankings: implicit backward relation
+    private = Column(Boolean, default=False)
 
     def __init__(self, **kwargs):
         password = kwargs.pop("password", "")
@@ -38,6 +40,13 @@ class User(TableMixin, Base):
         return self.session.execute(select(User)).all()
 
     def create(self):
+        if not self.email and self.private:
+            unique_str = uuid4()
+            self.email = f"priv-{unique_str}@progame.io"
+        elif not self.email:
+            unique_str = uuid4()
+            self.email = f"pub -{unique_str}@progame.io"
+
         self.session.add(self)
         self.session.commit()
         return self

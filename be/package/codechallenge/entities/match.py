@@ -147,7 +147,7 @@ class Match(TableMixin, Base):
     @property
     def json(self):
         """
-        Store questions is list, one per game
+        Store questions as list, one per game
         """
         return {
             "name": self.name,
