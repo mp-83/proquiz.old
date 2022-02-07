@@ -2,7 +2,7 @@ from uuid import uuid4
 
 import bcrypt
 from codechallenge.app import StoreConfig
-from codechallenge.entities.meta import Base, TableMixin
+from codechallenge.entities.meta import Base, TableMixin, classproperty
 from sqlalchemy import Boolean, Column, String, select
 
 
@@ -39,13 +39,12 @@ class User(TableMixin, Base):
     def all(self):
         return self.session.execute(select(User)).all()
 
-    def create(self):
+    def create(self, uhash=""):
         if not self.email and self.private:
-            unique_str = uuid4()
-            self.email = f"priv-{unique_str}@progame.io"
+            self.email = f"priv-{uhash}@progame.io"
         elif not self.email:
             unique_str = uuid4()
-            self.email = f"pub -{unique_str}@progame.io"
+            self.email = f"pub-{unique_str}@progame.io"
 
         self.session.add(self)
         self.session.commit()
@@ -54,3 +53,22 @@ class User(TableMixin, Base):
     def save(self):
         self.session.commit()
         return self
+
+
+class Users:
+    @classproperty
+    def session(self):
+        return StoreConfig().session
+
+    @classmethod
+    def count(cls):
+        return cls.session.query(User).count()
+
+    @classmethod
+    def get_private_user(cls, mhash):
+        email = f"priv-{mhash}@progame.io"
+        return cls.session.query(User).filter_by(email=email).one_or_none()
+
+    @classmethod
+    def get(cls, uid):
+        return cls.session.query(User).filter_by(uid=uid).one_or_none()

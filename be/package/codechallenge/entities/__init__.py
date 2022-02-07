@@ -5,4 +5,4 @@ from codechallenge.entities.open_answer import OpenAnswer, OpenAnswers  # noqa: 
 from codechallenge.entities.question import Question, Questions  # noqa: F401
 from codechallenge.entities.ranking import Ranking  # noqa: F401
 from codechallenge.entities.reaction import Reaction, Reactions  # noqa: F401
-from codechallenge.entities.user import User  # noqa: F401
+from codechallenge.entities.user import User, Users  # noqa: F401

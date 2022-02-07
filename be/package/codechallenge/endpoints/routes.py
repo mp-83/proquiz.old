@@ -13,7 +13,9 @@ def default_routes(config):
 
 
 def play_routes(config):
+    config.add_route("land", "/")
     config.add_route("start", "/start")
+    config.add_route("next", "/next")
 
 
 def includeme(config):

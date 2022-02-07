@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import uuid1
 
 from codechallenge.app import StoreConfig
@@ -15,7 +16,7 @@ class Match(TableMixin, Base):
     # games: rankings: reactions:
 
     name = Column(String, nullable=False, unique=True)
-    url = Column(String, nullable=True)
+    url = Column(String)
     # if true, this match is playable only by users with the link
     is_restricted = Column(Boolean, default=True)
     # after this time match is no longer playable
@@ -60,6 +61,12 @@ class Match(TableMixin, Base):
     def with_name(self, name):
         matched_row = self.session.execute(select(Match).where(Match.name == name))
         return matched_row.scalar_one_or_none()
+
+    @property
+    def is_valid(self):
+        if self.expires:
+            return (self.expires - datetime.now()).total_seconds() > 0
+        return True
 
     @property
     def ordered_games(self):

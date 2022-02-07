@@ -1,7 +1,6 @@
 import logging
 
-# TODO remove the Match model when the validation is implemented
-from codechallenge.entities import Matches
+from codechallenge.entities import Matches, User, Users
 from codechallenge.play.single_player import SinglePlayer
 from pyramid.response import Response
 from pyramid.view import view_config
@@ -13,16 +12,43 @@ class PlayEndPoints:
     def __init__(self, request):
         self.request = request
 
+    @view_config(route_name="land", request_method="POST")
+    def land(self):
+        user = None
+        data = getattr(self.request, "json", None)
+        match = Matches.get(data.get("match"))
+        if match.is_restricted:
+            user = Users.get_private_user(mhash=data.get("uhash"))
+
+        if not user:
+            user = User(private=match.is_restricted).create()
+
+        return Response(json={"match": match.uid, "user": user.uid})
+
     @view_config(route_name="start", request_method="POST")
     def start(self):
         data = getattr(self.request, "json", None)
-        # TODO the match value should be returned by the validation
         match = Matches.get(data.get("match"))
-        user = self.request.identity
+        user = Users.get(uid=data.get("user"))
+
+        if not match.is_valid:
+            return Response(status=400, json={"error": "Invalid match"})
+
+        if not match.left_attempts(user):
+            return Response(status=400, json={"error": "Invalid match"})
+
         player = SinglePlayer(user, match)
         current_question = player.start()
         match_data = {
-            "question": current_question.text,
-            "answers": [a.text for a in current_question.answers],
+            "question": current_question.json,
+            "answers": [a.json for a in current_question.answers],
+            "user": user.uid,
         }
         return Response(json=match_data)
+
+    @view_config(route_name="next", request_method="POST")
+    def next(self):
+        # if answer is among the one of this question's answer
+        # if no same reaction has been recorded already
+
+        return Response(json={})
