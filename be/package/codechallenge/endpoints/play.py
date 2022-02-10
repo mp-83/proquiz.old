@@ -17,6 +17,9 @@ class PlayEndPoints:
         user = None
         data = getattr(self.request, "json", None)
         match = Matches.get(data.get("match"))
+        if not match:
+            return Response(status=404)
+
         if match.is_restricted:
             user = Users.get_private_user(mhash=data.get("uhash"))
 
@@ -30,6 +33,8 @@ class PlayEndPoints:
         data = getattr(self.request, "json", None)
         match = Matches.get(data.get("match"))
         user = Users.get(uid=data.get("user"))
+        if not match:
+            return Response(status=404)
 
         if not match.is_valid:
             return Response(status=400, json={"error": "Invalid match"})
@@ -50,5 +55,12 @@ class PlayEndPoints:
     def next(self):
         # if answer is among the one of this question's answer
         # if no same reaction has been recorded already
+        data = getattr(self.request, "json", None)
+        match = Matches.get(data.get("match"))
+        user = Users.get(uid=data.get("user"))
 
+        if not match:
+            return Response(status=404)
+
+        SinglePlayer(user, match)
         return Response(json={})

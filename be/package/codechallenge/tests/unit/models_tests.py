@@ -13,6 +13,7 @@ from codechallenge.entities import (
     Question,
     Questions,
     Reaction,
+    Reactions,
     User,
 )
 from codechallenge.entities.reaction import ReactionScore
@@ -321,6 +322,19 @@ class TestCaseReactionModel:
         assert reaction.answer_time
         # no score should be computed for open questions
         assert not reaction.score
+
+    def t_allReactionsOfUser(self, dbsession):
+        match = Match().create()
+        user = User(email="user@test.project").create()
+        q1 = Question(text="t1", position=0).save()
+        q2 = Question(text="t2", position=1).save()
+        r1 = Reaction(match=match, question=q1, user=user).create()
+        r2 = Reaction(match=match, question=q2, user=user).create()
+
+        reactions = Reactions.all_reactions_of_user_to_match(user, match, asc=False)
+        assert len(reactions) == 2
+        assert reactions[0] == r2
+        assert reactions[1] == r1
 
 
 class TestCaseReactionScore:

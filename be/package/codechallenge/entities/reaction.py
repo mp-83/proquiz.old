@@ -123,3 +123,12 @@ class Reactions:
             .filter_by(user=user, question=question)
             .one_or_none()
         )
+
+    @classmethod
+    def all_reactions_of_user_to_match(cls, user, match, asc=False):
+        qs = cls.session.query(Reaction).filter_by(user=user, match=match)
+        if asc:
+            field = Reaction.uid.asc
+        else:
+            field = Reaction.uid.desc
+        return qs.order_by(field()).all()

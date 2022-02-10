@@ -24,7 +24,7 @@ Base.metadata.naming_convention = NAMING_CONVENTION
 
 
 def t_now():
-    return datetime.now(timezone.utc)
+    return datetime.now(tz=timezone.utc)
 
 
 @declarative_mixin

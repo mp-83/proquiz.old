@@ -124,16 +124,16 @@ class TestCaseSinglePlayerSingleGame:
         assert player.current_question == question_displayed
         assert Reactions.count() == 1
 
-    def t_reactToOneOpenQuestion(self, dbsession):
+    def t_reactToFirstQuestion(self, dbsession):
         match = Match().create()
         first_game = Game(match_uid=match.uid, index=1).create()
-        question = Question(
+        first = Question(
             text="Where is London?", game_uid=first_game.uid, position=0
         ).save()
+        answer = Answer(question=first, text="UK", position=1).create()
         second = Question(
             text="Where is Paris?", game_uid=first_game.uid, position=1
         ).save()
-        answer = Answer(question=question, text="UK", position=1).create()
         user = User(email="user@test.project").create()
 
         player = SinglePlayer(user, match)
@@ -185,6 +185,27 @@ class TestCaseSinglePlayerSingleGame:
         player.start()
         with pytest.raises(MatchOver):
             player.react(answer)
+
+    def t_resumingPlaySession(self, dbsession):
+        match = Match().create()
+        first_game = Game(match_uid=match.uid, index=1).create()
+        first = Question(
+            text="Where is London?", game_uid=first_game.uid, position=0
+        ).save()
+        first_answer = Answer(question=first, text="UK", position=1).create()
+        second = Question(
+            text="Where is Paris?", game_uid=first_game.uid, position=1
+        ).save()
+        second_answer = Answer(question=first, text="France", position=1).create()
+        user = User(email="user@test.project").create()
+
+        player = SinglePlayer(user, match)
+        assert player.start() == first
+        next_q = player.react(first_answer)
+        assert next_q == second
+
+        player = SinglePlayer(user, match)
+        next_q = player.react(second_answer)
 
 
 class TestCaseResumeMatch:

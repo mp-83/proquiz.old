@@ -1,4 +1,4 @@
-from codechallenge.entities import Reaction
+from codechallenge.entities import Reaction, Reactions
 from codechallenge.exceptions import (
     EmptyMatchError,
     GameError,
@@ -80,11 +80,10 @@ class SinglePlayer:
     def __init__(self, user, match):
         self._user = user
         self._current_match = match
-        self._question_counter = 0
-        self._game_counter = 0
         self._current_game = None
         self._game_factory = GameFactory(match)
         self._question_factory = None
+        self._current_reaction = None
 
     def start(self):
         self._current_match.refresh()
@@ -118,6 +117,15 @@ class SinglePlayer:
     def can_be_resumed(self):
         return self._game_factory
 
+    def last_reaction(self):
+        reactions = Reactions.all_reactions_of_user_to_match(
+            self._user, self._current_match
+        )
+        if reactions:
+            return reactions[0]
+
+        raise GameError(f"Match {self._current_match.name} is not started")
+
     @property
     def match_can_be_resumed(self):
         """Determine if this match can be restored
@@ -129,6 +137,8 @@ class SinglePlayer:
         return m.is_restricted and len(m.reactions) < len(m.questions)
 
     def react(self, answer):
+        if not self._current_reaction:
+            self._current_reaction = self.last_reaction()
         self._current_reaction.record_answer(answer)
         self.next_question()
         return self.current_question
