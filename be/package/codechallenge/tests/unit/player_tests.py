@@ -2,7 +2,6 @@ import pytest
 from codechallenge.entities import Answer, Game, Match, Question, Reactions, User
 from codechallenge.exceptions import (
     EmptyMatchError,
-    GameError,
     GameOver,
     MatchNotPlayableError,
     MatchOver,
@@ -142,19 +141,6 @@ class TestCaseSinglePlayerSingleGame:
         assert Reactions.count() == 1
         assert next_q == second
 
-    def t_callingNextQuestionWhenMatchIsNotStarted(self, dbsession):
-        match = Match().create()
-        user = User(email="user@test.project").create()
-        Game(match_uid=match.uid, index=1).create()
-        player = SinglePlayer(user, match)
-
-        with pytest.raises(GameError) as err:
-            player.next_question()
-
-        assert err.value.message == f"Match {match.name} is not started"
-
-        dbsession.rollback()
-
     def t_matchCannotBePlayedMoreThanMatchTimes(self, dbsession):
         match = Match().create()
         user = User(email="user@test.project").create()
@@ -197,6 +183,11 @@ class TestCaseSinglePlayerSingleGame:
             text="Where is Paris?", game_uid=first_game.uid, position=1
         ).save()
         second_answer = Answer(question=first, text="France", position=1).create()
+        third = Question(
+            text="Where is Dublin?", game_uid=first_game.uid, position=2
+        ).save()
+        third_answer = Answer(question=first, text="Ireland", position=1).create()
+
         user = User(email="user@test.project").create()
 
         player = SinglePlayer(user, match)
@@ -206,6 +197,9 @@ class TestCaseSinglePlayerSingleGame:
 
         player = SinglePlayer(user, match)
         next_q = player.react(second_answer)
+        # assert next_q == third
+        assert third
+        assert third_answer
 
 
 class TestCaseResumeMatch:

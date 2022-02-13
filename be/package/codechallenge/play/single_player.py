@@ -44,27 +44,28 @@ class QuestionFactory:
 class GameFactory:
     def __init__(self, match):
         self._match = match
-        self._counter = 0
+        self._counter = -1
         self._game = None
 
-    def next_game(self):
+    @property
+    def games(self):
         if self._match.order:
-            games = self._match.ordered_games
-        else:
-            games = self._match.games
+            return self._match.ordered_games
+        return self._match.games
 
-        if self._counter == 0 and not games:
+    def next_game(self):
+        if not self.games:
             raise EmptyMatchError(f"Match {self._match.name} contains no Game")
 
-        if len(games) == self._counter:
+        if self._counter == len(self.games) - 1:
             raise MatchOver(f"Match {self._match.name}")
 
-        self._game = games[self._counter]
         self._counter += 1
-        return self._game
+        return self.current
 
     @property
     def current(self):
+        self._game = self.games[self._counter]
         return self._game
 
     @property
@@ -73,7 +74,7 @@ class GameFactory:
 
     @property
     def is_last_game(self):
-        return self._counter == len(self._match.games)
+        return self._counter == len(self.games) - 1
 
 
 class SinglePlayer:
@@ -117,14 +118,20 @@ class SinglePlayer:
     def can_be_resumed(self):
         return self._game_factory
 
-    def last_reaction(self):
+    def last_reaction(self, question):
         reactions = Reactions.all_reactions_of_user_to_match(
             self._user, self._current_match
-        )
-        if reactions:
-            return reactions[0]
+        ).filter_by(_answer=None)
 
-        raise GameError(f"Match {self._current_match.name} is not started")
+        self._game_factory = GameFactory(self._current_match)
+        if reactions.all():
+            return reactions.first()
+
+        return Reaction(
+            match_uid=self._current_match.uid,
+            question_uid=question.uid,
+            user_uid=self._user.uid,
+        ).create()
 
     @property
     def match_can_be_resumed(self):
@@ -138,7 +145,8 @@ class SinglePlayer:
 
     def react(self, answer):
         if not self._current_reaction:
-            self._current_reaction = self.last_reaction()
+            self._current_reaction = self.last_reaction(answer.question)
+
         self._current_reaction.record_answer(answer)
         self.next_question()
         return self.current_question

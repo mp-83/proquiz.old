@@ -138,8 +138,11 @@ def tm():
 
 @pytest.fixture
 def dbsession(app, tm):
+
     session_factory = app.registry["dbsession_factory"]
-    return get_tm_session(session_factory, tm)
+    _session = get_tm_session(session_factory, tm)
+
+    yield _session
 
 
 @pytest.fixture

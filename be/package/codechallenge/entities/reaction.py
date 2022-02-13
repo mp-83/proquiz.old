@@ -131,4 +131,4 @@ class Reactions:
             field = Reaction.uid.asc
         else:
             field = Reaction.uid.desc
-        return qs.order_by(field()).all()
+        return qs.order_by(field())

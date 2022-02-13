@@ -331,7 +331,9 @@ class TestCaseReactionModel:
         r1 = Reaction(match=match, question=q1, user=user).create()
         r2 = Reaction(match=match, question=q2, user=user).create()
 
-        reactions = Reactions.all_reactions_of_user_to_match(user, match, asc=False)
+        reactions = Reactions.all_reactions_of_user_to_match(
+            user, match, asc=False
+        ).all()
         assert len(reactions) == 2
         assert reactions[0] == r2
         assert reactions[1] == r1
