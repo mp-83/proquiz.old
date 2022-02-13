@@ -13,9 +13,9 @@ class PlayException(Exception):
 
 
 class QuestionFactory:
-    def __init__(self, game):
+    def __init__(self, game, counter=0):
         self._game = game
-        self._counter = 0
+        self._counter = counter
         self._question = None
 
     def next_question(self):
@@ -123,7 +123,6 @@ class SinglePlayer:
             self._user, self._current_match
         ).filter_by(_answer=None)
 
-        self._game_factory = GameFactory(self._current_match)
         if reactions.all():
             return reactions.first()
 
@@ -146,10 +145,11 @@ class SinglePlayer:
     def react(self, answer):
         if not self._current_reaction:
             self._current_reaction = self.last_reaction(answer.question)
+            self._game_factory = GameFactory(self._current_match)
+            self._question_factory = QuestionFactory(self.current_game, counter=2)
 
         self._current_reaction.record_answer(answer)
-        self.next_question()
-        return self.current_question
+        return self.next_question()
 
     def next_question(self):
         if not self.current_game:

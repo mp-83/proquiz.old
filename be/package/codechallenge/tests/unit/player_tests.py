@@ -197,7 +197,7 @@ class TestCaseSinglePlayerSingleGame:
 
         player = SinglePlayer(user, match)
         next_q = player.react(second_answer)
-        # assert next_q == third
+        assert next_q == third
         assert third
         assert third_answer
 
