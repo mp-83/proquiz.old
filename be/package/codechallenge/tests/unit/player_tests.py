@@ -172,9 +172,10 @@ class TestCaseSinglePlayerSingleGame:
         with pytest.raises(MatchOver):
             player.react(answer)
 
-    def t_resumingPlaySession(self, dbsession):
+    def t_playMatchOverMultipleRequests(self, dbsession):
+        # the SinglePlayer is instanced multiple times
         match = Match().create()
-        first_game = Game(match_uid=match.uid, index=1).create()
+        first_game = Game(match_uid=match.uid, index=1, order=False).create()
         first = Question(
             text="Where is London?", game_uid=first_game.uid, position=0
         ).save()
@@ -198,8 +199,8 @@ class TestCaseSinglePlayerSingleGame:
         player = SinglePlayer(user, match)
         next_q = player.react(second_answer)
         assert next_q == third
-        assert third
-        assert third_answer
+        player = SinglePlayer(user, match)
+        player.react(third_answer)
 
 
 class TestCaseResumeMatch:

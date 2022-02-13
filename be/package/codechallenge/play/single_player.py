@@ -123,7 +123,7 @@ class SinglePlayer:
             self._user, self._current_match
         ).filter_by(_answer=None)
 
-        if reactions.all():
+        if reactions.count() > 0:
             return reactions.first()
 
         return Reaction(
