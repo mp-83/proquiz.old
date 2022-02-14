@@ -108,6 +108,7 @@ class SinglePlayer:
             match_uid=self._current_match.uid,
             question_uid=question.uid,
             user_uid=self._user.uid,
+            game_uid=self._current_game.uid,
         ).create()
 
         # left as sanity check. To be removed after testing
@@ -142,6 +143,7 @@ class SinglePlayer:
         return Reaction(
             match_uid=self._current_match.uid,
             question_uid=question.uid,
+            game_uid=question.game.uid,
             user_uid=self._user.uid,
         ).create()
 

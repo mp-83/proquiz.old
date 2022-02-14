@@ -20,6 +20,12 @@ class Reaction(TableMixin, Base):
     _open_answer = relationship("OpenAnswer", backref="reactions")
     user_uid = Column(Integer, ForeignKey("user.uid"), nullable=False)
     user = relationship("User", backref="reactions")
+    # this column might be saved as the game might be fetched via the question
+    # TODO: open point, keep or remove it
+    game_uid = Column(Integer, ForeignKey("game.uid"), nullable=False)
+    game = relationship("Game", backref="reactions")
+    q_counter = Column(Integer)
+    g_counter = Column(Integer)
 
     # used to mark reactions of a user when drops out of a match
     dirty = Column(Boolean, default=False)
@@ -45,6 +51,8 @@ class Reaction(TableMixin, Base):
         return self
 
     def create(self):
+        if not self.game_uid:
+            self.game_uid = self.question.game.uid
         self.session.add(self)
         self.session.commit()
         return self

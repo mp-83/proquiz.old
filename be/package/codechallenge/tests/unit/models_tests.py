@@ -197,10 +197,10 @@ class TestCaseMatchModel:
 
     def t_matchCannotBePlayedIfAreNoLeftAttempts(self, dbsession):
         match = Match().create()
-        Game(match_uid=match.uid, index=2).create()
+        game = Game(match_uid=match.uid, index=2).create()
         user = User(email="user@test.project").create()
-        question = Question(text="1+1 is = to", position=0).save()
-        Reaction(question=question, user=user, match=match).create()
+        question = Question(text="1+1 is = to", position=0, game_uid=game.uid).save()
+        Reaction(question=question, user=user, match=match, game_uid=game.uid).create()
 
         assert match.reactions[0].user == user
         assert match.left_attempts(user) == 0
@@ -242,8 +242,9 @@ class TestCaseGameModel:
 class TestCaseReactionModel:
     def t_cannotExistsTwoReactionsOfTheSameUserAtSameTime(self, dbsession):
         match = Match().create()
+        game = Game(match_uid=match.uid, index=0).create()
         user = User(email="user@test.project").create()
-        question = Question(text="new-question", position=0).save()
+        question = Question(text="new-question", position=0, game_uid=game.uid).save()
         answer = Answer(
             question=question, text="question2.answer1", position=1
         ).create()
@@ -256,6 +257,7 @@ class TestCaseReactionModel:
                 answer_uid=answer.uid,
                 user_uid=user.uid,
                 create_timestamp=now,
+                game_uid=game.uid,
             ).create()
             Reaction(
                 match_uid=match.uid,
@@ -263,11 +265,13 @@ class TestCaseReactionModel:
                 answer_uid=answer.uid,
                 user_uid=user.uid,
                 create_timestamp=now,
+                game_uid=game.uid,
             ).create()
         dbsession.rollback()
 
     def t_ifQuestionChangesThenAlsoFKIsUpdatedAndAffectsReaction(self, dbsession):
         match = Match().create()
+        game = Game(match_uid=match.uid, index=0).create()
         user = User(email="user@test.project").create()
         question = Question(text="1+1 is = to", position=0).save()
         answer = Answer(question=question, text="2", position=1).create()
@@ -276,6 +280,7 @@ class TestCaseReactionModel:
             question_uid=question.uid,
             answer_uid=answer.uid,
             user_uid=user.uid,
+            game_uid=game.uid,
         ).create()
         question.text = "1+2 is = to"
         question.save()
@@ -284,9 +289,12 @@ class TestCaseReactionModel:
 
     def t_whenQuestionIsElapsedAnswerIsNotRecorded(self, dbsession):
         match = Match().create()
+        game = Game(match_uid=match.uid, index=0).create()
         user = User(email="user@test.project").create()
         question = Question(text="3*3 = ", time=0, position=0).save()
-        reaction = Reaction(match=match, question=question, user=user).create()
+        reaction = Reaction(
+            match=match, question=question, user=user, game_uid=game.uid
+        ).create()
 
         answer = Answer(question=question, text="9", position=1).create()
         reaction.record_answer(answer)
@@ -295,9 +303,12 @@ class TestCaseReactionModel:
 
     def t_recordAnswerInTime(self, dbsession):
         match = Match().create()
+        game = Game(match_uid=match.uid, index=0).create()
         user = User(email="user@test.project").create()
         question = Question(text="1+1 =", time=2, position=0).save()
-        reaction = Reaction(match=match, question=question, user=user).create()
+        reaction = Reaction(
+            match=match, question=question, user=user, game_uid=game.uid
+        ).create()
 
         answer = Answer(question=question, text="2", position=1).create()
         reaction.record_answer(answer)
@@ -311,9 +322,12 @@ class TestCaseReactionModel:
 
     def t_reactionTimingIsRecordedAlsoForOpenQuestions(self, dbsession):
         match = Match().create()
+        game = Game(match_uid=match.uid, index=0).create()
         user = User(email="user@test.project").create()
         question = Question(text="Where is Miami", position=0).save()
-        reaction = Reaction(match=match, question=question, user=user).create()
+        reaction = Reaction(
+            match=match, question=question, user=user, game_uid=game.uid
+        ).create()
 
         open_answer = OpenAnswer(text="Florida").create()
         reaction.record_answer(open_answer)
@@ -325,11 +339,12 @@ class TestCaseReactionModel:
 
     def t_allReactionsOfUser(self, dbsession):
         match = Match().create()
+        game = Game(match_uid=match.uid, index=0).create()
         user = User(email="user@test.project").create()
         q1 = Question(text="t1", position=0).save()
         q2 = Question(text="t2", position=1).save()
-        r1 = Reaction(match=match, question=q1, user=user).create()
-        r2 = Reaction(match=match, question=q2, user=user).create()
+        r1 = Reaction(match=match, question=q1, user=user, game_uid=game.uid).create()
+        r2 = Reaction(match=match, question=q2, user=user, game_uid=game.uid).create()
 
         reactions = Reactions.all_reactions_of_user_to_match(
             user, match, asc=False

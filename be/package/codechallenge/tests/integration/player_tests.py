@@ -14,6 +14,7 @@ class TestCaseUnexistentMatch:
                     headers={"X-CSRF-Token": testapp.get_csrf_token()},
                     status=404,
                 )
+            # TODO: to replace with specific exception
             except Exception as err:
                 assert not err
 
@@ -44,8 +45,9 @@ class TestCasePlay:
     def t_invitedUserHasPlayedGameAlreadyMoreThanAllowed(self, testapp):
         match = Match().create()
         user = User(private=match.is_restricted).create(uhash="acde48001122")
-        question = Question(text="1+1 is = to", position=0).save()
-        Reaction(question=question, user=user, match=match).create()
+        game = Game(match_uid=match.uid).create()
+        question = Question(text="1+1 is = to", position=0, game_uid=game.uid).save()
+        Reaction(question=question, user=user, match=match, game_uid=game.uid).create()
 
         testapp.post_json(
             "/play/start",
