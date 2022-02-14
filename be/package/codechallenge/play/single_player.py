@@ -37,6 +37,10 @@ class QuestionFactory:
         return self._question
 
     @property
+    def counter(self):
+        return self._counter
+
+    @property
     def is_last_question(self):
         return self._counter == len(self._game.questions)
 
@@ -46,6 +50,10 @@ class GameFactory:
         self._match = match
         self._counter = -1
         self._game = None
+
+    @property
+    def counter(self):
+        return self._counter
 
     @property
     def games(self):
@@ -94,12 +102,17 @@ class SinglePlayer:
             )
 
         self._current_game = self.next_game()
+        self._question_factory = QuestionFactory(self.current_game)
         question = self.next_question()
         self._current_reaction = Reaction(
             match_uid=self._current_match.uid,
             question_uid=question.uid,
             user_uid=self._user.uid,
         ).create()
+
+        # left as sanity check. To be removed after testing
+        assert self._current_game.uid == question.game.uid
+
         return question
 
     @property
@@ -149,14 +162,12 @@ class SinglePlayer:
             self._question_factory = QuestionFactory(self.current_game, counter=2)
 
         self._current_reaction.record_answer(answer)
-        return self.next_question()
+        _question = self.next_question()
+        return _question
 
     def next_question(self):
         if not self.current_game:
             raise GameError(f"Match {self._current_match.name} is not started")
-
-        if not self._question_factory:
-            self._question_factory = QuestionFactory(self.current_game)
 
         try:
             return self._question_factory.next_question()

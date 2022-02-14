@@ -138,7 +138,8 @@ class TestCaseSinglePlayerSingleGame:
         player = SinglePlayer(user, match)
         player.start()
         next_q = player.react(answer)
-        assert Reactions.count() == 1
+
+        assert len(user.reactions) == 1
         assert next_q == second
 
     def t_matchCannotBePlayedMoreThanMatchTimes(self, dbsession):
