@@ -12,8 +12,7 @@ class NotUsableQuestionError(BaseException):
     """"""
 
 
-# NOT USED
-class EmptyMatchError(BaseException):
+class MatchError(BaseException):
     """"""
 
 

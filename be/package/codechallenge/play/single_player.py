@@ -1,13 +1,14 @@
 from codechallenge.entities import Reaction, Reactions
 from codechallenge.exceptions import (
-    EmptyMatchError,
     GameError,
     GameOver,
+    MatchError,
     MatchNotPlayableError,
     MatchOver,
 )
 
 
+# TODO is this used anywhere?
 class PlayException(Exception):
     """"""
 
@@ -64,45 +65,48 @@ class QuestionFactory:
 
 
 class GameFactory:
-    def __init__(self, match, counter=0):
+    def __init__(self, match, *played_ids):
         self._match = match
-        self._counter = counter
-        if self._match.order:
-            self._games = self._match.ordered_games
-        else:
-            self._games = self._match.games
-        self._current = None
+        self.played_ids = played_ids
+        self._game = None
 
-    @property
-    def counter(self):
-        return self._counter
+    def next(self):
+        games = self._match.ordered_games if self._match.order else self._match.games
+        for g in games:
+            if g.uid not in self.played_ids:
+                self.played_ids += (g.uid,)
+                self._game = g
+                return g
 
-    @property
-    def games(self):
-        return self._games
+        raise MatchOver(f"Match {self._match.name}")
 
-    def next_game(self):
-        if not self._games:
-            raise EmptyMatchError(f"Match {self._match.name} contains no Game")
+    def previous(self):
+        games = self._match.ordered_games if self._match.order else self._match.games
+        for g in games:
+            if not self._game or len(self.played_ids) == 1:
+                continue
 
-        if self._counter == len(self.games):
-            raise MatchOver(f"Match {self._match.name}")
+            if g.uid == self.played_ids[-2]:
+                self._game = g
+                return g
 
-        self._current = self.games[self._counter]
-        self._counter += 1
-        return self._current
+        msg = (
+            "No game were played" if not self.played_ids else "Only one game was played"
+        )
+        raise MatchError(f"{msg} for Match {self._match.name}")
 
     @property
     def current(self):
-        return self._current
+        return self._game
 
     @property
     def match_started(self):
-        return self._counter > 0
+        return len(self.played_ids) > 0
 
     @property
     def is_last_game(self):
-        return self._counter == len(self.games) - 1
+        games = self._match.ordered_games if self._match.order else self._match.games
+        return len(self.played_ids) == len(games)
 
 
 class SinglePlayer:

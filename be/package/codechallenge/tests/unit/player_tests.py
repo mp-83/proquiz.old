@@ -1,9 +1,9 @@
 import pytest
 from codechallenge.entities import Answer, Game, Match, Question, Reactions, User
 from codechallenge.exceptions import (
-    EmptyMatchError,
     GameError,
     GameOver,
+    MatchError,
     MatchNotPlayableError,
     MatchOver,
 )
@@ -110,36 +110,64 @@ class TestCaseGameFactory:
         second = Game(match_uid=match.uid, index=2).create()
         first = Game(match_uid=match.uid, index=1).create()
 
-        factory = GameFactory(match)
-        assert factory.next_game() == first
-        assert factory.next_game() == second
+        game_factory = GameFactory(match, *())
+        assert game_factory.next() == first
+        assert game_factory.next() == second
 
     def t_matchWithoutGamesThrowsError(self, dbsession):
         match = Match().create()
-        factory = GameFactory(match)
+        game_factory = GameFactory(match, *())
 
-        with pytest.raises(EmptyMatchError):
-            factory.next_game()
+        with pytest.raises(MatchOver):
+            game_factory.next()
 
         dbsession.rollback()
 
     def t_matchStarted(self, dbsession):
         match = Match().create()
         Game(match_uid=match.uid, index=1).create()
-        factory = GameFactory(match)
+        game_factory = GameFactory(match, *())
 
-        assert not factory.match_started
+        assert not game_factory.match_started
 
     def t_isLastGame(self, dbsession):
         match = Match().create()
         Game(match_uid=match.uid, index=0).create()
         Game(match_uid=match.uid, index=1).create()
-        factory = GameFactory(match)
+        game_factory = GameFactory(match, *())
 
-        factory.next_game()
-        assert not factory.is_last_game
-        factory.next_game()
-        assert factory.is_last_game
+        game_factory.next()
+        assert not game_factory.is_last_game
+        game_factory.next()
+        assert game_factory.is_last_game
+
+    def t_nextOverTwoSessions(self, dbsession):
+        match = Match().create()
+        g1 = Game(match_uid=match.uid, index=0).create()
+        Game(match_uid=match.uid, index=1).create()
+        game_factory = GameFactory(match, g1.uid)
+
+        game_factory.next()
+        assert game_factory.is_last_game
+
+    def t_callingPreviousRightAfterFirstNext(self, dbsession):
+        match = Match().create()
+        Game(match_uid=match.uid, index=0).create()
+        Game(match_uid=match.uid, index=1).create()
+        game_factory = GameFactory(match, *())
+
+        game_factory.next()
+        with pytest.raises(MatchError):
+            game_factory.previous()
+
+    def t_callingPreviousWithoutNext(self, dbsession):
+        match = Match().create()
+        Game(match_uid=match.uid, index=0).create()
+        Game(match_uid=match.uid, index=1).create()
+        game_factory = GameFactory(match, *())
+
+        with pytest.raises(MatchError):
+            game_factory.previous()
 
 
 class TestCaseSinglePlayerSingleGame:
