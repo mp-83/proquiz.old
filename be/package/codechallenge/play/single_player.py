@@ -13,46 +13,65 @@ class PlayException(Exception):
 
 
 class QuestionFactory:
-    def __init__(self, game, counter=0):
+    def __init__(self, game, *displayed_ids):
         self._game = game
-        self._counter = counter - 1
+        # displayed_ids are ordered based on their display order
+        self.displayed_ids = displayed_ids
         self._question = None
 
-    def next_question(self):
-        self._counter += 1
-        if (not self._game.questions and self._counter == 0) or (
-            self._counter == len(self._game.questions)
-        ):
-            raise GameOver(f"Game {self._game} has not questions")
+    def next(self):
+        questions = (
+            self._game.ordered_questions if self._game.order else self._game.questions
+        )
+        for q in questions:
+            if q.uid not in self.displayed_ids:
+                self._question = q
+                self.displayed_ids += (q.uid,)
+                return q
 
-        if self._game.order:
-            self._question = self._game.ordered_questions[self._counter]
-        else:
-            self._question = self._game.questions[self._counter]
+        raise GameOver(f"Game {self._game} has no questions")
 
-        return self._question
+    def previous(self):
+        # remember that the reaction is not deleted
+        questions = (
+            self._game.ordered_questions if self._game.order else self._game.questions
+        )
+        for q in questions:
+            if not self._question or len(self.displayed_ids) == 1:
+                continue
+
+            if q.uid == self.displayed_ids[-2]:
+                self._question = q
+                return q
+
+        msg = (
+            "No questions were displayed"
+            if not self.displayed_ids
+            else "Only one question was displayed"
+        )
+        raise GameError(f"{msg} for Game {self._game}")
 
     @property
     def current(self):
         return self._question
 
     @property
-    def counter(self):
-        return self._counter
-
-    @property
     def is_last_question(self):
-        return self._counter == len(self._game.questions) - 1
+        questions = (
+            self._game.ordered_questions if self._game.order else self._game.questions
+        )
+        return len(self.displayed_ids) == len(questions)
 
 
 class GameFactory:
     def __init__(self, match, counter=0):
         self._match = match
-        self._counter = counter - 1
+        self._counter = counter
         if self._match.order:
             self._games = self._match.ordered_games
         else:
             self._games = self._match.games
+        self._current = None
 
     @property
     def counter(self):
@@ -66,15 +85,16 @@ class GameFactory:
         if not self._games:
             raise EmptyMatchError(f"Match {self._match.name} contains no Game")
 
-        if self._counter == len(self.games) - 1:
+        if self._counter == len(self.games):
             raise MatchOver(f"Match {self._match.name}")
 
+        self._current = self.games[self._counter]
         self._counter += 1
-        return self.games[self._counter]
+        return self._current
 
     @property
     def current(self):
-        return self.games[self._counter]
+        return self._current
 
     @property
     def match_started(self):
@@ -137,7 +157,9 @@ class SinglePlayer:
     def last_reaction(self, question):
         reactions = Reactions.all_reactions_of_user_to_match(
             self._user, self._current_match
-        ).filter_by(_answer=None)
+        ).filter_by(
+            _answer=None
+        )  # TODO to fix: or _open_answer=None
 
         if reactions.count() > 0:
             return reactions.first()
@@ -147,6 +169,8 @@ class SinglePlayer:
             question_uid=question.uid,
             game_uid=question.game.uid,
             user_uid=self._user.uid,
+            q_counter=0,
+            g_counter=0,
         ).create()
 
     @property
@@ -162,10 +186,21 @@ class SinglePlayer:
     def react(self, answer):
         if not self._current_reaction:
             self._current_reaction = self.last_reaction(answer.question)
-            self._game_factory = GameFactory(self._current_match)
-            self._question_factory = QuestionFactory(self.current_game, counter=2)
+            self._game_factory = GameFactory(
+                self._current_match, self._current_reaction.g_counter + 1
+            )
+            self._question_factory = QuestionFactory(
+                self.current_game, self._current_reaction.q_counter + 1
+            )
+            # import pdb;pdb.set_trace()
 
+        # counters are incremented to be used in the next reaction
+        self._current_reaction.q_counter = self._question_factory.counter
+        self._current_reaction.g_counter = self._game_factory.counter
         self._current_reaction.record_answer(answer)
+
+        # import pdb;pdb.set_trace()
+
         _question = self.next_question()
         return _question
 

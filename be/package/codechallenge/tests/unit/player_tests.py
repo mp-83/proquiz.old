@@ -2,6 +2,7 @@ import pytest
 from codechallenge.entities import Answer, Game, Match, Question, Reactions, User
 from codechallenge.exceptions import (
     EmptyMatchError,
+    GameError,
     GameOver,
     MatchNotPlayableError,
     MatchOver,
@@ -20,10 +21,10 @@ class TestCaseQuestionFactory:
             text="Where is Zurich?", game_uid=game.uid, position=1
         ).save()
 
-        factory = QuestionFactory(game)
-        assert factory.next_question() == q_berlin
-        assert factory.next_question() == q_zurich
-        assert factory.current == q_zurich
+        question_factory = QuestionFactory(game, *())
+        assert question_factory.next() == q_berlin
+        assert question_factory.next() == q_zurich
+        assert question_factory.current == q_zurich
 
     def t_nextQuestionWhenOrdered(self, dbsession):
         """Questions are inversely created
@@ -34,27 +35,27 @@ class TestCaseQuestionFactory:
         second = Question(text="Where is London?", game_uid=game.uid, position=1).save()
         first = Question(text="Where is Paris?", game_uid=game.uid, position=0).save()
 
-        factory = QuestionFactory(game)
-        assert factory.next_question() == first
-        assert factory.next_question() == second
+        question_factory = QuestionFactory(game, *())
+        assert question_factory.next() == first
+        assert question_factory.next() == second
 
-    def t_gameOver(self, dbsession):
+    def t_gameOverWhenThereAreNoQuestions(self, dbsession):
         match = Match().create()
         game = Game(match_uid=match.uid, index=1).create()
 
-        factory = QuestionFactory(game)
+        question_factory = QuestionFactory(game, *())
         with pytest.raises(GameOver):
-            factory.next_question()
+            question_factory.next()
 
     def t_gameIsOverAfterLastQuestion(self, dbsession):
         match = Match().create()
         game = Game(match_uid=match.uid, index=1).create()
         Question(text="Where is Paris?", game_uid=game.uid, position=0).save()
 
-        factory = QuestionFactory(game)
-        factory.next_question()
+        question_factory = QuestionFactory(game, *())
+        question_factory.next()
         with pytest.raises(GameOver):
-            factory.next_question()
+            question_factory.next()
 
     def t_isLastQuestion(self, dbsession):
         match = Match().create()
@@ -62,11 +63,45 @@ class TestCaseQuestionFactory:
         Question(text="Where is Amsterdam?", game_uid=game.uid, position=0).save()
         Question(text="Where is Lion?", game_uid=game.uid, position=1).save()
 
-        factory = QuestionFactory(game)
-        factory.next_question()
-        assert not factory.is_last_question
-        factory.next_question()
-        assert factory.is_last_question
+        question_factory = QuestionFactory(game)
+        question_factory.next()
+        assert not question_factory.is_last_question
+        question_factory.next()
+        assert question_factory.is_last_question
+
+    def t_previousQuestion(self, dbsession):
+        match = Match().create()
+        game = Game(match_uid=match.uid, index=1).create()
+        first = Question(
+            text="Where is Amsterdam?", game_uid=game.uid, position=0
+        ).save()
+        Question(text="Where is Lion?", game_uid=game.uid, position=1).save()
+
+        question_factory = QuestionFactory(game)
+        question_factory.next()
+        question_factory.next()
+        assert question_factory.previous() == first
+
+    def t_callingPreviousWithoutNext(self, dbsession):
+        match = Match().create()
+        game = Game(match_uid=match.uid, index=1).create()
+        Question(text="Where is Amsterdam?", game_uid=game.uid, position=0).save()
+        Question(text="Where is Lion?", game_uid=game.uid, position=1).save()
+
+        question_factory = QuestionFactory(game)
+        with pytest.raises(GameError):
+            question_factory.previous()
+
+    def t_callingPreviousRightAfterFirstNext(self, dbsession):
+        match = Match().create()
+        game = Game(match_uid=match.uid, index=1).create()
+        Question(text="Where is Amsterdam?", game_uid=game.uid, position=0).save()
+        Question(text="Where is Lion?", game_uid=game.uid, position=1).save()
+
+        question_factory = QuestionFactory(game)
+        question_factory.next()
+        with pytest.raises(GameError):
+            question_factory.previous()
 
 
 class TestCaseGameFactory:
@@ -139,7 +174,10 @@ class TestCaseSinglePlayerSingleGame:
         player.start()
         next_q = player.react(answer)
 
-        assert len(user.reactions) == 1
+        reaction = user.reactions[0]
+        assert reaction.q_counter == 0
+        assert reaction.g_counter == 0
+
         assert next_q == second
 
     def t_matchCannotBePlayedMoreThanMatchTimes(self, dbsession):
@@ -199,6 +237,8 @@ class TestCaseSinglePlayerSingleGame:
 
         player = SinglePlayer(user, match)
         next_q = player.react(second_answer)
+
+        # assert user.reactions[0].question == second
         assert next_q == third
         player = SinglePlayer(user, match)
         player.react(third_answer)
