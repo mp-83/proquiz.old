@@ -1,5 +1,13 @@
 import pytest
-from codechallenge.entities import Answer, Game, Match, Question, Reactions, User
+from codechallenge.entities import (
+    Answer,
+    Game,
+    Match,
+    Question,
+    Reaction,
+    Reactions,
+    User,
+)
 from codechallenge.exceptions import (
     GameError,
     GameOver,
@@ -7,7 +15,12 @@ from codechallenge.exceptions import (
     MatchNotPlayableError,
     MatchOver,
 )
-from codechallenge.play.single_player import GameFactory, QuestionFactory, SinglePlayer
+from codechallenge.play.single_player import (
+    GameFactory,
+    PlayerStatus,
+    QuestionFactory,
+    SinglePlayer,
+)
 
 
 class TestCaseQuestionFactory:
@@ -168,6 +181,44 @@ class TestCaseGameFactory:
 
         with pytest.raises(MatchError):
             game_factory.previous()
+
+
+class TestCaseStatus:
+    def t_questionsDisplayed(self, dbsession, emitted_queries):
+        match = Match().create()
+        game = Game(match_uid=match.uid, index=0).create()
+        q1 = Question(text="Where is Miami", position=0, game=game).save()
+        q2 = Question(text="Where is London", position=1, game=game).save()
+        q3 = Question(text="Where is Paris", position=2, game=game).save()
+        user = User(email="user@test.project").create()
+
+        Reaction(match=match, question=q1, user=user, game_uid=game.uid).create()
+
+        Reaction(match=match, question=q2, user=user, game_uid=game.uid).create()
+        Reaction(
+            match=Match().create(), question=q3, user=user, game_uid=game.uid
+        ).create()
+        status = PlayerStatus(user, match)
+        before = len(emitted_queries)
+        assert status.questions_displayed() == {q2.uid: q2, q1.uid: q1}
+        assert len(emitted_queries) == before + 1
+
+    def t_questionDisplayedByGame(self, dbsession):
+        match = Match().create()
+        game = Game(match_uid=match.uid, index=0).create()
+        q1 = Question(text="Where is Miami", position=0, game=game).save()
+        q2 = Question(text="Where is London", position=1, game=game).save()
+        q3 = Question(text="Where is Paris", position=2, game=game).save()
+        user = User(email="user@test.project").create()
+
+        Reaction(match=match, question=q1, user=user, game_uid=game.uid).create()
+
+        Reaction(match=match, question=q2, user=user, game_uid=game.uid).create()
+        Reaction(
+            match=Match().create(), question=q3, user=user, game_uid=game.uid
+        ).create()
+        status = PlayerStatus(user, match)
+        assert status.questions_displayed_by_game(game) == {q2.uid: q2, q1.uid: q1}
 
 
 class TestCaseSinglePlayerSingleGame:

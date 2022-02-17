@@ -109,6 +109,31 @@ class GameFactory:
         return len(self.played_ids) == len(games)
 
 
+class PlayerStatus:
+    def __init__(self, user, match):
+        self._user = user
+        self._current_match = match
+
+    @property
+    def _all_reactions_query(self):
+        return Reactions.all_reactions_of_user_to_match(
+            self._user, self._current_match
+        ).filter_by(_answer=None)
+
+    def all_reactions(self):
+        return self._all_reactions_query.all()  # TODO to fix: or _open_answer=None
+
+    def questions_displayed(self):
+        return {r.question.uid: r.question for r in self._all_reactions_query.all()}
+
+    def questions_displayed_by_game(self, game):
+        return {
+            r.question.uid: r.question
+            for r in self._all_reactions_query.all()
+            if r.game.uid == game.uid
+        }
+
+
 class SinglePlayer:
     def __init__(self, user, match):
         self._user = user
