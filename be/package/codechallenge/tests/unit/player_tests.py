@@ -220,8 +220,21 @@ class TestCaseStatus:
         status = PlayerStatus(user, match)
         assert status.questions_displayed_by_game(game) == {q2.uid: q2, q1.uid: q1}
 
+    def t_allGamesPlayed(self, dbsession):
+        match = Match().create()
+        g1 = Game(match_uid=match.uid, index=0).create()
+        g2 = Game(match_uid=match.uid, index=1).create()
+        q1 = Question(text="Where is Miami", position=0, game=g1).save()
+        q2 = Question(text="Where is London", position=0, game=g2).save()
+        user = User(email="user@test.project").create()
+        Reaction(match=match, question=q1, user=user, game_uid=g1.uid).create()
+        Reaction(match=match, question=q2, user=user, game_uid=g2.uid).create()
 
-class TestCaseSinglePlayerSingleGame:
+        status = PlayerStatus(user, match)
+        assert status.all_games_played() == {g1.uid: g1, g2.uid: g2}
+
+
+class TestCaseSinglePlayer:
     def t_reactionIsCreatedAsSoonAsQuestionIsReturned(self, dbsession):
         match = Match().create()
         first_game = Game(match_uid=match.uid, index=1).create()
@@ -230,7 +243,8 @@ class TestCaseSinglePlayerSingleGame:
         ).save()
         user = User(email="user@test.project").create()
 
-        player = SinglePlayer(user, match)
+        status = PlayerStatus(user, match)
+        player = SinglePlayer(status, user, match)
         question_displayed = player.start()
 
         assert question_displayed == question
@@ -249,14 +263,12 @@ class TestCaseSinglePlayerSingleGame:
         ).save()
         user = User(email="user@test.project").create()
 
-        player = SinglePlayer(user, match)
+        status = PlayerStatus(user, match)
+        player = SinglePlayer(status, user, match)
         player.start()
         next_q = player.react(answer)
 
-        reaction = user.reactions[0]
-        assert reaction.q_counter == 0
-        assert reaction.g_counter == 0
-
+        assert len(user.reactions)
         assert next_q == second
 
     def t_matchCannotBePlayedMoreThanMatchTimes(self, dbsession):
@@ -267,7 +279,8 @@ class TestCaseSinglePlayerSingleGame:
             text="Where is London?", game_uid=game.uid, position=0
         ).save()
 
-        player = SinglePlayer(user, match)
+        status = PlayerStatus(user, match)
+        player = SinglePlayer(status, user, match)
         assert player.start() == question
 
         with pytest.raises(MatchNotPlayableError):
@@ -285,7 +298,8 @@ class TestCaseSinglePlayerSingleGame:
         answer = Answer(question=question, text="UK", position=1).create()
         user = User(email="user@test.project").create()
 
-        player = SinglePlayer(user, match)
+        status = PlayerStatus(user, match)
+        player = SinglePlayer(status, user, match)
         player.start()
         with pytest.raises(MatchOver):
             player.react(answer)
@@ -301,26 +315,29 @@ class TestCaseSinglePlayerSingleGame:
         second = Question(
             text="Where is Paris?", game_uid=first_game.uid, position=1
         ).save()
-        second_answer = Answer(question=first, text="France", position=1).create()
+        second_answer = Answer(question=second, text="France", position=1).create()
         third = Question(
             text="Where is Dublin?", game_uid=first_game.uid, position=2
         ).save()
-        third_answer = Answer(question=first, text="Ireland", position=1).create()
+        third_answer = Answer(question=third, text="Ireland", position=1).create()
 
         user = User(email="user@test.project").create()
 
-        player = SinglePlayer(user, match)
+        status = PlayerStatus(user, match)
+        player = SinglePlayer(status, user, match)
         assert player.start() == first
         next_q = player.react(first_answer)
         assert next_q == second
 
-        player = SinglePlayer(user, match)
+        status = PlayerStatus(user, match)
+        player = SinglePlayer(status, user, match)
         next_q = player.react(second_answer)
 
-        # assert user.reactions[0].question == second
+        assert user.reactions[1].question == second
         assert next_q == third
-        player = SinglePlayer(user, match)
-        player.react(third_answer)
+        player = SinglePlayer(status, user, match)
+        with pytest.raises(MatchOver):
+            player.react(third_answer)
 
 
 class TestCaseResumeMatch:
@@ -334,7 +351,8 @@ class TestCaseResumeMatch:
         answer = Answer(question=question, text="UK", position=1).create()
         user = User(email="user@test.project").create()
 
-        player = SinglePlayer(user, match)
+        status = PlayerStatus(user, match)
+        player = SinglePlayer(status, user, match)
         player.start()
         player.react(answer)
         assert player.match_can_be_resumed
@@ -343,5 +361,6 @@ class TestCaseResumeMatch:
         match = Match(is_restricted=False).create()
         user = User(email="user@test.project").create()
 
-        player = SinglePlayer(user, match)
+        status = PlayerStatus(user, match)
+        player = SinglePlayer(status, user, match)
         assert not player.match_can_be_resumed

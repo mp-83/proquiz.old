@@ -70,6 +70,11 @@ class Reaction(TableMixin, Base):
         questions.
         """
         response_datetime = datetime.now(tz=timezone.utc)
+        if not self.create_timestamp.tzinfo:
+            self.create_timestamp = self.create_timestamp.replace(
+                tzinfo=response_datetime.tzinfo
+            )
+
         response_time_in_secs = (
             response_datetime - self.create_timestamp
         ).total_seconds()

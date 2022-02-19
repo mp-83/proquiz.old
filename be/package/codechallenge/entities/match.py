@@ -49,6 +49,10 @@ class Match(TableMixin, Base):
     def questions(self):
         return [list(g.ordered_questions) for g in self.games]
 
+    @property
+    def questions_count(self):
+        return sum(len(g.questions) for g in self.games)
+
     def refresh(self):
         self.session.refresh(self)
         return self

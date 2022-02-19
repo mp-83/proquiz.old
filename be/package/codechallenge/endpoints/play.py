@@ -1,7 +1,7 @@
 import logging
 
 from codechallenge.entities import Matches, User, Users
-from codechallenge.play.single_player import SinglePlayer
+from codechallenge.play.single_player import PlayerStatus, SinglePlayer
 from pyramid.response import Response
 from pyramid.view import view_config
 
@@ -42,7 +42,8 @@ class PlayEndPoints:
         if not match.left_attempts(user):
             return Response(status=400, json={"error": "Invalid match"})
 
-        player = SinglePlayer(user, match)
+        status = PlayerStatus(user, match)
+        player = SinglePlayer(status, user, match)
         current_question = player.start()
         match_data = {
             "question": current_question.json,
@@ -53,8 +54,6 @@ class PlayEndPoints:
 
     @view_config(route_name="next", request_method="POST")
     def next(self):
-        # if answer is among the one of this question's answer
-        # if no same reaction has been recorded already
         data = getattr(self.request, "json", None)
         match = Matches.get(data.get("match"))
         user = Users.get(uid=data.get("user"))
@@ -62,5 +61,11 @@ class PlayEndPoints:
         if not match:
             return Response(status=404)
 
-        SinglePlayer(user, match)
+        status = PlayerStatus(user, match)
+        SinglePlayer(status, user, match)
+
+        # TODO: to fix
+
+        # if answer is among the one of this question's answer
+        # if no same reaction has been recorded already
         return Response(json={})

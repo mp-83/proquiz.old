@@ -118,7 +118,7 @@ class PlayerStatus:
     def _all_reactions_query(self):
         return Reactions.all_reactions_of_user_to_match(
             self._user, self._current_match
-        ).filter_by(_answer=None)
+        )  # .filter_by(_answer=None)
 
     def all_reactions(self):
         return self._all_reactions_query.all()  # TODO to fix: or _open_answer=None
@@ -133,37 +133,47 @@ class PlayerStatus:
             if r.game.uid == game.uid
         }
 
+    def all_games_played(self):
+        return {r.game.uid: r.game for r in self._all_reactions_query.all()}
+
+    @property
+    def match(self):
+        return self._current_match
+
 
 class SinglePlayer:
-    def __init__(self, user, match):
+    def __init__(self, status, user, match):
+        self._status = status
         self._user = user
-        self._current_match = match
+        self._match = match
+
         self._game_factory = None
         self._question_factory = None
         self._current_reaction = None
 
     def start(self):
-        self._current_match.refresh()
-        if self._current_match.left_attempts(self._user) == 0:
+        self._match.refresh()
+        if self._match.left_attempts(self._user) == 0:
             raise MatchNotPlayableError(
-                f"User {self._user} has no left attempts for Match {self._current_match.name}"
+                f"User {self._user} has no left attempts for Match {self._match.name}"
             )
 
-        self._game_factory = GameFactory(self._current_match)
-        _game = self.next_game()
-        self._question_factory = QuestionFactory(_game)
-        question = self.next_question()
+        self._game_factory = GameFactory(self._match, *self._status.all_games_played())
+        game = self._game_factory.next()
+
+        self._question_factory = QuestionFactory(
+            game, *self._status.questions_displayed()
+        )
+        question = self._question_factory.next()
 
         # left as sanity check. To be removed after testing
-        assert _game.uid == question.game.uid
+        assert game.uid == question.game.uid
 
         self._current_reaction = Reaction(
-            match_uid=self._current_match.uid,
-            question_uid=question.uid,
+            match_uid=self._match.uid,
             user_uid=self._user.uid,
-            game_uid=_game.uid,
-            q_counter=0,
-            g_counter=0,
+            game_uid=game.uid,
+            question_uid=question.uid,
         ).create()
 
         return question
@@ -185,7 +195,7 @@ class SinglePlayer:
 
     def last_reaction(self, question):
         reactions = Reactions.all_reactions_of_user_to_match(
-            self._user, self._current_match
+            self._user, self._match
         ).filter_by(
             _answer=None
         )  # TODO to fix: or _open_answer=None
@@ -194,12 +204,10 @@ class SinglePlayer:
             return reactions.first()
 
         return Reaction(
-            match_uid=self._current_match.uid,
+            match_uid=self._match.uid,
             question_uid=question.uid,
             game_uid=question.game.uid,
             user_uid=self._user.uid,
-            q_counter=0,
-            g_counter=0,
         ).create()
 
     @property
@@ -209,39 +217,36 @@ class SinglePlayer:
         By counting the reactions it is possible to
         determine if all questions were displayed
         """
-        m = self._current_match
-        return m.is_restricted and len(m.reactions) < len(m.questions)
+        return (
+            self._match.is_restricted
+            and len(self._status.all_reactions()) < self._match.questions_count
+        )
 
     def react(self, answer):
         if not self._current_reaction:
             self._current_reaction = self.last_reaction(answer.question)
             self._game_factory = GameFactory(
-                self._current_match, self._current_reaction.g_counter + 1
+                self._match, *self._status.all_games_played()
             )
+
             self._question_factory = QuestionFactory(
-                self.current_game, self._current_reaction.q_counter + 1
+                self._current_reaction.game, *self._status.questions_displayed()
             )
-            # import pdb;pdb.set_trace()
 
-        # counters are incremented to be used in the next reaction
-        self._current_reaction.q_counter = self._question_factory.counter
-        self._current_reaction.g_counter = self._game_factory.counter
         self._current_reaction.record_answer(answer)
-
-        # import pdb;pdb.set_trace()
-
-        _question = self.next_question()
-        return _question
+        question = self.next_question()
+        return question
 
     @property
     def current_question(self):
         return self._question_factory.current
 
     def next_question(self):
-        if not self.current_game:
-            raise GameError(f"Match {self._current_match.name} is not started")
-
         try:
-            return self._question_factory.next_question()
+            return self._question_factory.next()
         except GameOver:
-            self._current_game = self.next_game()
+            game = self._game_factory.next()
+            self._question_factory = QuestionFactory(
+                game, *self._status.questions_displayed()
+            )
+            return self._question_factory.next()
