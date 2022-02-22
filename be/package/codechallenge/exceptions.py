@@ -30,3 +30,7 @@ class GameOver(BaseException):
 
 class MatchOver(BaseException):
     """Match is started but contains not games"""
+
+
+class ValidateError(BaseException):
+    """"""

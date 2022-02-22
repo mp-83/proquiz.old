@@ -66,8 +66,4 @@ class PlayEndPoints:
         player = SinglePlayer(status, user, match)
         next_q = player.react(answer)
 
-        # TODO: to fix
-
-        # if answer is among the one of this question's answer
-        # if no same reaction has been recorded already
         return Response(json={"question": next_q.json, "user": user.uid})

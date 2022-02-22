@@ -118,6 +118,5 @@ class TestCasePlay:
             headers={"X-CSRF-Token": testapp.get_csrf_token()},
             status=200,
         )
-        assert response
         assert response.json["question"] == match.questions[0][1].json
         assert response.json["user"] == user.uid
