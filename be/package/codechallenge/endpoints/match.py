@@ -32,8 +32,8 @@ class MatchEndPoints:
     )
     def create_match(self):
         data = self.request.json
-        new_match = Match(name=data.get("name")).create()
-        new_game = Game(match_uid=new_match.uid).create()
+        new_match = Match(name=data.get("name")).save()
+        new_game = Game(match_uid=new_match.uid).save()
         for position, question in enumerate(data.get("questions", [])):
             new = Question(
                 game_uid=new_game.uid, text=question["text"], position=position

@@ -172,7 +172,7 @@ class AuthenticatedRequest(DummyRequest):
             "email": "testing_user@test.com",
             "password": "p@ss",
         }
-        return User(**credentials).create()
+        return User(**credentials).save()
 
 
 @pytest.fixture
@@ -239,9 +239,9 @@ def count_database_queries(dbengine):
 
 @pytest.fixture(name="trivia_match")
 def create_fixture_test(dbsession):
-    match = Match().create()
-    first_game = Game(match_uid=match.uid, index=1).create()
-    second_game = Game(match_uid=match.uid, index=2).create()
+    match = Match().save()
+    first_game = Game(match_uid=match.uid, index=1).save()
+    second_game = Game(match_uid=match.uid, index=2).save()
     for i, q in enumerate(TEST_1, start=1):
         if i < 3:
             new_question = Question(game_uid=first_game.uid, text=q["text"], position=i)

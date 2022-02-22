@@ -39,18 +39,14 @@ class User(TableMixin, Base):
     def all(self):
         return self.session.execute(select(User)).all()
 
-    def create(self, uhash=""):
-        if not self.email and self.private:
+    def save(self, uhash=""):
+        if not self.uid and not self.email and self.private:
             self.email = f"priv-{uhash}@progame.io"
-        elif not self.email:
+        elif not self.uid and not self.email:
             unique_str = uuid4()
             self.email = f"pub-{unique_str}@progame.io"
 
         self.session.add(self)
-        self.session.commit()
-        return self
-
-    def save(self):
         self.session.commit()
         return self
 

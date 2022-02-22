@@ -50,14 +50,9 @@ class Reaction(TableMixin, Base):
         self.session.refresh(self)
         return self
 
-    def create(self):
+    def save(self):
         if not self.game_uid:
             self.game_uid = self.question.game.uid
-        self.session.add(self)
-        self.session.commit()
-        return self
-
-    def save(self):
         self.session.add(self)
         self.session.commit()
         return self

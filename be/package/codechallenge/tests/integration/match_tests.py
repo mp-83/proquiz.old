@@ -21,10 +21,10 @@ class TestCaseMatchEndpoints:
 
     def t_retriveOneMatchWithAllData(self, testapp):
         match_name = "New Match"
-        match = Match(name=match_name).create()
-        first_game = Game(match_uid=match.uid).create()
+        match = Match(name=match_name).save()
+        first_game = Game(match_uid=match.uid).save()
         Question(text="Where is London?", game_uid=first_game.uid, position=0).save()
-        second_game = Game(match_uid=match.uid, index=1).create()
+        second_game = Game(match_uid=match.uid, index=1).save()
         Question(text="Where is Vienna?", game_uid=second_game.uid, position=0).save()
 
         response = testapp.get(f"/match/{match.uid}", status=200)
@@ -58,13 +58,13 @@ class TestCaseMatchEndpoints:
 
     def t_matchCannotBeChangedIfStarted(self, testapp):
         match_name = "New Match"
-        match = Match(name=match_name).create()
-        first_game = Game(match_uid=match.uid).create()
+        match = Match(name=match_name).save()
+        first_game = Game(match_uid=match.uid).save()
         question = Question(
             text="Where is London?", game_uid=first_game.uid, position=0
         ).save()
-        user = User(email="t@t.com").create()
-        Reaction(match=match, question=question, user=user).create()
+        user = User(email="t@t.com").save()
+        Reaction(match=match, question=question, user=user).save()
         testapp.patch_json(
             f"/match/edit/{match.uid}",
             headers={"X-CSRF-Token": testapp.get_csrf_token()},
@@ -72,8 +72,8 @@ class TestCaseMatchEndpoints:
         )
 
     def t_addQuestionToExistingMatchWithOneGameOnly(self, testapp):
-        match = Match().create()
-        first_game = Game(match_uid=match.uid).create()
+        match = Match().save()
+        first_game = Game(match_uid=match.uid).save()
         Question(text="Where is London?", game_uid=first_game.uid, position=0).save()
         payload = {
             "questions": [
@@ -101,7 +101,7 @@ class TestCaseMatchEndpoints:
 
     def t_changeNameAndTimesOfAMatch(self, testapp):
         # showcase that changing the attribute value of a match work
-        match = Match(name="New Match").create()
+        match = Match(name="New Match").save()
         payload = {
             "name": "Another match name",
             "times": 10,

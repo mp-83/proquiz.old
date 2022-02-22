@@ -21,7 +21,7 @@ class TestCaseUnexistentMatch:
 
 class TestCasePlay:
     def t_playLand(self, testapp):
-        match = Match().create()
+        match = Match().save()
         response = testapp.post_json(
             "/play/",
             {"match": match.uid},
@@ -34,7 +34,7 @@ class TestCasePlay:
 
     def t_startExpiredMatch(self, testapp):
         one_hour_ago = datetime.now(timezone.utc) - timedelta(hours=1)
-        match = Match(expires=one_hour_ago).create()
+        match = Match(expires=one_hour_ago).save()
         testapp.post_json(
             "/play/start",
             {"match": match.uid},
@@ -43,11 +43,11 @@ class TestCasePlay:
         )
 
     def t_invitedUserHasPlayedGameAlreadyMoreThanAllowed(self, testapp):
-        match = Match().create()
-        user = User(private=match.is_restricted).create(uhash="acde48001122")
-        game = Game(match_uid=match.uid).create()
+        match = Match().save()
+        user = User(private=match.is_restricted).save(uhash="acde48001122")
+        game = Game(match_uid=match.uid).save()
         question = Question(text="1+1 is = to", position=0, game_uid=game.uid).save()
-        Reaction(question=question, user=user, match=match, game_uid=game.uid).create()
+        Reaction(question=question, user=user, match=match, game_uid=game.uid).save()
 
         testapp.post_json(
             "/play/start",
@@ -57,10 +57,10 @@ class TestCasePlay:
         )
 
     def t_startMatch(self, testapp):
-        match = Match().create()
-        game = Game(match_uid=match.uid).create()
+        match = Match().save()
+        game = Game(match_uid=match.uid).save()
         question = Question(game_uid=game.uid, text="1+1 is = to", position=0).save()
-        user = User().create()
+        user = User().save()
 
         response = testapp.post_json(
             "/play/start",
@@ -74,7 +74,7 @@ class TestCasePlay:
 
     def t_duplicateSameReaction(self, testapp, trivia_match):
         match = trivia_match
-        user = User().create()
+        user = User().save()
         question = match.questions[0][0]
         answer = question.answers_by_position[0]
 
@@ -103,7 +103,7 @@ class TestCasePlay:
 
     def t_answerQuestion(self, testapp, trivia_match):
         match = trivia_match
-        user = User().create()
+        user = User().save()
         question = match.questions[0][0]
         answer = question.answers_by_position[0]
 

@@ -33,11 +33,6 @@ class Answer(TableMixin, Base):
         matched_row = session.execute(select(cls).where(cls.text == text))
         return matched_row.scalar_one_or_none()
 
-    def create(self):
-        self.session.add(self)
-        self.session.commit()
-        return self
-
     def save(self):
         self.session.add(self)
         self.session.commit()

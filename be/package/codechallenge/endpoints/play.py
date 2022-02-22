@@ -24,7 +24,7 @@ class PlayEndPoints:
             user = Users.get_private_user(mhash=data.get("uhash"))
 
         if not user:
-            user = User(private=match.is_restricted).create()
+            user = User(private=match.is_restricted).save()
 
         return Response(json={"match": match.uid, "user": user.uid})
 

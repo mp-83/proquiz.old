@@ -40,7 +40,7 @@ class TestCaseLogin:
             "email": "user@test.com",
             "password": "p@ss",
         }
-        User(**credentials).create()
+        User(**credentials).save()
         testapp.post(
             "/login",
             status=303,

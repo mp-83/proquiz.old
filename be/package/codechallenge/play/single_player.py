@@ -174,7 +174,7 @@ class SinglePlayer:
             user_uid=self._user.uid,
             game_uid=game.uid,
             question_uid=question.uid,
-        ).create()
+        ).save()
 
         return question
 
@@ -208,7 +208,7 @@ class SinglePlayer:
             question_uid=question.uid,
             game_uid=question.game.uid,
             user_uid=self._user.uid,
-        ).create()
+        ).save()
 
     @property
     def match_can_be_resumed(self):

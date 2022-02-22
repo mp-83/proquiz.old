@@ -57,7 +57,7 @@ class Match(TableMixin, Base):
         self.session.refresh(self)
         return self
 
-    def create(self):
+    def save(self):
         self.session.add(self)
         self.session.commit()
         return self
@@ -105,7 +105,7 @@ class Match(TableMixin, Base):
         for q in questions:
             game_idx = q.get("game")
             if game_idx is None:
-                g = Game(match_uid=self.uid).create()
+                g = Game(match_uid=self.uid).save()
             else:
                 g = self.games[game_idx]
 
@@ -134,7 +134,7 @@ class Match(TableMixin, Base):
             return
         questions = Questions.questions_with_ids(*ids).all()
         result = []
-        new_game = Game(match_uid=self.uid).create()
+        new_game = Game(match_uid=self.uid).save()
         for question in questions:
             if question.game_uid:
                 raise NotUsableQuestionError(

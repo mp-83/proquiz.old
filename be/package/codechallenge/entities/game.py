@@ -22,7 +22,7 @@ class Game(TableMixin, Base):
     def session(self):
         return StoreConfig().session
 
-    def create(self):
+    def save(self):
         self.session.add(self)
         self.session.commit()
         return self

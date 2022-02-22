@@ -1,8 +1,6 @@
 from codechallenge.app import StoreConfig
 from codechallenge.entities.meta import Base, TableMixin, classproperty
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, select
-from sqlalchemy.orm import relationship
-from sqlalchemy.schema import UniqueConstraint
+from sqlalchemy import Column, String, select
 
 
 class OpenAnswer(TableMixin, Base):
@@ -20,7 +18,7 @@ class OpenAnswer(TableMixin, Base):
     def session(self):
         return StoreConfig().session
 
-    def create(self):
+    def save(self):
         self.session.add(self)
         self.session.commit()
         return self

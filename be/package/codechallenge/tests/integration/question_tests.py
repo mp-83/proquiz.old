@@ -54,8 +54,8 @@ class TestCaseQuestionEP:
 
     def t_updateAnswerValueAndPosition(self, testapp):
         question = Question(text="new-question", position=0).save()
-        a1 = Answer(question_uid=question.uid, text="Answer1", position=0).create()
-        a2 = Answer(question_uid=question.uid, text="Answer2", position=1).create()
+        a1 = Answer(question_uid=question.uid, text="Answer1", position=0).save()
+        a2 = Answer(question_uid=question.uid, text="Answer2", position=1).save()
 
         a2_json = a2.json
         a2_json.update(text="changed answer 2 and moved it to pos 1")

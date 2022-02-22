@@ -23,7 +23,7 @@ from sqlalchemy.exc import IntegrityError, InvalidRequestError
 
 class TestCaseUser:
     def t_createNewUserAndSetPassword(self, dbsession):
-        new_user = User(email="user@test.project").create()
+        new_user = User(email="user@test.project").save()
         new_user.set_password("password")
         new_user.save()
         assert new_user.check_password("password")
@@ -31,12 +31,12 @@ class TestCaseUser:
 
     def t_createPrivateUser(self, dbsession, mocker):
         invite_hash = "acde48001122"
-        new_user = User(private=True).create(invite_hash)
+        new_user = User(private=True).save(invite_hash)
         assert new_user.email == f"priv-{invite_hash}@progame.io"
 
     def t_createPublicUser(self, dbsession, mocker):
         mocker.patch("codechallenge.entities.user.uuid4", return_value="acde48001122")
-        new_user = User().create()
+        new_user = User().save()
         assert new_user.email == "pub-acde48001122@progame.io"
 
 
@@ -48,8 +48,8 @@ class TestCaseQuestion:
 
     def t_newCreatedAnswersShouldBeAvailableFromTheQuestion(self, fillTestingDB):
         question = Question().at_position(0)
-        Answer(question=question, text="question2.answer1", position=1).create()
-        Answer(question=question, text="question2.answer2", position=2).create()
+        Answer(question=question, text="question2.answer1", position=1).save()
+        Answer(question=question, text="question2.answer2", position=2).save()
         assert Answers.count() == 2
         assert question.answers[0].question_uid == question.uid
 
@@ -104,7 +104,7 @@ class TestCaseQuestion:
             question_uid=new_question.uid,
             text="The machine was undergoing repair",
             position=0,
-        ).create()
+        ).save()
         cloned = new_question.clone()
         assert new_question.uid != cloned.uid
         assert new_question.answers[0] != cloned.answers[0]
@@ -112,17 +112,17 @@ class TestCaseQuestion:
     def t_questionsAnswersAreOrderedByDefault(self, dbsession):
         # the reverse relation fields .answers is ordered by default
         question = Question(text="new-question", position=0).save()
-        Answer(question_uid=question.uid, text="Answer1", position=0).create()
-        Answer(question_uid=question.uid, text="Answer2", position=1).create()
+        Answer(question_uid=question.uid, text="Answer1", position=0).save()
+        Answer(question_uid=question.uid, text="Answer2", position=1).save()
 
         assert question.answers[0].text == "Answer1"
         assert question.answers[1].text == "Answer2"
 
     def t_updateAnswers(self, dbsession):
         question = Question(text="new-question", position=0).save()
-        a1 = Answer(question_uid=question.uid, text="Answer1", position=0).create()
-        a2 = Answer(question_uid=question.uid, text="Answer2", position=1).create()
-        a3 = Answer(question_uid=question.uid, text="Answer3", position=2).create()
+        a1 = Answer(question_uid=question.uid, text="Answer1", position=0).save()
+        a2 = Answer(question_uid=question.uid, text="Answer2", position=1).save()
+        a3 = Answer(question_uid=question.uid, text="Answer3", position=2).save()
 
         ans_2_json = a2.json
         ans_2_json.update(text="Answer text 2")
@@ -134,10 +134,10 @@ class TestCaseQuestion:
 
 class TestCaseMatchModel:
     def t_questionsPropertyReturnsTheExpectedResults(self, dbsession):
-        match = Match().create()
-        first_game = Game(match_uid=match.uid, index=0).create()
+        match = Match().save()
+        first_game = Game(match_uid=match.uid, index=0).save()
         Question(text="Where is London?", game_uid=first_game.uid, position=0).save()
-        second_game = Game(match_uid=match.uid, index=1).create()
+        second_game = Game(match_uid=match.uid, index=1).save()
         Question(text="Where is Vienna?", game_uid=second_game.uid, position=0).save()
         assert match.questions[0][0].text == "Where is London?"
         assert match.questions[0][0].game == first_game
@@ -145,13 +145,13 @@ class TestCaseMatchModel:
         assert match.questions[1][0].game == second_game
 
     def t_matchWithName(self, dbsession):
-        original = Match().create()
+        original = Match().save()
         found = Matches.with_name(original.name)
         assert found == original
 
     def t_updateTextExistingQuestion(self, dbsession):
-        match = Match().create()
-        first_game = Game(match_uid=match.uid, index=1).create()
+        match = Match().save()
+        first_game = Game(match_uid=match.uid, index=1).save()
         question = Question(
             text="Where is London?", game_uid=first_game.uid, position=0
         ).save()
@@ -176,9 +176,9 @@ class TestCaseMatchModel:
         ]
         Answer(
             question_uid=question_ids[0], text="question2.answer1", position=1
-        ).create()
+        ).save()
 
-        new_match = Match().create()
+        new_match = Match().save()
         questions_cnt = Questions.count()
         answers_cnt = Answers.count()
         new_match.import_template_questions(*question_ids)
@@ -186,8 +186,8 @@ class TestCaseMatchModel:
         assert Answers.count() == answers_cnt + 0
 
     def t_cannotAssociateQuestionsUsedInAnotherMatch(self, dbsession):
-        match = Match().create()
-        first_game = Game(match_uid=match.uid, index=2).create()
+        match = Match().save()
+        first_game = Game(match_uid=match.uid, index=2).save()
         question = Question(
             text="Where is London?", game_uid=first_game.uid, position=3
         ).save()
@@ -196,11 +196,11 @@ class TestCaseMatchModel:
             match.import_template_questions(*question_ids)
 
     def t_matchCannotBePlayedIfAreNoLeftAttempts(self, dbsession):
-        match = Match().create()
-        game = Game(match_uid=match.uid, index=2).create()
-        user = User(email="user@test.project").create()
+        match = Match().save()
+        game = Game(match_uid=match.uid, index=2).save()
+        user = User(email="user@test.project").save()
         question = Question(text="1+1 is = to", position=0, game_uid=game.uid).save()
-        Reaction(question=question, user=user, match=match, game_uid=game.uid).create()
+        Reaction(question=question, user=user, match=match, game_uid=game.uid).save()
 
         assert match.reactions[0].user == user
         assert match.left_attempts(user) == 0
@@ -208,16 +208,16 @@ class TestCaseMatchModel:
 
 class TestCaseGameModel:
     def t_raiseErrorWhenTwoGamesOfMatchHaveSamePosition(self, dbsession):
-        new_match = Match().create()
-        new_game = Game(index=1, match_uid=new_match.uid).create()
+        new_match = Match().save()
+        new_game = Game(index=1, match_uid=new_match.uid).save()
         with pytest.raises((IntegrityError, InvalidRequestError)):
-            Game(index=1, match_uid=new_game.match.uid).create()
+            Game(index=1, match_uid=new_game.match.uid).save()
 
         dbsession.rollback()
 
     def t_orderedQuestionsMethod(self, dbsession, emitted_queries):
-        match = Match().create()
-        game = Game(match_uid=match.uid, index=1).create()
+        match = Match().save()
+        game = Game(match_uid=match.uid, index=1).save()
         question_2 = Question(
             text="Where is London?", game_uid=game.uid, position=1
         ).save()
@@ -241,13 +241,11 @@ class TestCaseGameModel:
 
 class TestCaseReactionModel:
     def t_cannotExistsTwoReactionsOfTheSameUserAtSameTime(self, dbsession):
-        match = Match().create()
-        game = Game(match_uid=match.uid, index=0).create()
-        user = User(email="user@test.project").create()
+        match = Match().save()
+        game = Game(match_uid=match.uid, index=0).save()
+        user = User(email="user@test.project").save()
         question = Question(text="new-question", position=0, game_uid=game.uid).save()
-        answer = Answer(
-            question=question, text="question2.answer1", position=1
-        ).create()
+        answer = Answer(question=question, text="question2.answer1", position=1).save()
 
         now = datetime.now()
         with pytest.raises((IntegrityError, InvalidRequestError)):
@@ -258,7 +256,7 @@ class TestCaseReactionModel:
                 user_uid=user.uid,
                 create_timestamp=now,
                 game_uid=game.uid,
-            ).create()
+            ).save()
             Reaction(
                 match_uid=match.uid,
                 question_uid=question.uid,
@@ -266,51 +264,51 @@ class TestCaseReactionModel:
                 user_uid=user.uid,
                 create_timestamp=now,
                 game_uid=game.uid,
-            ).create()
+            ).save()
         dbsession.rollback()
 
     def t_ifQuestionChangesThenAlsoFKIsUpdatedAndAffectsReaction(self, dbsession):
-        match = Match().create()
-        game = Game(match_uid=match.uid, index=0).create()
-        user = User(email="user@test.project").create()
+        match = Match().save()
+        game = Game(match_uid=match.uid, index=0).save()
+        user = User(email="user@test.project").save()
         question = Question(text="1+1 is = to", position=0).save()
-        answer = Answer(question=question, text="2", position=1).create()
+        answer = Answer(question=question, text="2", position=1).save()
         reaction = Reaction(
             match_uid=match.uid,
             question_uid=question.uid,
             answer_uid=answer.uid,
             user_uid=user.uid,
             game_uid=game.uid,
-        ).create()
+        ).save()
         question.text = "1+2 is = to"
         question.save()
 
         assert reaction.question.text == "1+2 is = to"
 
     def t_whenQuestionIsElapsedAnswerIsNotRecorded(self, dbsession):
-        match = Match().create()
-        game = Game(match_uid=match.uid, index=0).create()
-        user = User(email="user@test.project").create()
+        match = Match().save()
+        game = Game(match_uid=match.uid, index=0).save()
+        user = User(email="user@test.project").save()
         question = Question(text="3*3 = ", time=0, position=0).save()
         reaction = Reaction(
             match=match, question=question, user=user, game_uid=game.uid
-        ).create()
+        ).save()
 
-        answer = Answer(question=question, text="9", position=1).create()
+        answer = Answer(question=question, text="9", position=1).save()
         reaction.record_answer(answer)
 
         assert reaction.answer is None
 
     def t_recordAnswerInTime(self, dbsession):
-        match = Match().create()
-        game = Game(match_uid=match.uid, index=0).create()
-        user = User(email="user@test.project").create()
+        match = Match().save()
+        game = Game(match_uid=match.uid, index=0).save()
+        user = User(email="user@test.project").save()
         question = Question(text="1+1 =", time=2, position=0).save()
         reaction = Reaction(
             match=match, question=question, user=user, game_uid=game.uid
-        ).create()
+        ).save()
 
-        answer = Answer(question=question, text="2", position=1).create()
+        answer = Answer(question=question, text="2", position=1).save()
         reaction.record_answer(answer)
 
         assert reaction.answer
@@ -321,15 +319,15 @@ class TestCaseReactionModel:
         assert isclose(reaction.score, 0.999, rel_tol=0.05)
 
     def t_reactionTimingIsRecordedAlsoForOpenQuestions(self, dbsession):
-        match = Match().create()
-        game = Game(match_uid=match.uid, index=0).create()
-        user = User(email="user@test.project").create()
+        match = Match().save()
+        game = Game(match_uid=match.uid, index=0).save()
+        user = User(email="user@test.project").save()
         question = Question(text="Where is Miami", position=0).save()
         reaction = Reaction(
             match=match, question=question, user=user, game_uid=game.uid
-        ).create()
+        ).save()
 
-        open_answer = OpenAnswer(text="Florida").create()
+        open_answer = OpenAnswer(text="Florida").save()
         reaction.record_answer(open_answer)
         assert question.is_open
         assert reaction.answer
@@ -338,13 +336,13 @@ class TestCaseReactionModel:
         assert not reaction.score
 
     def t_allReactionsOfUser(self, dbsession):
-        match = Match().create()
-        game = Game(match_uid=match.uid, index=0).create()
-        user = User(email="user@test.project").create()
+        match = Match().save()
+        game = Game(match_uid=match.uid, index=0).save()
+        user = User(email="user@test.project").save()
         q1 = Question(text="t1", position=0).save()
         q2 = Question(text="t2", position=1).save()
-        r1 = Reaction(match=match, question=q1, user=user, game_uid=game.uid).create()
-        r2 = Reaction(match=match, question=q2, user=user, game_uid=game.uid).create()
+        r1 = Reaction(match=match, question=q1, user=user, game_uid=game.uid).save()
+        r2 = Reaction(match=match, question=q2, user=user, game_uid=game.uid).save()
 
         reactions = Reactions.all_reactions_of_user_to_match(
             user, match, asc=False
