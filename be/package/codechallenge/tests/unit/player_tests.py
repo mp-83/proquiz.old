@@ -248,7 +248,7 @@ class TestCaseSinglePlayer:
         question_displayed = player.start()
 
         assert question_displayed == question
-        assert player.current_question == question_displayed
+        assert player.current == question_displayed
         assert Reactions.count() == 1
 
     def t_reactToFirstQuestion(self, dbsession):

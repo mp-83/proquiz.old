@@ -1,6 +1,6 @@
 import logging
 
-from codechallenge.entities import Matches, User, Users
+from codechallenge.entities import Answers, Matches, User, Users
 from codechallenge.play.single_player import PlayerStatus, SinglePlayer
 from pyramid.response import Response
 from pyramid.view import view_config
@@ -56,16 +56,18 @@ class PlayEndPoints:
     def next(self):
         data = getattr(self.request, "json", None)
         match = Matches.get(data.get("match"))
-        user = Users.get(uid=data.get("user"))
-
         if not match:
             return Response(status=404)
 
+        user = Users.get(uid=data.get("user"))
+        answer = Answers.get(uid=data.get("answer"))
+
         status = PlayerStatus(user, match)
-        SinglePlayer(status, user, match)
+        player = SinglePlayer(status, user, match)
+        next_q = player.react(answer)
 
         # TODO: to fix
 
         # if answer is among the one of this question's answer
         # if no same reaction has been recorded already
-        return Response(json={})
+        return Response(json={"question": next_q.json, "user": user.uid})

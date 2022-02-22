@@ -119,6 +119,5 @@ class TestCasePlay:
             status=200,
         )
         assert response
-        # assert response.json["question"] == question.json
-        # assert response.json["answers"] == []
-        # assert response.json["user"] == user.uid
+        assert response.json["question"] == match.questions[0][1].json
+        assert response.json["user"] == user.uid

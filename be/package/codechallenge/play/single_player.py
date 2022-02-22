@@ -234,14 +234,14 @@ class SinglePlayer:
             )
 
         self._current_reaction.record_answer(answer)
-        question = self.next_question()
+        question = self.forward()
         return question
 
     @property
-    def current_question(self):
+    def current(self):
         return self._question_factory.current
 
-    def next_question(self):
+    def forward(self):
         try:
             return self._question_factory.next()
         except GameOver:

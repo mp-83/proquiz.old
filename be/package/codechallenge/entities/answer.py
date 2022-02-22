@@ -73,3 +73,7 @@ class Answers:
     @classmethod
     def count(cls):
         return cls.session.query(Answer).count()
+
+    @classmethod
+    def get(cls, uid):
+        return cls.session.query(Answer).filter_by(uid=uid).one_or_none()
