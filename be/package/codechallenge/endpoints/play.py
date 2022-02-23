@@ -62,7 +62,7 @@ class PlayEndPoints:
         except (NotFoundObjectError, ValidateError) as e:
             if isinstance(e, NotFoundObjectError):
                 return Response(status=404)
-            return Response(status=400, json=e)
+            return Response(status=400, json={"error": e.message})
 
         match = data.get("match")
         user = data.get("user")

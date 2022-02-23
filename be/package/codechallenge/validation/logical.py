@@ -1,4 +1,4 @@
-from codechallenge.entities import Answers, Matches, Questions, Users
+from codechallenge.entities import Answers, Matches, Questions, Reactions, Users
 from codechallenge.exceptions import NotFoundObjectError, ValidateError
 
 
@@ -10,8 +10,18 @@ class ValidatePlayNext:
         self.question_uid = kwargs.get("question")
         self._data = {}
 
-    def data(self):
-        return self._data
+    def valid_reaction(self):
+        user = self._data.get("user")
+        if not user:
+            user = Users.get(uid=self.user_uid)
+
+        question = self._data.get("question")
+        if not question:
+            question = Questions.get(uid=self.question_uid)
+
+        reaction = Reactions.reaction_of_user_to_question(user, question)
+        if reaction and reaction.answer:
+            raise ValidateError("Duplicate Reactions")
 
     def valid_answer(self):
         answer = Answers.get(uid=self.answer_uid)
@@ -42,7 +52,9 @@ class ValidatePlayNext:
         raise NotFoundObjectError("Invalid match")
 
     def is_valid(self):
+        # expected to run in sequen
         self.valid_answer()
         self.valid_user()
         self.valid_match()
+        self.valid_reaction()
         return self._data

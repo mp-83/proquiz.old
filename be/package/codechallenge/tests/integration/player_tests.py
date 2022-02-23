@@ -98,7 +98,7 @@ class TestCasePlay:
                 "user": user.uid,
             },
             headers={"X-CSRF-Token": testapp.get_csrf_token()},
-            status=200,
+            status=400,
         )
 
     def t_answerQuestion(self, testapp, trivia_match):
