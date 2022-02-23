@@ -1,5 +1,6 @@
 import pytest
-from codechallenge.exceptions import ValidateError
+from codechallenge.entities import Answer, Questions
+from codechallenge.exceptions import NotFoundObjectError, ValidateError
 from codechallenge.validation.logical import ValidatePlayNext
 
 
@@ -8,16 +9,21 @@ class TestCaseNextEndPoint:
         # despite the delay between the two (which respects the DB constraint)
         pass
 
-    def t_answerDoesNotBelongToQuestion(self, dbsession):
+    def t_answerDoesNotBelongToQuestion(self, fillTestingDB, dbsession):
+        # simulate a more realistic case
+        question = Questions.get(uid=1)
+        answer = Answer(question=question, text="UK", position=1).save()
         with pytest.raises(ValidateError):
-            ValidatePlayNext(answer_uid=1, question_uid=1).valid_answer()
+            ValidatePlayNext(answer=answer.uid, question=10).valid_answer()
 
     def t_answerDoesNotExists(self, dbsession):
-        with pytest.raises(ValidateError):
-            ValidatePlayNext(answer_id=10000).valid_answer()
+        with pytest.raises(NotFoundObjectError):
+            ValidatePlayNext(answer=10000).valid_answer()
 
-    def t_userDoesNotExists(self):
-        pass
+    def t_userDoesNotExists(self, dbsession):
+        with pytest.raises(NotFoundObjectError):
+            ValidatePlayNext(user=1).valid_user()
 
-    def t_matchDoesNotExists(self):
-        pass
+    def t_matchDoesNotExists(self, dbsession):
+        with pytest.raises(NotFoundObjectError):
+            ValidatePlayNext(match=1).valid_match()

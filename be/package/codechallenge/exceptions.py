@@ -34,3 +34,7 @@ class MatchOver(BaseException):
 
 class ValidateError(BaseException):
     """"""
+
+
+class NotFoundObjectError(BaseException):
+    """"""
