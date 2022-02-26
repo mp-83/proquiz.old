@@ -10,6 +10,7 @@ from codechallenge.entities import (
 )
 from codechallenge.exceptions import NotFoundObjectError, ValidateError
 from codechallenge.validation.logical import (
+    MatchExists,
     ValidatePlayLand,
     ValidatePlayNext,
     ValidatePlayStart,
@@ -22,11 +23,13 @@ class TestCaseLandEndPoint:
             ValidatePlayLand(match=1).valid_match()
 
 
-class TestCaseStartEndPoint:
+class TestCaseMatchExists:
     def t_matchDoesNotExists(self, dbsession):
         with pytest.raises(NotFoundObjectError):
-            ValidatePlayStart(match=1).valid_match()
+            MatchExists(match_uid=1).check()
 
+
+class TestCaseStartEndPoint:
     def t_publicUserRestrictedMatch(self, dbsession):
         match = Match(is_restricted=True).save()
         user = User(email="user@test.project").save()

@@ -2,62 +2,59 @@ from codechallenge.entities import Answers, Matches, Questions, Reactions, Users
 from codechallenge.exceptions import NotFoundObjectError, ValidateError
 
 
+class MatchExists:
+    def __init__(self, match_uid):
+        self.match_uid = match_uid
+
+    def check(self):
+        match = Matches.get(uid=self.match_uid)
+        if match:
+            return match
+        raise NotFoundObjectError("")
+
+
 class ValidatePlayLand:
     def __init__(self, **kwargs):
         self.match_uid = kwargs.get("match")
         self.user_uid = kwargs.get("user")
-        self._data = {}
 
     def valid_match(self):
-        match = Matches.get(uid=self.match_uid)
-        if not match:
-            raise NotFoundObjectError("")
-
+        match = MatchExists(self.match_uid).check()
         if match.is_valid:
-            self._data["match"] = match
-            return
+            return match
 
         raise ValidateError("Expired match")
 
     def is_valid(self):
-        self.valid_match()
-        return self._data
+        return {"match": self.valid_match()}
 
 
 class ValidatePlayStart:
     def __init__(self, **kwargs):
         self.match_uid = kwargs.get("match")
         self.user_uid = kwargs.get("user")
-        self._data = {}
-
-    def valid_match(self):
-        match = Matches.get(uid=self.match_uid)
-        if match:
-            self._data["match"] = match
-            return
-        raise NotFoundObjectError("")
 
     def valid_user(self):
         user = Users.get(uid=self.user_uid)
         if user:
-            self._data["user"] = user
-            return
+            return user
 
         raise NotFoundObjectError("Invalid user")
 
-    def is_valid(self):
-        self.valid_user()
-        self.valid_match()
+    def valid_match(self):
+        return MatchExists(self.match_uid).check()
 
-        user = self._data["user"]
-        match = self._data["match"]
+    def is_valid(self):
+        match = self.valid_match()
+        user = self.valid_user()
+
         accessibility = (
             user.private
             and match.is_restricted
             or not (user.private or match.is_restricted)
         )
         if match.is_valid and accessibility:
-            return self._data
+            return {"user": user, "match": match}
 
         raise ValidateError("Invalid match")
 
@@ -104,12 +101,8 @@ class ValidatePlayNext:
         raise NotFoundObjectError("Invalid user")
 
     def valid_match(self):
-        match = Matches.get(uid=self.match_uid)
-        if match:
-            self._data["match"] = match
-            return
-
-        raise NotFoundObjectError("Match not found")
+        match = MatchExists(self.match_uid).check()
+        self._data["match"] = match
 
     def is_valid(self):
         # expected to run in sequence
