@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
-from codechallenge.entities import Game, Match, Question, Reaction, User
+from codechallenge.entities import Game, Match, Question, User
 
 
 class TestCaseUnexistentMatch:
@@ -35,20 +35,7 @@ class TestCasePlay:
     def t_startExpiredMatch(self, testapp):
         one_hour_ago = datetime.now(timezone.utc) - timedelta(hours=1)
         match = Match(expires=one_hour_ago).save()
-        testapp.post_json(
-            "/play/start",
-            {"match": match.uid},
-            headers={"X-CSRF-Token": testapp.get_csrf_token()},
-            status=400,
-        )
-
-    def t_invitedUserHasPlayedGameAlreadyMoreThanAllowed(self, testapp):
-        match = Match().save()
-        user = User(private=match.is_restricted).save(uhash="acde48001122")
-        game = Game(match_uid=match.uid).save()
-        question = Question(text="1+1 is = to", position=0, game_uid=game.uid).save()
-        Reaction(question=question, user=user, match=match, game_uid=game.uid).save()
-
+        user = User().save()
         testapp.post_json(
             "/play/start",
             {"match": match.uid, "user": user.uid},

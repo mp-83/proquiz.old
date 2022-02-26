@@ -3,7 +3,7 @@ import logging
 from codechallenge.entities import Matches, User, Users
 from codechallenge.exceptions import NotFoundObjectError, ValidateError
 from codechallenge.play.single_player import PlayerStatus, SinglePlayer
-from codechallenge.validation.logical import ValidatePlayNext
+from codechallenge.validation.logical import ValidatePlayNext, ValidatePlayStart
 from pyramid.response import Response
 from pyramid.view import view_config
 
@@ -32,18 +32,16 @@ class PlayEndPoints:
 
     @view_config(route_name="start", request_method="POST")
     def start(self):
-        data = getattr(self.request, "json", None)
-        match = Matches.get(data.get("match"))
-        user = Users.get(uid=data.get("user"))
-        if not match:
-            return Response(status=404)
+        user_input = getattr(self.request, "json", None)
+        try:
+            data = ValidatePlayStart(**user_input).is_valid()
+        except (NotFoundObjectError, ValidateError) as e:
+            if isinstance(e, NotFoundObjectError):
+                return Response(status=404)
+            return Response(status=400, json={"error": e.message})
 
-        if not match.is_valid:
-            return Response(status=400, json={"error": "Invalid match"})
-
-        if not match.left_attempts(user):
-            return Response(status=400, json={"error": "Invalid match"})
-
+        match = data.get("match")
+        user = data.get("user")
         status = PlayerStatus(user, match)
         player = SinglePlayer(status, user, match)
         current_question = player.start()

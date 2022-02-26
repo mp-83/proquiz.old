@@ -153,6 +153,7 @@ class SinglePlayer:
 
     def start(self):
         self._match.refresh()
+        # TODO to fix
         if self._match.left_attempts(self._user) == 0:
             raise MatchNotPlayableError(
                 f"User {self._user} has no left attempts for Match {self._match.name}"

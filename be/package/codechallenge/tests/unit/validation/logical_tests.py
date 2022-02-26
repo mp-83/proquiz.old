@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 import pytest
 from codechallenge.entities import (
     Answer,
@@ -9,7 +11,18 @@ from codechallenge.entities import (
     User,
 )
 from codechallenge.exceptions import NotFoundObjectError, ValidateError
-from codechallenge.validation.logical import ValidatePlayNext
+from codechallenge.validation.logical import ValidatePlayNext, ValidatePlayStart
+
+
+class TestCaseStartEndPoint:
+    def t_matchDoesNotExists(self, dbsession):
+        with pytest.raises(NotFoundObjectError):
+            ValidatePlayStart(match=1).valid_match()
+
+    def t_matchExpired(self, dbsession):
+        match = Match(expires=(datetime.now() - timedelta(hours=1))).save()
+        with pytest.raises(ValidateError):
+            ValidatePlayStart(match=match.uid).valid_match()
 
 
 class TestCaseNextEndPoint:

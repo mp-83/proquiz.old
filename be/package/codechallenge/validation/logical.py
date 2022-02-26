@@ -2,6 +2,37 @@ from codechallenge.entities import Answers, Matches, Questions, Reactions, Users
 from codechallenge.exceptions import NotFoundObjectError, ValidateError
 
 
+class ValidatePlayStart:
+    def __init__(self, **kwargs):
+        self.match_uid = kwargs.get("match")
+        self.user_uid = kwargs.get("user")
+        self._data = {}
+
+    def valid_match(self):
+        match = Matches.get(uid=self.match_uid)
+        if not match:
+            raise NotFoundObjectError("")
+
+        if match.is_valid:
+            self._data["match"] = match
+            return
+
+        raise ValidateError("Expired match")
+
+    def valid_user(self):
+        user = Users.get(uid=self.user_uid)
+        if user:
+            self._data["user"] = user
+            return
+
+        raise NotFoundObjectError("Invalid user")
+
+    def is_valid(self):
+        self.valid_user()
+        self.valid_match()
+        return self._data
+
+
 class ValidatePlayNext:
     def __init__(self, **kwargs):
         self.match_uid = kwargs.get("match")
@@ -49,10 +80,10 @@ class ValidatePlayNext:
             self._data["match"] = match
             return
 
-        raise NotFoundObjectError("Invalid match")
+        raise NotFoundObjectError("Match not found")
 
     def is_valid(self):
-        # expected to run in sequen
+        # expected to run in sequence
         self.valid_answer()
         self.valid_user()
         self.valid_match()
