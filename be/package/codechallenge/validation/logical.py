@@ -2,7 +2,7 @@ from codechallenge.entities import Answers, Matches, Questions, Reactions, Users
 from codechallenge.exceptions import NotFoundObjectError, ValidateError
 
 
-class ValidatePlayStart:
+class ValidatePlayLand:
     def __init__(self, **kwargs):
         self.match_uid = kwargs.get("match")
         self.user_uid = kwargs.get("user")
@@ -19,6 +19,24 @@ class ValidatePlayStart:
 
         raise ValidateError("Expired match")
 
+    def is_valid(self):
+        self.valid_match()
+        return self._data
+
+
+class ValidatePlayStart:
+    def __init__(self, **kwargs):
+        self.match_uid = kwargs.get("match")
+        self.user_uid = kwargs.get("user")
+        self._data = {}
+
+    def valid_match(self):
+        match = Matches.get(uid=self.match_uid)
+        if match:
+            self._data["match"] = match
+            return
+        raise NotFoundObjectError("")
+
     def valid_user(self):
         user = Users.get(uid=self.user_uid)
         if user:
@@ -30,7 +48,18 @@ class ValidatePlayStart:
     def is_valid(self):
         self.valid_user()
         self.valid_match()
-        return self._data
+
+        user = self._data["user"]
+        match = self._data["match"]
+        accessibility = (
+            user.private
+            and match.is_restricted
+            or not (user.private or match.is_restricted)
+        )
+        if match.is_valid and accessibility:
+            return self._data
+
+        raise ValidateError("Invalid match")
 
 
 class ValidatePlayNext:

@@ -6,10 +6,10 @@ from codechallenge.entities import Game, Match, Question, User
 class TestCaseUnexistentMatch:
     def t_endpoints(self, testapp):
         endpoints = ["/play/", "/play/start", "/play/next"]
-        for ep in endpoints:
+        for endpoint in endpoints:
             try:
                 testapp.post_json(
-                    ep,
+                    endpoint,
                     {"match": 100},
                     headers={"X-CSRF-Token": testapp.get_csrf_token()},
                     status=404,
@@ -44,7 +44,7 @@ class TestCasePlay:
         )
 
     def t_startMatch(self, testapp):
-        match = Match().save()
+        match = Match(is_restricted=False).save()
         game = Game(match_uid=match.uid).save()
         question = Question(game_uid=game.uid, text="1+1 is = to", position=0).save()
         user = User().save()

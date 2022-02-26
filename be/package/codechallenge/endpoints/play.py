@@ -1,9 +1,13 @@
 import logging
 
-from codechallenge.entities import Matches, User, Users
+from codechallenge.entities import User, Users
 from codechallenge.exceptions import NotFoundObjectError, ValidateError
 from codechallenge.play.single_player import PlayerStatus, SinglePlayer
-from codechallenge.validation.logical import ValidatePlayNext, ValidatePlayStart
+from codechallenge.validation.logical import (
+    ValidatePlayLand,
+    ValidatePlayNext,
+    ValidatePlayStart,
+)
 from pyramid.response import Response
 from pyramid.view import view_config
 
@@ -17,11 +21,15 @@ class PlayEndPoints:
     @view_config(route_name="land", request_method="POST")
     def land(self):
         user = None
-        data = getattr(self.request, "json", None)
-        match = Matches.get(data.get("match"))
-        if not match:
-            return Response(status=404)
+        user_input = getattr(self.request, "json", None)
+        try:
+            data = ValidatePlayLand(**user_input).is_valid()
+        except (NotFoundObjectError, ValidateError) as e:
+            if isinstance(e, NotFoundObjectError):
+                return Response(status=404)
+            return Response(status=400, json={"error": e.message})
 
+        match = data.get("match")
         if match.is_restricted:
             user = Users.get_private_user(mhash=data.get("uhash"))
 
