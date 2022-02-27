@@ -3,7 +3,7 @@ import logging
 from codechallenge.entities import Game, Match, Question
 from codechallenge.exceptions import NotFoundObjectError, ValidateError
 from codechallenge.security import login_required
-from codechallenge.validation.logical import MatchExists, ValidateEditMatch
+from codechallenge.validation.logical import RetrieveObject, ValidateEditMatch
 from pyramid.response import Response
 from pyramid.view import view_config
 
@@ -22,7 +22,7 @@ class MatchEndPoints:
     def get_match(self):
         uid = self.request.matchdict.get("uid")
         try:
-            match = MatchExists(match_uid=uid).check()
+            match = RetrieveObject(uid=uid, otype="match").get()
         except NotFoundObjectError:
             return Response(status=404)
 

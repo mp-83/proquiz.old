@@ -2,14 +2,22 @@ from codechallenge.entities import Answers, Matches, Questions, Reactions, Users
 from codechallenge.exceptions import NotFoundObjectError, ValidateError
 
 
-class MatchExists:
-    def __init__(self, match_uid):
-        self.match_uid = match_uid
+class RetrieveObject:
+    def __init__(self, uid, otype):
+        self.object_uid = uid
+        self.otype = otype
 
-    def check(self):
-        match = Matches.get(uid=self.match_uid)
-        if match:
-            return match
+    def get(self):
+        klass = {
+            "answer": Answers,
+            "match": Matches,
+            "question": Questions,
+            "user": Users,
+        }.get(self.otype)
+
+        obj = klass.get(uid=self.object_uid)
+        if obj:
+            return obj
         raise NotFoundObjectError("")
 
 
@@ -19,7 +27,7 @@ class ValidatePlayLand:
         self.user_uid = kwargs.get("user")
 
     def valid_match(self):
-        match = MatchExists(self.match_uid).check()
+        match = RetrieveObject(self.match_uid, otype="match").get()
         if match.is_valid:
             return match
 
@@ -42,7 +50,7 @@ class ValidatePlayStart:
         raise NotFoundObjectError("Invalid user")
 
     def valid_match(self):
-        return MatchExists(self.match_uid).check()
+        return RetrieveObject(self.match_uid, otype="match").get()
 
     def is_valid(self):
         match = self.valid_match()
@@ -101,7 +109,7 @@ class ValidatePlayNext:
         raise NotFoundObjectError("Invalid user")
 
     def valid_match(self):
-        match = MatchExists(self.match_uid).check()
+        match = RetrieveObject(self.match_uid, otype="match").get()
         self._data["match"] = match
 
     def is_valid(self):
@@ -118,7 +126,7 @@ class ValidateEditMatch:
         self.match_uid = match_uid
 
     def valid_match(self):
-        match = MatchExists(self.match_uid).check()
+        match = RetrieveObject(self.match_uid, otype="match").get()
         if not match.is_started:
             return match
 

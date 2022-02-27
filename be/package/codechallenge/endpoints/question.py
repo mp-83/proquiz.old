@@ -1,7 +1,9 @@
 import logging
 
-from codechallenge.entities import Question, Questions
+from codechallenge.entities import Question
+from codechallenge.exceptions import NotFoundObjectError
 from codechallenge.security import login_required
+from codechallenge.validation.logical import RetrieveObject
 from pyramid.response import Response
 from pyramid.view import view_config, view_defaults
 
@@ -17,8 +19,9 @@ class QuestionEndPoints:
     @view_config(route_name="get_question")
     def get_question(self):
         uid = self.request.matchdict.get("uid")
-        question = Questions.get(uid)
-        if not question:
+        try:
+            question = RetrieveObject(uid=uid, otype="question").get()
+        except NotFoundObjectError:
             return Response(status=404)
 
         return Response(json=question.json)
@@ -43,9 +46,9 @@ class QuestionEndPoints:
     def edit_question(self):
         uid = self.request.matchdict.get("uid")
         data = getattr(self.request, "json", None)
-
-        question = Questions.get(uid)
-        if not question:
+        try:
+            question = RetrieveObject(uid=uid, otype="question").get()
+        except NotFoundObjectError:
             return Response(status=404)
 
         question.update(**data)

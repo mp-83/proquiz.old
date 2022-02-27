@@ -20,6 +20,7 @@ class TestCaseUnexistentMatch:
 
 
 class TestCasePlay:
+    # the test scenario for land/404 is already tested above
     def t_playLand(self, testapp):
         match = Match().save()
         response = testapp.post_json(
