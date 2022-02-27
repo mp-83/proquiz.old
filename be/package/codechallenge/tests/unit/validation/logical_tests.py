@@ -32,11 +32,11 @@ class TestCaseStartEndPoint:
         match = Match(is_restricted=True).save()
         user = User(email="user@test.project").save()
         with pytest.raises(ValidateError):
-            ValidatePlayStart(match=match.uid, user=user.uid).is_valid()
+            ValidatePlayStart(match_uid=match.uid, user_uid=user.uid).is_valid()
 
     def t_userDoesNotExists(self, dbsession):
         with pytest.raises(NotFoundObjectError):
-            ValidatePlayStart(user=1).valid_user()
+            ValidatePlayStart(user_uid=1).valid_user()
 
 
 class TestCaseNextEndPoint:
@@ -59,23 +59,25 @@ class TestCaseNextEndPoint:
         ).save()
 
         with pytest.raises(ValidateError):
-            ValidatePlayNext(user=user.uid, question=question.uid).valid_reaction()
+            ValidatePlayNext(
+                user_uid=user.uid, question_uid=question.uid
+            ).valid_reaction()
 
     def t_answerDoesNotBelongToQuestion(self, fillTestingDB, dbsession):
         # simulate a more realistic case
         question = Questions.get(uid=1)
-        answer = Answer(question=question, text="UK", position=1).save()
+        answer = Answer(question_uid=question.uid, text="UK", position=1).save()
         with pytest.raises(ValidateError):
-            ValidatePlayNext(answer=answer.uid, question=10).valid_answer()
+            ValidatePlayNext(answer_uid=answer.uid, question_uid=10).valid_answer()
 
     def t_answerDoesNotExists(self, dbsession):
         with pytest.raises(NotFoundObjectError):
-            ValidatePlayNext(answer=10000).valid_answer()
+            ValidatePlayNext(answer_uid=10000).valid_answer()
 
     def t_userDoesNotExists(self, dbsession):
         with pytest.raises(NotFoundObjectError):
-            ValidatePlayNext(user=1).valid_user()
+            ValidatePlayNext(user_uid=1).valid_user()
 
     def t_matchDoesNotExists(self, dbsession):
         with pytest.raises(NotFoundObjectError):
-            ValidatePlayNext(match=1).valid_match()
+            ValidatePlayNext(match_uid=1).valid_match()

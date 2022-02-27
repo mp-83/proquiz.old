@@ -23,8 +23,8 @@ class RetrieveObject:
 
 class ValidatePlayLand:
     def __init__(self, **kwargs):
-        self.match_uid = kwargs.get("match")
-        self.user_uid = kwargs.get("user")
+        self.match_uid = kwargs.get("match_uid")
+        self.user_uid = kwargs.get("user_uid")
 
     def valid_match(self):
         match = RetrieveObject(self.match_uid, otype="match").get()
@@ -39,8 +39,8 @@ class ValidatePlayLand:
 
 class ValidatePlayStart:
     def __init__(self, **kwargs):
-        self.match_uid = kwargs.get("match")
-        self.user_uid = kwargs.get("user")
+        self.match_uid = kwargs.get("match_uid")
+        self.user_uid = kwargs.get("user_uid")
 
     def valid_user(self):
         user = Users.get(uid=self.user_uid)
@@ -69,10 +69,10 @@ class ValidatePlayStart:
 
 class ValidatePlayNext:
     def __init__(self, **kwargs):
-        self.match_uid = kwargs.get("match")
-        self.answer_uid = kwargs.get("answer")
-        self.user_uid = kwargs.get("user")
-        self.question_uid = kwargs.get("question")
+        self.match_uid = kwargs.get("match_uid")
+        self.answer_uid = kwargs.get("answer_uid")
+        self.user_uid = kwargs.get("user_uid")
+        self.question_uid = kwargs.get("question_uid")
         self._data = {}
 
     def valid_reaction(self):

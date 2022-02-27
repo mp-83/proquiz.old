@@ -10,7 +10,7 @@ class TestCaseUnexistentMatch:
             try:
                 testapp.post_json(
                     endpoint,
-                    {"match": 100},
+                    {"match_uid": 100},
                     headers={"X-CSRF-Token": testapp.get_csrf_token()},
                     status=404,
                 )
@@ -25,7 +25,7 @@ class TestCasePlay:
         match = Match().save()
         response = testapp.post_json(
             "/play/",
-            {"match": match.uid},
+            {"match_uid": match.uid},
             headers={"X-CSRF-Token": testapp.get_csrf_token()},
             status=200,
         )
@@ -39,7 +39,7 @@ class TestCasePlay:
         user = User().save()
         testapp.post_json(
             "/play/start",
-            {"match": match.uid, "user": user.uid},
+            {"match_uid": match.uid, "user_uid": user.uid},
             headers={"X-CSRF-Token": testapp.get_csrf_token()},
             status=400,
         )
@@ -52,7 +52,7 @@ class TestCasePlay:
 
         response = testapp.post_json(
             "/play/start",
-            {"match": match.uid, "user": user.uid},
+            {"match_uid": match.uid, "user_uid": user.uid},
             headers={"X-CSRF-Token": testapp.get_csrf_token()},
             status=200,
         )
@@ -69,10 +69,10 @@ class TestCasePlay:
         testapp.post_json(
             "/play/next",
             {
-                "match": match.uid,
-                "question": question.uid,
-                "answer": answer.uid,
-                "user": user.uid,
+                "match_uid": match.uid,
+                "question_uid": question.uid,
+                "answer_uid": answer.uid,
+                "user_uid": user.uid,
             },
             headers={"X-CSRF-Token": testapp.get_csrf_token()},
             status=200,
@@ -80,10 +80,10 @@ class TestCasePlay:
         testapp.post_json(
             "/play/next",
             {
-                "match": match.uid,
-                "question": question.uid,
-                "answer": answer.uid,
-                "user": user.uid,
+                "match_uid": match.uid,
+                "question_uid": question.uid,
+                "answer_uid": answer.uid,
+                "user_uid": user.uid,
             },
             headers={"X-CSRF-Token": testapp.get_csrf_token()},
             status=400,
@@ -98,10 +98,10 @@ class TestCasePlay:
         response = testapp.post_json(
             "/play/next",
             {
-                "match": match.uid,
-                "question": question.uid,
-                "answer": answer.uid,
-                "user": user.uid,
+                "match_uid": match.uid,
+                "question_uid": question.uid,
+                "answer_uid": answer.uid,
+                "user_uid": user.uid,
             },
             headers={"X-CSRF-Token": testapp.get_csrf_token()},
             status=200,
