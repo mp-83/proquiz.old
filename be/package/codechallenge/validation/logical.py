@@ -111,3 +111,18 @@ class ValidatePlayNext:
         self.valid_match()
         self.valid_reaction()
         return self._data
+
+
+class ValidateEditMatch:
+    def __init__(self, match_uid):
+        self.match_uid = match_uid
+
+    def valid_match(self):
+        match = MatchExists(self.match_uid).check()
+        if not match.is_started:
+            return match
+
+        raise ValidateError("Invalid answer")
+
+    def is_valid(self):
+        return self.valid_match()

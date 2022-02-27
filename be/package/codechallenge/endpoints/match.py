@@ -1,7 +1,9 @@
 import logging
 
-from codechallenge.entities import Game, Match, Matches, Question
+from codechallenge.entities import Game, Match, Question
+from codechallenge.exceptions import NotFoundObjectError, ValidateError
 from codechallenge.security import login_required
+from codechallenge.validation.logical import MatchExists, ValidateEditMatch
 from pyramid.response import Response
 from pyramid.view import view_config
 
@@ -19,9 +21,11 @@ class MatchEndPoints:
     )
     def get_match(self):
         uid = self.request.matchdict.get("uid")
-        match = Matches.get(uid=uid)
-        if not match:
+        try:
+            match = MatchExists(match_uid=uid).check()
+        except NotFoundObjectError:
             return Response(status=404)
+
         return Response(json={"match": match.json})
 
     @login_required
@@ -48,9 +52,12 @@ class MatchEndPoints:
     )
     def edit_match(self):
         uid = self.request.matchdict.get("uid")
-        match = Matches.get(uid=uid)
-        if match.is_started:
-            return Response(status=400)
+        try:
+            match = ValidateEditMatch(uid).is_valid()
+        except (NotFoundObjectError, ValidateError) as e:
+            if isinstance(e, NotFoundObjectError):
+                return Response(status=404)
+            return Response(status=400, json={"error": e.message})
 
         data = self.request.json
         match.update(**data)
