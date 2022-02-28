@@ -5,7 +5,7 @@ from pyramid.httpexceptions import HTTPSeeOther
 
 
 class TestCaseLoginRequired:
-    # these tests should
+    # TODO: check why this test should stay as it is
     def t_checkDefaultEndPointsAreDecorated(self, dummy_request, config):
         protected_endpoints = (
             (QuestionEndPoints, "new_question"),
