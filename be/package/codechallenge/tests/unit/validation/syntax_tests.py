@@ -51,3 +51,6 @@ class TestCasePlaySchemas:
             {"game_uid": "1", "text": "".join("a" for _ in range(400)), "position": 1}
         )
         assert is_valid
+
+    def t_anotherTest(self):
+        pass
