@@ -1,7 +1,6 @@
 from cerberus import Validator
 from codechallenge.validation.syntax import (
     create_question_schema,
-    edit_question_schema,
     land_play_schema,
     next_play_schema,
     start_play_schema,
@@ -46,7 +45,7 @@ class TestCasePlaySchemas:
         assert is_valid
 
     def t_editQuestion(self):
-        v = Validator(edit_question_schema)
+        v = Validator(create_question_schema)
         is_valid = v.validate(
             {"game_uid": "1", "text": "".join("a" for _ in range(400)), "position": 1}
         )
