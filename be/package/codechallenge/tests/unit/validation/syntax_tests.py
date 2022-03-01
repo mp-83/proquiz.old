@@ -1,5 +1,6 @@
 from cerberus import Validator
 from codechallenge.validation.syntax import (
+    create_match_schema,
     create_question_schema,
     edit_question_schema,
     land_play_schema,
@@ -38,7 +39,14 @@ class TestCasePlaySchemas:
         assert not is_valid
         assert v.errors == {"question_uid": ["required field"]}
 
-    def t_newQuestionData(self):
+
+class TestCaseQuestionSchema:
+    def t_templateQuestion(self):
+        v = Validator(create_question_schema)
+        is_valid = v.validate({"text": "".join("a" for _ in range(400)), "position": 1})
+        assert is_valid
+
+    def t_gameQuestion(self):
         v = Validator(create_question_schema)
         is_valid = v.validate(
             {"game_uid": "1", "text": "".join("a" for _ in range(400)), "position": 1}
@@ -48,9 +56,35 @@ class TestCasePlaySchemas:
     def t_editQuestion(self):
         v = Validator(edit_question_schema)
         is_valid = v.validate(
-            {"game_uid": "1", "text": "".join("a" for _ in range(400)), "position": 1}
+            {
+                "question_uid": "1",
+                "game_uid": "1",
+                "text": "".join("a" for _ in range(400)),
+                "position": 1,
+            }
         )
         assert is_valid
 
+
+class TestCaseMatchSchema:
     def t_anotherTest(self):
-        pass
+        v = Validator(create_match_schema)
+        is_valid = v.validate(
+            {
+                "name": "new match",
+                "questions": [
+                    {
+                        "text": "Which of the following statements cannot be inferred from the passage?",
+                        "answers": [
+                            {
+                                "text": "The Turk began its tour of Europe in April of 1783."
+                            },
+                            {
+                                "text": "Philidor found his match with the Turk challenging."
+                            },
+                        ],
+                    },
+                ],
+            }
+        )
+        assert is_valid
