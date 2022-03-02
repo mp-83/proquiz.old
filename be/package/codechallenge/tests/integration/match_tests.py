@@ -16,6 +16,14 @@ class TestCaseMatchEndpoints:
         questions = response.json["match"]["questions"]
         assert questions[0][0]["text"] == TEST_1[0]["text"]
 
+    def t_invalidCreationPayload(self, testapp):
+        testapp.post_json(
+            "/match/new",
+            {"questions": [{}]},
+            headers={"X-CSRF-Token": testapp.get_csrf_token()},
+            status=400,
+        )
+
     def t_requestUnexistentMatch(self, testapp):
         testapp.get("/match/30", status=404)
 
@@ -76,6 +84,7 @@ class TestCaseMatchEndpoints:
         first_game = Game(match_uid=match.uid).save()
         Question(text="Where is London?", game_uid=first_game.uid, position=0).save()
         payload = {
+            "times": 10,
             "questions": [
                 {
                     "game": first_game.index,
@@ -98,21 +107,13 @@ class TestCaseMatchEndpoints:
         match.refresh()
         assert len(match.questions[0]) == 2
         assert len(first_game.ordered_questions) == 2
+        assert match.times == 10
 
-    def t_changeNameAndTimesOfAMatch(self, testapp):
-        # showcase that changing the attribute value of a match work
+    def t_invalidEditPayload(self, testapp):
         match = Match(name="New Match").save()
-        payload = {
-            "name": "Another match name",
-            "times": 10,
-        }
         testapp.patch_json(
             f"/match/edit/{match.uid}",
-            payload,
+            {"times": 0},
             headers={"X-CSRF-Token": testapp.get_csrf_token()},
-            status=200,
+            status=400,
         )
-
-        match.refresh()
-        assert match.name == "Another match name"
-        assert match.times == 10

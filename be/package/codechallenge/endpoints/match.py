@@ -1,9 +1,11 @@
 import logging
 
+from cerberus import Validator
 from codechallenge.entities import Game, Match, Question
 from codechallenge.exceptions import NotFoundObjectError, ValidateError
 from codechallenge.security import login_required
 from codechallenge.validation.logical import RetrieveObject, ValidateEditMatch
+from codechallenge.validation.syntax import create_match_schema, edit_match_schema
 from pyramid.response import Response
 from pyramid.view import view_config
 
@@ -35,10 +37,14 @@ class MatchEndPoints:
         request_method="POST",
     )
     def create_match(self):
-        data = self.request.json
-        new_match = Match(name=data.get("name")).save()
+        user_data = getattr(self.request, "json", None)
+        v = Validator(create_match_schema)
+        if not v.validate(user_data):
+            return Response(status=400, json=v.errors)
+
+        new_match = Match(name=user_data.get("name")).save()
         new_game = Game(match_uid=new_match.uid).save()
-        for position, question in enumerate(data.get("questions", [])):
+        for position, question in enumerate(user_data.get("questions", [])):
             new = Question(
                 game_uid=new_game.uid, text=question["text"], position=position
             )
@@ -59,6 +65,10 @@ class MatchEndPoints:
                 return Response(status=404)
             return Response(status=400, json={"error": e.message})
 
-        data = self.request.json
-        match.update(**data)
+        user_data = getattr(self.request, "json", None)
+        v = Validator(edit_match_schema)
+        if not v.validate(user_data):
+            return Response(status=400, json=v.errors)
+
+        match.update(**v.document)
         return Response(json={"match": match.json})

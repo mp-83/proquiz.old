@@ -3,16 +3,16 @@ from datetime import datetime, timedelta, timezone
 from codechallenge.entities import Game, Match, Question, User
 
 
-class TestCaseUnexistentMatch:
+class TestCaseBadRequest:
     def t_endpoints(self, testapp):
         endpoints = ["/play/", "/play/start", "/play/next"]
         for endpoint in endpoints:
             try:
                 testapp.post_json(
                     endpoint,
-                    {"match_uid": 100},
+                    {"match_uid": None},
                     headers={"X-CSRF-Token": testapp.get_csrf_token()},
-                    status=404,
+                    status=400,
                 )
             # TODO: to replace with specific exception
             except Exception as err:
@@ -32,6 +32,14 @@ class TestCasePlay:
         # the user.uid value can't be known ahead, but it will be > 0
         assert response.json["user"]
         assert response.json["match"] == match.uid
+
+    def t_unexistentMatch(self, testapp):
+        testapp.post_json(
+            "/play/start",
+            {"match_uid": 100, "user_uid": 1},
+            headers={"X-CSRF-Token": testapp.get_csrf_token()},
+            status=404,
+        )
 
     def t_startExpiredMatch(self, testapp):
         one_hour_ago = datetime.now(timezone.utc) - timedelta(hours=1)
@@ -87,6 +95,19 @@ class TestCasePlay:
             },
             headers={"X-CSRF-Token": testapp.get_csrf_token()},
             status=400,
+        )
+
+    def t_unexistentQuestion(self, testapp):
+        testapp.post_json(
+            "/play/next",
+            {
+                "match_uid": 1,
+                "question_uid": 1,
+                "answer_uid": 1,
+                "user_uid": 1,
+            },
+            headers={"X-CSRF-Token": testapp.get_csrf_token()},
+            status=404,
         )
 
     def t_answerQuestion(self, testapp, trivia_match):

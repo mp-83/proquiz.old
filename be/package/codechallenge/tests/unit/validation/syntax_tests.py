@@ -2,6 +2,7 @@ from cerberus import Validator
 from codechallenge.validation.syntax import (
     create_match_schema,
     create_question_schema,
+    edit_match_schema,
     edit_question_schema,
     land_play_schema,
     next_play_schema,
@@ -67,11 +68,13 @@ class TestCaseQuestionSchema:
 
 
 class TestCaseMatchSchema:
-    def t_anotherTest(self):
+    def t_createPayloadWithQuestions(self):
         v = Validator(create_match_schema)
         is_valid = v.validate(
             {
                 "name": "new match",
+                "times": "2",
+                "is_restricted": "true",
                 "questions": [
                     {
                         "text": "Which of the following statements cannot be inferred from the passage?",
@@ -88,3 +91,24 @@ class TestCaseMatchSchema:
             }
         )
         assert is_valid
+        assert v.document["is_restricted"]
+
+    def t_multipleEdgeValues(self):
+        v = Validator(create_match_schema)
+        document = {
+            "name": "new match",
+            "times": "2",
+            "is_restricted": "true",
+            "order": "false",
+            "questions": [{"text": "text"}],
+        }
+        for value in [1, None, "10", "null"]:
+            document.update(times=value)
+            is_valid = v.validate(document)
+            assert is_valid
+
+    def t_allowForPartialUpdate(self):
+        v = Validator(edit_match_schema)
+        is_valid = v.validate({"is_restricted": False})
+        assert is_valid
+        assert not v.document["is_restricted"]

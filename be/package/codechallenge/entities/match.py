@@ -20,7 +20,7 @@ class Match(TableMixin, Base):
     # if true, this match is playable only by users with the link
     is_restricted = Column(Boolean, default=True)
     # after this time match is no longer playable
-    expires = Column(DateTime(timezone=True), nullable=True)
+    expires = Column(DateTime(timezone=True))
     # how many times a match can be played
     times = Column(Integer, default=1)
     # when True games should be played in order
