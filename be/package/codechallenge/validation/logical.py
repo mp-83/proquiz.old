@@ -130,7 +130,7 @@ class ValidateEditMatch:
         if not match.is_started:
             return match
 
-        raise ValidateError("Invalid answer")
+        raise ValidateError("Match started. Cannot be edited")
 
     def is_valid(self):
         return self.valid_match()

@@ -58,17 +58,17 @@ class MatchEndPoints:
     )
     def edit_match(self):
         uid = self.request.matchdict.get("uid")
+        user_data = getattr(self.request, "json", None)
+        v = Validator(edit_match_schema)
+        if not v.validate(user_data):
+            return Response(status=400, json=v.errors)
+
         try:
             match = ValidateEditMatch(uid).is_valid()
         except (NotFoundObjectError, ValidateError) as e:
             if isinstance(e, NotFoundObjectError):
                 return Response(status=404)
             return Response(status=400, json={"error": e.message})
-
-        user_data = getattr(self.request, "json", None)
-        v = Validator(edit_match_schema)
-        if not v.validate(user_data):
-            return Response(status=400, json=v.errors)
 
         match.update(**v.document)
         return Response(json={"match": match.json})

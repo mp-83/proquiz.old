@@ -2,6 +2,26 @@ from codechallenge.entities import Game, Match, Question, Questions, Reaction, U
 from codechallenge.tests.fixtures import TEST_1
 
 
+class TestCaseBadRequest:
+    # verify that syntax check occurs before
+    # logical one
+    def t_creation(self, testapp):
+        testapp.post_json(
+            "/match/new",
+            {"questions": None},
+            headers={"X-CSRF-Token": testapp.get_csrf_token()},
+            status=400,
+        )
+
+    def t_update(self, testapp):
+        testapp.patch_json(
+            "/match/edit/1",
+            {"questions": None},
+            headers={"X-CSRF-Token": testapp.get_csrf_token()},
+            status=400,
+        )
+
+
 class TestCaseMatchEndpoints:
     def t_successfulCreationOfAMatch(self, testapp):
         match_name = "New Match"
@@ -15,14 +35,6 @@ class TestCaseMatchEndpoints:
         assert Questions.count() == 4
         questions = response.json["match"]["questions"]
         assert questions[0][0]["text"] == TEST_1[0]["text"]
-
-    def t_invalidCreationPayload(self, testapp):
-        testapp.post_json(
-            "/match/new",
-            {"questions": [{}]},
-            headers={"X-CSRF-Token": testapp.get_csrf_token()},
-            status=400,
-        )
 
     def t_requestUnexistentMatch(self, testapp):
         testapp.get("/match/30", status=404)
@@ -73,11 +85,13 @@ class TestCaseMatchEndpoints:
         ).save()
         user = User(email="t@t.com").save()
         Reaction(match=match, question=question, user=user).save()
-        testapp.patch_json(
+        response = testapp.patch_json(
             f"/match/edit/{match.uid}",
+            {"times": 1},
             headers={"X-CSRF-Token": testapp.get_csrf_token()},
             status=400,
         )
+        assert response.json["error"] == "Match started. Cannot be edited"
 
     def t_addQuestionToExistingMatchWithOneGameOnly(self, testapp):
         match = Match().save()
@@ -108,12 +122,3 @@ class TestCaseMatchEndpoints:
         assert len(match.questions[0]) == 2
         assert len(first_game.ordered_questions) == 2
         assert match.times == 10
-
-    def t_invalidEditPayload(self, testapp):
-        match = Match(name="New Match").save()
-        testapp.patch_json(
-            f"/match/edit/{match.uid}",
-            {"times": 0},
-            headers={"X-CSRF-Token": testapp.get_csrf_token()},
-            status=400,
-        )
