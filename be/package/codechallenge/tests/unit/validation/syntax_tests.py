@@ -1,3 +1,4 @@
+import pytest
 from cerberus import Validator
 from codechallenge.validation.syntax import (
     create_match_schema,
@@ -7,6 +8,7 @@ from codechallenge.validation.syntax import (
     land_play_schema,
     next_play_schema,
     start_play_schema,
+    user_login_schema,
 )
 
 
@@ -111,3 +113,17 @@ class TestCaseMatchSchema:
         is_valid = v.validate({"is_restricted": False})
         assert is_valid
         assert not v.document["is_restricted"]
+
+
+class TestCaseUserSchema:
+    def t_emptyUserNameAndPassword(self):
+        # arguments are too short
+        v = Validator(user_login_schema)
+        is_valid = v.validate({"email": "", "password": "pass"})
+        assert not is_valid
+
+    @pytest.mark.skip("skipped until regex is activated")
+    def t_invalidEmail(self):
+        v = Validator(user_login_schema)
+        is_valid = v.validate({"email": "e@a.c", "password": "password"})
+        assert not is_valid

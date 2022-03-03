@@ -24,35 +24,23 @@ class TestCaseLoginRequired:
 
 class TestCaseLogin:
     def t_failedLoginAttempt(self, testapp):
-        credentials = {
-            "email": "user@test.com",
-            "password": "psser",
-        }
-        testapp.post(
+        testapp.post_json(
             "/login",
+            {"email": "user@test.com", "password": "psser"},
             status=400,
-            params=credentials,
             headers={"X-CSRF-Token": testapp.get_csrf_token()},
         )
 
     def t_successfulLogin(self, testapp):
         credentials = {
             "email": "user@test.com",
-            "password": "p@ss",
+            "password": "p@ssworth",
         }
         User(**credentials).save()
-        testapp.post(
+        testapp.post_json(
             "/login",
+            credentials,
             status=303,
-            params=credentials,
-            headers={"X-CSRF-Token": testapp.get_csrf_token()},
-        )
-
-    def t_malformedLoginPayload(self, testapp):
-        testapp.post(
-            "/login",
-            status=400,
-            params={"email": "user"},
             headers={"X-CSRF-Token": testapp.get_csrf_token()},
         )
 

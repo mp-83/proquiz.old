@@ -112,3 +112,10 @@ edit_match_schema = {
         },
     },
 }
+
+# TODO: verify why is not working
+# 'regex': '^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+.[a-zA-Z0-9-.]{2:}$'
+user_login_schema = {
+    "email": {"type": "string", "required": True, "minlength": 5, "maxlength": 30},
+    "password": {"type": "string", "required": True, "minlength": 8, "maxlength": 100},
+}
