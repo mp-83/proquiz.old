@@ -19,16 +19,32 @@ create_question_schema = {
     "time": {"type": "integer", "coerce": int},
     "content_url": {"type": "string", "coerce": str},
     "code": {"type": "string", "coerce": str},
+    "answers": {
+        "type": "list",
+        "schema": {
+            "type": "dict",
+            "schema": {"text": {"type": "string", "required": True}},
+        },
+    },
 }
 
 edit_question_schema = {
-    "question_uid": {"type": "integer", "coerce": int, "required": True},
     "game_uid": {"type": "integer", "coerce": int, "required": False},
-    "text": {"type": "string", "required": True, "maxlength": 400},
-    "position": {"type": "integer", "coerce": int, "required": True},
+    "text": {"type": "string", "maxlength": 400},
+    "position": {"type": "integer", "coerce": int, "min": 0},
     "time": {"type": "integer", "coerce": int},
     "content_url": {"type": "string", "coerce": str},
     "code": {"type": "string", "coerce": str},
+    "answers": {
+        "type": "list",
+        "schema": {
+            "type": "dict",
+            "schema": {
+                "uid": {"type": "integer", "coerce": int, "required": False},
+                "text": {"type": "string", "required": True},
+            },
+        },
+    },
 }
 
 

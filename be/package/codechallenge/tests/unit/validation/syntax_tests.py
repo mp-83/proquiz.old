@@ -58,7 +58,6 @@ class TestCaseQuestionSchema:
         v = Validator(edit_question_schema)
         is_valid = v.validate(
             {
-                "question_uid": "1",
                 "game_uid": "1",
                 "text": "".join("a" for _ in range(400)),
                 "position": 1,
