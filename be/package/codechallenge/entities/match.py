@@ -1,4 +1,6 @@
 from datetime import datetime
+from random import choices
+from string import ascii_letters
 from uuid import uuid1
 
 from codechallenge.app import StoreConfig
@@ -16,7 +18,7 @@ class Match(TableMixin, Base):
     # games: rankings: reactions:
 
     name = Column(String, nullable=False, unique=True)
-    url = Column(String)
+    uhash = Column(String)
     # if true, this match is playable only by users with the link
     is_restricted = Column(Boolean, default=True)
     # after this time match is no longer playable
@@ -39,6 +41,10 @@ class Match(TableMixin, Base):
         if _name is None or _name == "":
             uuid_time_substring = "{}".format(uuid1())[:23]
             kwargs["name"] = f"M-{uuid_time_substring}"
+
+        with_hash = kwargs.pop("with_hash", False)
+        if with_hash:
+            self.uhash = MatchHash().get_hash()
         super().__init__(**kwargs)
 
     @property
@@ -130,10 +136,11 @@ class Match(TableMixin, Base):
 
     def import_template_questions(self, *ids):
         """Import already existsing questions"""
-        if not ids:
-            return
-        questions = Questions.questions_with_ids(*ids).all()
         result = []
+        if not ids:
+            return result
+
+        questions = Questions.questions_with_ids(*ids).all()
         new_game = Game(match_uid=self.uid).save()
         for question in questions:
             if question.game_uid:
@@ -171,6 +178,23 @@ class Match(TableMixin, Base):
             "questions": [[q.json for q in g.ordered_questions] for g in self.games],
         }
 
+    def set_hash(self, value):
+        self.uhash = value
+        self.save()
+        return self
+
+
+class MatchHash:
+    def new_value(self, length):
+        return "".join(choices(ascii_letters, k=length))
+
+    def get_hash(self, length=10):
+        value = self.new_value(length)
+        while Matches.with_uhash(value):
+            value = self.new_value(length)
+
+        return value
+
 
 class Matches:
     @classproperty
@@ -188,3 +212,7 @@ class Matches:
     @classmethod
     def get(cls, uid):
         return cls.session.query(Match).filter_by(uid=uid).one_or_none()
+
+    @classmethod
+    def with_uhash(cls, uhash):
+        return cls.session.query(Match).filter_by(uhash=uhash).one_or_none()

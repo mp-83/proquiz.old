@@ -8,7 +8,6 @@ from codechallenge.entities import (
     Answers,
     Game,
     Match,
-    Matches,
     OpenAnswer,
     Question,
     Questions,
@@ -16,6 +15,7 @@ from codechallenge.entities import (
     Reactions,
     User,
 )
+from codechallenge.entities.match import MatchHash
 from codechallenge.entities.reaction import ReactionScore
 from codechallenge.exceptions import NotUsableQuestionError
 from sqlalchemy.exc import IntegrityError, InvalidRequestError
@@ -144,10 +144,10 @@ class TestCaseMatchModel:
         assert match.questions[1][0].text == "Where is Vienna?"
         assert match.questions[1][0].game == second_game
 
-    def t_matchWithName(self, dbsession):
-        original = Match().save()
-        found = Matches.with_name(original.name)
-        assert found == original
+    def t_createMatchWithHash(self, dbsession):
+        match = Match(with_hash=True).save()
+        assert match.uhash is not None
+        assert len(match.uhash) == 10
 
     def t_updateTextExistingQuestion(self, dbsession):
         match = Match().save()
@@ -185,7 +185,7 @@ class TestCaseMatchModel:
         assert Questions.count() == questions_cnt + 2
         assert Answers.count() == answers_cnt + 0
 
-    def t_cannotAssociateQuestionsUsedInAnotherMatch(self, dbsession):
+    def t_cannotUseIdsOfQuestionAlreadyAssociateToAGame(self, dbsession):
         match = Match().save()
         first_game = Game(match_uid=match.uid, index=2).save()
         question = Question(
@@ -204,6 +204,18 @@ class TestCaseMatchModel:
 
         assert match.reactions[0].user == user
         assert match.left_attempts(user) == 0
+
+
+class TestCaseMatchHash:
+    def t_hashMustBeUniqueForEachMatch(self, dbsession, mocker):
+        # the first call return a value already used
+        random_method = mocker.patch(
+            "codechallenge.entities.match.choices",
+            side_effect=["LINK-HASH1", "LINK-HASH2"],
+        )
+        Match(with_hash=True).save()
+        MatchHash().get_hash()
+        assert random_method.call_count == 2
 
 
 class TestCaseGameModel:

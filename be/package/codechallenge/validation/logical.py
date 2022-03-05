@@ -53,6 +53,7 @@ class ValidatePlayStart:
         return RetrieveObject(self.match_uid, otype="match").get()
 
     def is_valid(self):
+        """Verifies match accessibility"""
         match = self.valid_match()
         user = self.valid_user()
 
