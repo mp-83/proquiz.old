@@ -1,6 +1,6 @@
 def default_routes(config):
-    # /new must come before /{uid} suffixed routes because of
-    # route matching logic
+    # /new must come before /{uid} suffixed routes
+    # because of route matching logic
     config.add_route("home", "/")
     config.add_route("login", "/login")
     config.add_route("logout", "/logout")
@@ -13,9 +13,11 @@ def default_routes(config):
 
 
 def play_routes(config):
-    config.add_route("land", "/")
+    # routes must come after others because of
+    # the route matching logic
     config.add_route("start", "/start")
     config.add_route("next", "/next")
+    config.add_route("land", "/{match_uhash}")
 
 
 def includeme(config):

@@ -1,4 +1,14 @@
-land_play_schema = {"match_uid": {"type": "integer", "coerce": int, "required": True}}
+from codechallenge.constants import MATCH_HASH_LEN
+
+
+def fixed_length(field, value, error):
+    if len(value) != MATCH_HASH_LEN:
+        error(field, "Wrong hash length")
+
+
+land_play_schema = {
+    "match_uhash": {"type": "string", "required": True, "check_with": fixed_length}
+}
 
 start_play_schema = {
     "match_uid": {"type": "integer", "coerce": int, "required": True, "min": 1},

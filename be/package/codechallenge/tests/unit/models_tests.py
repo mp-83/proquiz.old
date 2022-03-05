@@ -3,6 +3,7 @@ from math import isclose
 
 import pytest
 from codechallenge.app import StoreConfig
+from codechallenge.constants import MATCH_HASH_LEN
 from codechallenge.entities import (
     Answer,
     Answers,
@@ -147,7 +148,7 @@ class TestCaseMatchModel:
     def t_createMatchWithHash(self, dbsession):
         match = Match(with_hash=True).save()
         assert match.uhash is not None
-        assert len(match.uhash) == 10
+        assert len(match.uhash) == MATCH_HASH_LEN
 
     def t_updateTextExistingQuestion(self, dbsession):
         match = Match().save()

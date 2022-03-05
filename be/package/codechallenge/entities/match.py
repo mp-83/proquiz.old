@@ -4,6 +4,7 @@ from string import ascii_letters
 from uuid import uuid1
 
 from codechallenge.app import StoreConfig
+from codechallenge.constants import MATCH_HASH_LEN
 from codechallenge.entities.game import Game
 from codechallenge.entities.meta import Base, TableMixin, classproperty
 from codechallenge.entities.question import Question, Questions
@@ -188,7 +189,7 @@ class MatchHash:
     def new_value(self, length):
         return "".join(choices(ascii_letters, k=length))
 
-    def get_hash(self, length=10):
+    def get_hash(self, length=MATCH_HASH_LEN):
         value = self.new_value(length)
         while Matches.with_uhash(value):
             value = self.new_value(length)

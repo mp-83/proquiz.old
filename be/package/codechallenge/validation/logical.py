@@ -23,11 +23,13 @@ class RetrieveObject:
 
 class ValidatePlayLand:
     def __init__(self, **kwargs):
-        self.match_uid = kwargs.get("match_uid")
-        self.user_uid = kwargs.get("user_uid")
+        self.match_uhash = kwargs.get("match_uhash")
 
     def valid_match(self):
-        match = RetrieveObject(self.match_uid, otype="match").get()
+        match = Matches.with_uhash(self.match_uhash)
+        if not match:
+            raise NotFoundObjectError("")
+
         if match.is_valid:
             return match
 

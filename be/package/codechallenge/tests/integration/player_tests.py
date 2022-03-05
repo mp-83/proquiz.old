@@ -5,7 +5,7 @@ from codechallenge.entities import Game, Match, Question, User
 
 class TestCaseBadRequest:
     def t_endpoints(self, testapp):
-        endpoints = ["/play/", "/play/start", "/play/next"]
+        endpoints = ["/play/BAD", "/play/start", "/play/next"]
         for endpoint in endpoints:
             try:
                 testapp.post_json(
@@ -22,10 +22,9 @@ class TestCaseBadRequest:
 class TestCasePlay:
     # the test scenario for land/404 is already tested above
     def t_playLand(self, testapp):
-        match = Match().save()
-        response = testapp.post_json(
-            "/play/",
-            {"match_uid": match.uid},
+        match = Match(with_hash=True).save()
+        response = testapp.post(
+            f"/play/{match.uhash}",
             headers={"X-CSRF-Token": testapp.get_csrf_token()},
             status=200,
         )

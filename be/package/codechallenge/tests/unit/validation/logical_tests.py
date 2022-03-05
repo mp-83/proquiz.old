@@ -11,6 +11,7 @@ from codechallenge.entities import (
 from codechallenge.exceptions import NotFoundObjectError, ValidateError
 from codechallenge.validation.logical import (
     RetrieveObject,
+    ValidatePlayLand,
     ValidatePlayNext,
     ValidatePlayStart,
 )
@@ -23,8 +24,14 @@ class TestCaseRetrieveObject:
 
     def t_objectIsOfCorrectType(self, dbsession):
         user = User().save()
-        obj = RetrieveObject(uid=1, otype="user").get()
+        obj = RetrieveObject(uid=user.uid, otype="user").get()
         assert obj == user
+
+
+class TestCaseLandEndPoint:
+    def t_matchDoesNotExists(self, dbsession):
+        with pytest.raises(NotFoundObjectError):
+            ValidatePlayLand(match_uhash="wrong-hash").valid_match()
 
 
 class TestCaseStartEndPoint:

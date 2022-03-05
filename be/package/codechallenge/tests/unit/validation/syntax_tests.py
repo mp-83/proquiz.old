@@ -15,8 +15,9 @@ from codechallenge.validation.syntax import (
 class TestCasePlaySchemas:
     def t_matchUidAsNone(self):
         v = Validator(land_play_schema)
-        is_valid = v.validate({"match_uid": None})
+        is_valid = v.validate({"match_uhash": "IJD34KOP"})
         assert not is_valid
+        assert v.errors == {"match_uhash": ["Wrong hash length"]}
 
     def t_validStartPayload(self):
         v = Validator(start_play_schema)

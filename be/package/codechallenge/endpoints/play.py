@@ -27,7 +27,7 @@ class PlayEndPoints:
     @view_config(route_name="land", request_method="POST")
     def land(self):
         user = None
-        user_input = getattr(self.request, "json", None)
+        user_input = self.request.matchdict
         v = Validator(land_play_schema)
         if not v.validate(user_input):
             return Response(status=400, json=v.errors)
