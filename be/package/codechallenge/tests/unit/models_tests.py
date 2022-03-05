@@ -3,7 +3,7 @@ from math import isclose
 
 import pytest
 from codechallenge.app import StoreConfig
-from codechallenge.constants import MATCH_HASH_LEN
+from codechallenge.constants import MATCH_HASH_LEN, MATCH_PASSWORD_LEN
 from codechallenge.entities import (
     Answer,
     Answers,
@@ -16,7 +16,7 @@ from codechallenge.entities import (
     Reactions,
     User,
 )
-from codechallenge.entities.match import MatchHash
+from codechallenge.entities.match import MatchHash, MatchPassword
 from codechallenge.entities.reaction import ReactionScore
 from codechallenge.exceptions import NotUsableQuestionError
 from sqlalchemy.exc import IntegrityError, InvalidRequestError
@@ -150,6 +150,11 @@ class TestCaseMatchModel:
         assert match.uhash is not None
         assert len(match.uhash) == MATCH_HASH_LEN
 
+    def t_createRestrictedMatch(self, dbsession):
+        match = Match(is_restricted=True).save()
+        assert match.uhash
+        assert len(match.password) == MATCH_PASSWORD_LEN
+
     def t_updateTextExistingQuestion(self, dbsession):
         match = Match().save()
         first_game = Game(match_uid=match.uid, index=1).save()
@@ -214,8 +219,22 @@ class TestCaseMatchHash:
             "codechallenge.entities.match.choices",
             side_effect=["LINK-HASH1", "LINK-HASH2"],
         )
-        Match(with_hash=True).save()
+        Match(uhash="LINK-HASH1").save()
+
         MatchHash().get_hash()
+        assert random_method.call_count == 2
+
+
+class TestCaseMatchPassword:
+    def t_passwordUniqueForEachMatch(self, dbsession, mocker):
+        # the first call return a value already used
+        random_method = mocker.patch(
+            "codechallenge.entities.match.choices",
+            side_effect=["00321", "34550"],
+        )
+        Match(uhash="AEDRF", password="00321").save()
+
+        MatchPassword(uhash="AEDRF").get_value()
         assert random_method.call_count == 2
 
 

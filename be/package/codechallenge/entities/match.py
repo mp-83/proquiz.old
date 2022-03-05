@@ -1,10 +1,14 @@
 from datetime import datetime
 from random import choices
-from string import ascii_letters
 from uuid import uuid1
 
 from codechallenge.app import StoreConfig
-from codechallenge.constants import MATCH_HASH_LEN
+from codechallenge.constants import (
+    HASH_POPULATION,
+    MATCH_HASH_LEN,
+    MATCH_PASSWORD_LEN,
+    PASSWORD_POPULATION,
+)
 from codechallenge.entities.game import Game
 from codechallenge.entities.meta import Base, TableMixin, classproperty
 from codechallenge.entities.question import Question, Questions
@@ -19,7 +23,10 @@ class Match(TableMixin, Base):
     # games: rankings: reactions:
 
     name = Column(String, nullable=False, unique=True)
+    # unique hash identifying this match
     uhash = Column(String)
+    # password needed to start the match if it's private
+    password = Column(String)
     # if true, this match is playable only by users with the link
     is_restricted = Column(Boolean, default=True)
     # after this time match is no longer playable
@@ -46,6 +53,10 @@ class Match(TableMixin, Base):
         with_hash = kwargs.pop("with_hash", False)
         if with_hash:
             self.uhash = MatchHash().get_hash()
+
+        if kwargs.get("is_restricted"):
+            self.uhash = kwargs.get("uhash") or MatchHash().get_hash()
+            self.password = MatchPassword(uhash=self.uhash).get_value()
         super().__init__(**kwargs)
 
     @property
@@ -187,11 +198,26 @@ class Match(TableMixin, Base):
 
 class MatchHash:
     def new_value(self, length):
-        return "".join(choices(ascii_letters, k=length))
+        return "".join(choices(HASH_POPULATION, k=length))
 
     def get_hash(self, length=MATCH_HASH_LEN):
         value = self.new_value(length)
         while Matches.with_uhash(value):
+            value = self.new_value(length)
+
+        return value
+
+
+class MatchPassword:
+    def __init__(self, uhash):
+        self.match_uhash = uhash
+
+    def new_value(self, length):
+        return "".join(choices(PASSWORD_POPULATION, k=length))
+
+    def get_value(self, length=MATCH_PASSWORD_LEN):
+        value = self.new_value(length)
+        while Matches.with_hash_and_password(self.match_uhash, value):
             value = self.new_value(length)
 
         return value
@@ -217,3 +243,11 @@ class Matches:
     @classmethod
     def with_uhash(cls, uhash):
         return cls.session.query(Match).filter_by(uhash=uhash).one_or_none()
+
+    @classmethod
+    def with_hash_and_password(cls, uhash, password):
+        return (
+            cls.session.query(Match)
+            .filter_by(uhash=uhash, password=password)
+            .one_or_none()
+        )
