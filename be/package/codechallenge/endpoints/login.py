@@ -12,15 +12,9 @@ from pyramid.view import view_config, view_defaults
 logger = logging.getLogger(__name__)
 
 
-@view_defaults(request_method="GET")
 class Login:
     def __init__(self, request):
         self.request = request
-
-    @view_config(route_name="home", renderer="codechallenge:templates/home_page.jinja2")
-    def home(self):
-        # TODO: deprecate soon
-        return {}
 
     @view_config(
         route_name="login",
