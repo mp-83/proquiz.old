@@ -38,12 +38,34 @@ class TestCaseStartEndPoint:
     def t_publicUserRestrictedMatch(self, dbsession):
         match = Match(is_restricted=True).save()
         user = User(email="user@test.project").save()
-        with pytest.raises(ValidateError):
+        with pytest.raises(ValidateError) as err:
             ValidatePlayStart(match_uid=match.uid, user_uid=user.uid).is_valid()
+
+        assert err.value.message == "User cannot access this match"
+
+    def t_privateMatchRequiresPassword(self, dbsession):
+        match = Match(is_restricted=True).save()
+        user = User(private=True).save()
+        with pytest.raises(ValidateError) as err:
+            ValidatePlayStart(
+                match_uid=match.uid, user_uid=user.uid, password=""
+            ).is_valid()
+
+        assert err.value.message == "Password is required for private matches"
 
     def t_userDoesNotExists(self, dbsession):
         with pytest.raises(NotFoundObjectError):
             ValidatePlayStart(user_uid=1).valid_user()
+
+    def t_invalidPassword(self, dbsession):
+        match = Match(is_restricted=True).save()
+        user = User(private=True).save()
+        with pytest.raises(ValidateError) as err:
+            ValidatePlayStart(
+                match_uid=match.uid, user_uid=user.uid, password="Invalid"
+            ).is_valid()
+
+        assert err.value.message == "Password mismatch"
 
 
 class TestCaseNextEndPoint:

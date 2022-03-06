@@ -19,7 +19,7 @@ class TestCaseBadRequest:
                 assert not err
 
 
-class TestCasePlay:
+class TestCasePlayLand:
     # the test scenario for land/404 is already tested above
     def t_playLand(self, testapp):
         match = Match(with_hash=True).save()
@@ -32,6 +32,8 @@ class TestCasePlay:
         assert response.json["user"]
         assert response.json["match"] == match.uid
 
+
+class TestCasePlayStart:
     def t_unexistentMatch(self, testapp):
         testapp.post_json(
             "/play/start",
@@ -67,6 +69,24 @@ class TestCasePlay:
         assert response.json["answers"] == []
         assert response.json["user"]
 
+    # the password feature is tested more thoroughly in the logical tests
+    def t_startRestrictedMatchUsingPassword(self, testapp):
+        match = Match(is_restricted=True).save()
+        game = Game(match_uid=match.uid).save()
+        question = Question(game_uid=game.uid, text="1+1 is = to", position=0).save()
+        user = User(private=True).save()
+
+        response = testapp.post_json(
+            "/play/start",
+            {"match_uid": match.uid, "user_uid": user.uid, "password": match.password},
+            headers={"X-CSRF-Token": testapp.get_csrf_token()},
+            status=200,
+        )
+
+        assert response.json["question"] == question.json
+
+
+class TestCasePlayNext:
     def t_duplicateSameReaction(self, testapp, trivia_match):
         match = trivia_match
         user = User().save()

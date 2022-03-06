@@ -43,6 +43,7 @@ class ValidatePlayStart:
     def __init__(self, **kwargs):
         self.match_uid = kwargs.get("match_uid")
         self.user_uid = kwargs.get("user_uid")
+        self.password = kwargs.get("password")
 
     def valid_user(self):
         user = Users.get(uid=self.user_uid)
@@ -59,15 +60,20 @@ class ValidatePlayStart:
         match = self.valid_match()
         user = self.valid_user()
 
-        accessibility = (
-            user.private
-            and match.is_restricted
-            or not (user.private or match.is_restricted)
-        )
-        if match.is_valid and accessibility:
-            return {"user": user, "match": match}
+        if not match.is_valid:
+            raise ValidateError("Invalid match")
 
-        raise ValidateError("Invalid match")
+        if user.private != match.is_restricted:
+            raise ValidateError("User cannot access this match")
+
+        if user.private and match.is_restricted:
+            if not self.password:
+                raise ValidateError("Password is required for private matches")
+
+            if self.password != match.password:
+                raise ValidateError("Password mismatch")
+
+        return {"user": user, "match": match}
 
 
 class ValidatePlayNext:

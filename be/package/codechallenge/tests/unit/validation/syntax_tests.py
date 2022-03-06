@@ -19,9 +19,14 @@ class TestCasePlaySchemas:
         assert not is_valid
         assert v.errors == {"match_uhash": ["Wrong hash length"]}
 
-    def t_validStartPayload(self):
+    def t_validStartPayloadWithoutPassword(self):
         v = Validator(start_play_schema)
         is_valid = v.validate({"match_uid": 1, "user_uid": 1})
+        assert is_valid
+
+    def t_startPayloadWithPassword(self):
+        v = Validator(start_play_schema)
+        is_valid = v.validate({"match_uid": 1, "user_uid": 1, "password": "KDVBG"})
         assert is_valid
 
     def t_validNextPayload(self):
