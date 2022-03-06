@@ -18,13 +18,13 @@ class TestCasePlaySchemas:
         v = Validator(land_play_schema)
         is_valid = v.validate({"match_uhash": "IJD34KOP"})
         assert not is_valid
-        assert v.errors == {"match_uhash": ["Wrong hash length"]}
+        assert v.errors["match_uhash"][0].startswith("value does not match regex")
 
     def t_matchWrongCode(self):
         v = Validator(code_play_schema)
         is_valid = v.validate({"match_code": "34569"})
         assert not is_valid
-        assert v.errors == {"match_code": ["value does not match regex '[0-9]{4}'"]}
+        assert v.errors["match_code"][0].startswith("value does not match regex")
 
     def t_validStartPayloadWithoutPassword(self):
         v = Validator(start_play_schema)
@@ -34,7 +34,8 @@ class TestCasePlaySchemas:
     def t_startPayloadWithPassword(self):
         v = Validator(start_play_schema)
         is_valid = v.validate({"match_uid": 1, "user_uid": 1, "password": "KDVBG"})
-        assert is_valid
+        assert not is_valid
+        assert v.errors["password"][0].startswith("value does not match regex")
 
     def t_validNextPayload(self):
         v = Validator(next_play_schema)

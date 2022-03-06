@@ -1,13 +1,18 @@
-from codechallenge.constants import MATCH_CODE_LEN, MATCH_HASH_LEN, MATCH_PASSWORD_LEN
-
-
-def check_hash_length(field, value, error):
-    if len(value) != MATCH_HASH_LEN:
-        error(field, "Wrong hash length")
-
+from codechallenge.constants import (
+    CODE_POPULATION,
+    HASH_POPULATION,
+    MATCH_CODE_LEN,
+    MATCH_HASH_LEN,
+    MATCH_PASSWORD_LEN,
+    PASSWORD_POPULATION,
+)
 
 land_play_schema = {
-    "match_uhash": {"type": "string", "required": True, "check_with": check_hash_length}
+    "match_uhash": {
+        "type": "string",
+        "required": True,
+        "regex": "[" + f"{HASH_POPULATION}" + "]{" + f"{MATCH_HASH_LEN}" + "}",
+    }
 }
 
 
@@ -15,20 +20,18 @@ code_play_schema = {
     "match_code": {
         "type": "string",
         "required": True,
-        "regex": "[0-9]{" + f"{MATCH_CODE_LEN}" + "}",
+        "regex": "[" + f"{CODE_POPULATION}" + "]{" + f"{MATCH_CODE_LEN}" + "}",
     }
 }
-
-
-def check_password_length(field, value, error):
-    if len(value) != MATCH_PASSWORD_LEN:
-        error(field, "Wrong password length")
 
 
 start_play_schema = {
     "match_uid": {"type": "integer", "coerce": int, "required": True, "min": 1},
     "user_uid": {"type": "integer", "coerce": int, "required": True, "min": 1},
-    "password": {"type": "string", "check_with": check_password_length},
+    "password": {
+        "type": "string",
+        "regex": "[" + f"{PASSWORD_POPULATION}" + "]{" + f"{MATCH_PASSWORD_LEN}" + "}",
+    },
 }
 
 next_play_schema = {
