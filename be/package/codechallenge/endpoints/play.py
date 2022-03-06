@@ -5,11 +5,13 @@ from codechallenge.entities import User, Users
 from codechallenge.exceptions import NotFoundObjectError, ValidateError
 from codechallenge.play.single_player import PlayerStatus, SinglePlayer
 from codechallenge.validation.logical import (
+    ValidatePlayCode,
     ValidatePlayLand,
     ValidatePlayNext,
     ValidatePlayStart,
 )
 from codechallenge.validation.syntax import (
+    code_play_schema,
     land_play_schema,
     next_play_schema,
     start_play_schema,
@@ -46,6 +48,24 @@ class PlayEndPoints:
         if not user:
             user = User(private=match.is_restricted).save()
 
+        return Response(json={"match": match.uid, "user": user.uid})
+
+    @view_config(route_name="code", request_method="POST")
+    def code(self):
+        user_input = getattr(self.request, "json", None)
+        v = Validator(code_play_schema)
+        if not v.validate(user_input):
+            return Response(status=400, json=v.errors)
+
+        try:
+            data = ValidatePlayCode(**user_input).is_valid()
+        except (NotFoundObjectError, ValidateError) as e:
+            if isinstance(e, NotFoundObjectError):
+                return Response(status=404)
+            return Response(status=400, json={"error": e.message})
+
+        match = data.get("match")
+        user = User(private=True).save()
         return Response(json={"match": match.uid, "user": user.uid})
 
     @view_config(route_name="start", request_method="POST")

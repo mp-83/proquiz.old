@@ -11,6 +11,7 @@ from codechallenge.entities import (
 from codechallenge.exceptions import NotFoundObjectError, ValidateError
 from codechallenge.validation.logical import (
     RetrieveObject,
+    ValidatePlayCode,
     ValidatePlayLand,
     ValidatePlayNext,
     ValidatePlayStart,
@@ -32,6 +33,12 @@ class TestCaseLandEndPoint:
     def t_matchDoesNotExists(self, dbsession):
         with pytest.raises(NotFoundObjectError):
             ValidatePlayLand(match_uhash="wrong-hash").valid_match()
+
+
+class TestCaseCodeEndPoint:
+    def t_wrongCode(self, dbsession):
+        with pytest.raises(NotFoundObjectError):
+            ValidatePlayCode(match_uhash="wrong-hash").valid_match()
 
 
 class TestCaseStartEndPoint:

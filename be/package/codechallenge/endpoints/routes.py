@@ -17,6 +17,7 @@ def play_routes(config):
     # the route matching logic
     config.add_route("start", "/start")
     config.add_route("next", "/next")
+    config.add_route("code", "/code")
     config.add_route("land", "/{match_uhash}")
 
 

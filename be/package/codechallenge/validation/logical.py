@@ -39,6 +39,21 @@ class ValidatePlayLand:
         return {"match": self.valid_match()}
 
 
+class ValidatePlayCode:
+    def __init__(self, **kwargs):
+        self.match_code = kwargs.get("match_code")
+
+    def valid_match(self):
+        match = Matches.active_with_code(self.match_code)
+        if not match:
+            raise NotFoundObjectError("")
+
+        return match
+
+    def is_valid(self):
+        return {"match": self.valid_match()}
+
+
 class ValidatePlayStart:
     def __init__(self, **kwargs):
         self.match_uid = kwargs.get("match_uid")

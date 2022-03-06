@@ -33,6 +33,21 @@ class TestCasePlayLand:
         assert response.json["match"] == match.uid
 
 
+class TestCasePlayCode:
+    def t_playCode(self, testapp):
+        in_one_hour = datetime.now() + timedelta(hours=1)
+        match = Match(with_code=True, expires=in_one_hour).save()
+        response = testapp.post_json(
+            "/play/code",
+            {"match_code": match.code},
+            headers={"X-CSRF-Token": testapp.get_csrf_token()},
+            status=200,
+        )
+        # the user.uid value can't be known ahead, but it will be > 0
+        assert response.json["user"]
+        assert response.json["match"] == match.uid
+
+
 class TestCasePlayStart:
     def t_unexistentMatch(self, testapp):
         testapp.post_json(

@@ -4,7 +4,9 @@ from uuid import uuid1
 
 from codechallenge.app import StoreConfig
 from codechallenge.constants import (
+    CODE_POPULATION,
     HASH_POPULATION,
+    MATCH_CODE_LEN,
     MATCH_HASH_LEN,
     MATCH_PASSWORD_LEN,
     PASSWORD_POPULATION,
@@ -27,6 +29,8 @@ class Match(TableMixin, Base):
     uhash = Column(String)
     # password needed to start the match if it's private
     password = Column(String)
+    # code needed to start match
+    code = Column(String)
     # if true, this match is playable only by users with the link
     is_restricted = Column(Boolean, default=True)
     # after this time match is no longer playable
@@ -53,6 +57,10 @@ class Match(TableMixin, Base):
         with_hash = kwargs.pop("with_hash", False)
         if with_hash:
             self.uhash = MatchHash().get_hash()
+
+        with_code = kwargs.pop("with_code", False)
+        if with_code:
+            self.code = MatchCode().get_code()
 
         if kwargs.get("is_restricted"):
             self.uhash = kwargs.get("uhash") or MatchHash().get_hash()
@@ -223,6 +231,18 @@ class MatchPassword:
         return value
 
 
+class MatchCode:
+    def new_value(self, length):
+        return "".join(choices(CODE_POPULATION, k=length))
+
+    def get_code(self, length=MATCH_CODE_LEN):
+        value = self.new_value(length)
+        while Matches.active_with_code(value):
+            value = self.new_value(length)
+
+        return value
+
+
 class Matches:
     @classproperty
     def session(self):
@@ -243,6 +263,14 @@ class Matches:
     @classmethod
     def with_uhash(cls, uhash):
         return cls.session.query(Match).filter_by(uhash=uhash).one_or_none()
+
+    @classmethod
+    def active_with_code(cls, code):
+        return (
+            cls.session.query(Match)
+            .filter(Match.code == code, Match.expires > datetime.now())
+            .one_or_none()
+        )
 
     @classmethod
     def with_hash_and_password(cls, uhash, password):

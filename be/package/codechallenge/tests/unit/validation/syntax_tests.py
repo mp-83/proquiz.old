@@ -1,6 +1,7 @@
 import pytest
 from cerberus import Validator
 from codechallenge.validation.syntax import (
+    code_play_schema,
     create_match_schema,
     create_question_schema,
     edit_match_schema,
@@ -18,6 +19,12 @@ class TestCasePlaySchemas:
         is_valid = v.validate({"match_uhash": "IJD34KOP"})
         assert not is_valid
         assert v.errors == {"match_uhash": ["Wrong hash length"]}
+
+    def t_matchWrongCode(self):
+        v = Validator(code_play_schema)
+        is_valid = v.validate({"match_code": "34569"})
+        assert not is_valid
+        assert v.errors == {"match_code": ["value does not match regex '[0-9]{4}'"]}
 
     def t_validStartPayloadWithoutPassword(self):
         v = Validator(start_play_schema)

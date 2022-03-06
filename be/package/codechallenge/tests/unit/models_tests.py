@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from math import isclose
 
 import pytest
@@ -16,7 +16,7 @@ from codechallenge.entities import (
     Reactions,
     User,
 )
-from codechallenge.entities.match import MatchHash, MatchPassword
+from codechallenge.entities.match import MatchCode, MatchHash, MatchPassword
 from codechallenge.entities.reaction import ReactionScore
 from codechallenge.exceptions import NotUsableQuestionError
 from sqlalchemy.exc import IntegrityError, InvalidRequestError
@@ -235,6 +235,19 @@ class TestCaseMatchPassword:
         Match(uhash="AEDRF", password="00321").save()
 
         MatchPassword(uhash="AEDRF").get_value()
+        assert random_method.call_count == 2
+
+
+class TestCaseMatchCode:
+    def t_codeUniqueForEachMatchAtThatTime(self, dbsession, mocker):
+        tomorrow = datetime.now() + timedelta(days=1)
+        random_method = mocker.patch(
+            "codechallenge.entities.match.choices",
+            side_effect=["8363", "7775"],
+        )
+        Match(code=8363, expires=tomorrow).save()
+
+        MatchCode().get_code()
         assert random_method.call_count == 2
 
 

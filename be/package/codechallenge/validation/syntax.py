@@ -1,4 +1,4 @@
-from codechallenge.constants import MATCH_HASH_LEN, MATCH_PASSWORD_LEN
+from codechallenge.constants import MATCH_CODE_LEN, MATCH_HASH_LEN, MATCH_PASSWORD_LEN
 
 
 def check_hash_length(field, value, error):
@@ -6,14 +6,24 @@ def check_hash_length(field, value, error):
         error(field, "Wrong hash length")
 
 
-def check_password_length(field, value, error):
-    if len(value) != MATCH_PASSWORD_LEN:
-        error(field, "Wrong hash length")
-
-
 land_play_schema = {
     "match_uhash": {"type": "string", "required": True, "check_with": check_hash_length}
 }
+
+
+code_play_schema = {
+    "match_code": {
+        "type": "string",
+        "required": True,
+        "regex": "[0-9]{" + f"{MATCH_CODE_LEN}" + "}",
+    }
+}
+
+
+def check_password_length(field, value, error):
+    if len(value) != MATCH_PASSWORD_LEN:
+        error(field, "Wrong password length")
+
 
 start_play_schema = {
     "match_uid": {"type": "integer", "coerce": int, "required": True, "min": 1},
