@@ -14,6 +14,7 @@ class TestCaseLoginRequired:
             (MatchEndPoints, "create_match"),
             (MatchEndPoints, "edit_match"),
             (MatchEndPoints, "get_match"),
+            (MatchEndPoints, "list_matches"),
         )
         for endpoint_cls, endpoint_name in protected_endpoints:
             endpoint_obj = endpoint_cls(dummy_request)

@@ -279,3 +279,7 @@ class Matches:
             .filter_by(uhash=uhash, password=password)
             .one_or_none()
         )
+
+    @classmethod
+    def all_matches(cls, **filters):
+        return cls.session.query(Match).filter_by(**filters).all()

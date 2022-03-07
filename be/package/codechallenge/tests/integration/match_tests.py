@@ -122,3 +122,16 @@ class TestCaseMatchEndpoints:
         assert len(match.questions[0]) == 2
         assert len(first_game.ordered_questions) == 2
         assert match.times == 10
+
+    def t_listAllMatches(self, testapp):
+        m1 = Match().save()
+        m2 = Match().save()
+        m3 = Match().save()
+
+        response = testapp.get(
+            "/match/list",
+            status=200,
+        )
+
+        rjson = response.json
+        assert rjson["matches"] == [m.json for m in [m1, m2, m3]]

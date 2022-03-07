@@ -7,6 +7,7 @@ def default_routes(config):
     config.add_route("new_question", "/question/new")
     config.add_route("get_question", "/question/{uid}")
     config.add_route("edit_question", "/question/edit/{uid}")
+    config.add_route("list_matches", "/match/list")
     config.add_route("new_match", "/match/new")
     config.add_route("get_match", "/match/{uid}")
     config.add_route("edit_match", "/match/edit/{uid}")

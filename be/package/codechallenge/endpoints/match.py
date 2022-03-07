@@ -1,7 +1,7 @@
 import logging
 
 from cerberus import Validator
-from codechallenge.entities import Game, Match, Question
+from codechallenge.entities import Game, Match, Matches, Question
 from codechallenge.exceptions import NotFoundObjectError, ValidateError
 from codechallenge.security import login_required
 from codechallenge.validation.logical import RetrieveObject, ValidateEditMatch
@@ -15,6 +15,16 @@ logger = logging.getLogger(__name__)
 class MatchEndPoints:
     def __init__(self, request):
         self.request = request
+
+    @login_required
+    @view_config(
+        route_name="list_matches",
+        request_method="GET",
+    )
+    def list_matches(self):
+        _ = self.request.params
+        all_matches = Matches.all_matches(**{})
+        return Response(json={"matches": [m.json for m in all_matches]})
 
     @login_required
     @view_config(
@@ -33,7 +43,6 @@ class MatchEndPoints:
     @login_required
     @view_config(
         route_name="new_match",
-        # renderer="codechallenge:templates/new_question.jinja2" TODO: to fix
         request_method="POST",
     )
     def create_match(self):
