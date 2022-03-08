@@ -24,42 +24,50 @@ from sqlalchemy.exc import IntegrityError, InvalidRequestError
 
 
 class TestCaseUserFactory:
-    def t_fetchNewRegisteredUser(self, dbsession, mocker):
+    def t_fetchNewLoggedUser(self, dbsession, mocker):
         mocker.patch(
             "codechallenge.entities.user.uuid4",
             return_value=mocker.Mock(hex="3ba57f9a004e42918eee6f73326aa89d"),
         )
-        new_user = UserFactory(original_email="test@progame.io").fetch()
-        assert new_user.email == "916a55cf753a5c847b861df2bdbbd8de@progame.io"
-        assert new_user.digest == "916a55cf753a5c847b861df2bdbbd8de"
+        logged_user = UserFactory(original_email="test@progame.io").fetch()
+        assert logged_user.email == "916a55cf753a5c847b861df2bdbbd8de@progame.io"
+        assert logged_user.digest == "916a55cf753a5c847b861df2bdbbd8de"
 
-    def t_fetchExistingRegisteredUser(self, dbsession, mocker):
+    def t_fetchExistingLoggedUser(self, dbsession, mocker):
         mocker.patch(
             "codechallenge.entities.user.uuid4",
             return_value=mocker.Mock(hex="3ba57f9a004e42918eee6f73326aa89d"),
         )
-        registered_user = User(
-            email="916a55cf753a5c847b861df2bdbbd8de@progame.io"
-        ).save()
-        assert UserFactory(original_email="test@progame.io").fetch() == registered_user
+        logged_user = User(email="916a55cf753a5c847b861df2bdbbd8de@progame.io").save()
+        assert UserFactory(original_email="test@progame.io").fetch() == logged_user
 
-    def t_fetchExtUserShouldReturnNewUserEveryTime(self, dbsession, mocker):
+    def t_fetchPublicUserShouldReturnNewUserEveryTime(self, dbsession, mocker):
         mocker.patch(
             "codechallenge.entities.user.uuid4",
             return_value=mocker.Mock(hex="3ba57f9a004e42918eee6f73326aa89d"),
         )
-        user = UserFactory().fetch()
-        assert user.email == "pub-3ba57f9a004e42918eee6f73326aa89d@progame.io"
-        assert not user.digest
+        public_user = UserFactory().fetch()
+        assert public_user.email == "pub-3ba57f9a004e42918eee6f73326aa89d@progame.io"
+        assert not public_user.digest
         mocker.patch(
             "codechallenge.entities.user.uuid4",
             return_value=mocker.Mock(hex="eee84145094cc69e4f816fd9f435e6b3"),
         )
-        user = UserFactory().fetch()
-        assert user.email == "pub-eee84145094cc69e4f816fd9f435e6b3@progame.io"
-        assert not user.digest
+        public_user = UserFactory().fetch()
+        assert public_user.email == "pub-eee84145094cc69e4f816fd9f435e6b3@progame.io"
+        assert not public_user.digest
+
+    def t_fetchLoggedUserWithoutPassingOriginalEmail(self, dbsession, mocker):
+        mocker.patch(
+            "codechallenge.entities.user.uuid4",
+            return_value=mocker.Mock(hex="3ba57f9a004e42918eee6f73326aa89d"),
+        )
+        logged_user = UserFactory(logged=True).fetch()
+        assert logged_user.email == "9a1cfb41abc50c3f37630b673323cef5@progame.io"
+        assert logged_user.digest == "9a1cfb41abc50c3f37630b673323cef5"
 
 
+# TODO to reuse this test for admin users
 class TestCaseUser:
     def t_createNewUserAndSetPassword(self, dbsession):
         new_user = User(email="user@test.project").save()

@@ -10,7 +10,7 @@ from sqlalchemy import Boolean, Column, String, select
 class UserFactory:
     def __init__(self, **kwargs):
         self.original_email = kwargs.pop("original_email", "")
-        self.registered = kwargs.pop("registered", None) or self.original_email != ""
+        self.restricted = kwargs.pop("logged", None) or self.original_email != ""
 
     def fetch(self):
 
@@ -26,7 +26,7 @@ class UserFactory:
         if user:
             return user
 
-        if not self.registered:
+        if not self.restricted:
             unique_str = uuid4().hex
             email = f"pub-{unique_str}@progame.io"
             return User(email=email).save()
