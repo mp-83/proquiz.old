@@ -18,8 +18,46 @@ from codechallenge.entities import (
 )
 from codechallenge.entities.match import MatchCode, MatchHash, MatchPassword
 from codechallenge.entities.reaction import ReactionScore
+from codechallenge.entities.user import UserFactory
 from codechallenge.exceptions import NotUsableQuestionError
 from sqlalchemy.exc import IntegrityError, InvalidRequestError
+
+
+class TestCaseUserFactory:
+    def t_fetchNewRegisteredUser(self, dbsession, mocker):
+        mocker.patch(
+            "codechallenge.entities.user.uuid4",
+            return_value=mocker.Mock(hex="3ba57f9a004e42918eee6f73326aa89d"),
+        )
+        new_user = UserFactory(original_email="test@progame.io").fetch()
+        assert new_user.email == "916a55cf753a5c847b861df2bdbbd8de@progame.io"
+        assert new_user.digest == "916a55cf753a5c847b861df2bdbbd8de"
+
+    def t_fetchExistingRegisteredUser(self, dbsession, mocker):
+        mocker.patch(
+            "codechallenge.entities.user.uuid4",
+            return_value=mocker.Mock(hex="3ba57f9a004e42918eee6f73326aa89d"),
+        )
+        registered_user = User(
+            email="916a55cf753a5c847b861df2bdbbd8de@progame.io"
+        ).save()
+        assert UserFactory(original_email="test@progame.io").fetch() == registered_user
+
+    def t_fetchExtUserShouldReturnNewUserEveryTime(self, dbsession, mocker):
+        mocker.patch(
+            "codechallenge.entities.user.uuid4",
+            return_value=mocker.Mock(hex="3ba57f9a004e42918eee6f73326aa89d"),
+        )
+        user = UserFactory().fetch()
+        assert user.email == "pub-3ba57f9a004e42918eee6f73326aa89d@progame.io"
+        assert not user.digest
+        mocker.patch(
+            "codechallenge.entities.user.uuid4",
+            return_value=mocker.Mock(hex="eee84145094cc69e4f816fd9f435e6b3"),
+        )
+        user = UserFactory().fetch()
+        assert user.email == "pub-eee84145094cc69e4f816fd9f435e6b3@progame.io"
+        assert not user.digest
 
 
 class TestCaseUser:
@@ -29,16 +67,6 @@ class TestCaseUser:
         new_user.save()
         assert new_user.check_password("password")
         assert new_user.create_timestamp is not None
-
-    def t_createPrivateUser(self, dbsession, mocker):
-        invite_hash = "acde48001122"
-        new_user = User(private=True).save(invite_hash)
-        assert new_user.email == f"priv-{invite_hash}@progame.io"
-
-    def t_createPublicUser(self, dbsession, mocker):
-        mocker.patch("codechallenge.entities.user.uuid4", return_value="acde48001122")
-        new_user = User().save()
-        assert new_user.email == "pub-acde48001122@progame.io"
 
 
 class TestCaseQuestion:

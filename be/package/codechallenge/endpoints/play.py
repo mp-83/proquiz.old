@@ -1,7 +1,7 @@
 import logging
 
 from cerberus import Validator
-from codechallenge.entities import User, Users
+from codechallenge.entities import User
 from codechallenge.exceptions import NotFoundObjectError, ValidateError
 from codechallenge.play.single_player import PlayerStatus, SinglePlayer
 from codechallenge.validation.logical import (
@@ -42,9 +42,6 @@ class PlayEndPoints:
             return Response(status=400, json={"error": e.message})
 
         match = data.get("match")
-        if match.is_restricted:
-            user = Users.get_private_user(mhash=data.get("uhash"))
-
         if not user:
             user = User(private=match.is_restricted).save()
 

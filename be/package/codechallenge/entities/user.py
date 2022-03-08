@@ -1,9 +1,42 @@
+from hashlib import blake2b
 from uuid import uuid4
 
 import bcrypt
 from codechallenge.app import StoreConfig
 from codechallenge.entities.meta import Base, TableMixin, classproperty
 from sqlalchemy import Boolean, Column, String, select
+
+
+class UserFactory:
+    def __init__(self, **kwargs):
+        self.original_email = kwargs.pop("original_email", "")
+        self.registered = kwargs.pop("registered", None) or self.original_email != ""
+
+    def fetch(self):
+
+        # user_word = kwargs.pop("user_word", uuid4().hex[:10])
+
+        key = uuid4().hex.encode("utf-8")
+        h = blake2b(key=key, digest_size=16)
+        h.update(self.original_email.encode("utf-8"))
+        digest = h.hexdigest()
+        email = f"{digest}@progame.io"
+
+        user = Users.get_2(email)
+        if user:
+            return user
+
+        if not self.registered:
+            unique_str = uuid4().hex
+            email = f"pub-{unique_str}@progame.io"
+            return User(email=email).save()
+
+        user = User()
+        user.key = key
+        user.email = email
+        user.digest = digest
+        user.save()
+        return user
 
 
 class User(TableMixin, Base):
@@ -15,11 +48,14 @@ class User(TableMixin, Base):
     # reactions: implicit backward relation
     # user_rankings: implicit backward relation
     private = Column(Boolean, default=False)
+    key = Column(String)
+    digest = Column(String)
 
     def __init__(self, **kwargs):
         password = kwargs.pop("password", "")
         if password:
             self.set_password(password)
+
         super().__init__(**kwargs)
 
     def set_password(self, pw):
@@ -39,13 +75,7 @@ class User(TableMixin, Base):
     def all(self):
         return self.session.execute(select(User)).all()
 
-    def save(self, uhash=""):
-        if not self.uid and not self.email and self.private:
-            self.email = f"priv-{uhash}@progame.io"
-        elif not self.uid and not self.email:
-            unique_str = uuid4()
-            self.email = f"pub-{unique_str}@progame.io"
-
+    def save(self):
         self.session.add(self)
         self.session.commit()
         return self
@@ -61,8 +91,7 @@ class Users:
         return cls.session.query(User).count()
 
     @classmethod
-    def get_private_user(cls, mhash):
-        email = f"priv-{mhash}@progame.io"
+    def get_2(cls, email):
         return cls.session.query(User).filter_by(email=email).one_or_none()
 
     @classmethod
