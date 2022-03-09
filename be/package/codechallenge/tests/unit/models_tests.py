@@ -24,19 +24,17 @@ from sqlalchemy.exc import IntegrityError, InvalidRequestError
 
 
 class TestCaseUserFactory:
-    def t_fetchNewSignedUser(self, dbsession, mocker):
-        mocker.patch(
-            "codechallenge.entities.user.uuid4",
-            return_value=mocker.Mock(hex="3ba57f9a004e42918eee6f73326aa89d"),
+    def t_fetchNewSignedUser(self, dbsession, monkeypatch):
+        monkeypatch.setenv(
+            "SIGNED_KEY", "3ba57f9a004e42918eee6f73326aa89d", prepend=None
         )
         signed_user = UserFactory(original_email="test@progame.io").fetch()
         assert signed_user.email == "916a55cf753a5c847b861df2bdbbd8de@progame.io"
         assert signed_user.digest == "916a55cf753a5c847b861df2bdbbd8de"
 
-    def t_fetchExistingSignedUser(self, dbsession, mocker):
-        mocker.patch(
-            "codechallenge.entities.user.uuid4",
-            return_value=mocker.Mock(hex="3ba57f9a004e42918eee6f73326aa89d"),
+    def t_fetchExistingSignedUser(self, dbsession, monkeypatch):
+        monkeypatch.setenv(
+            "SIGNED_KEY", "3ba57f9a004e42918eee6f73326aa89d", prepend=None
         )
         signed_user = User(email="916a55cf753a5c847b861df2bdbbd8de@progame.io").save()
         assert UserFactory(original_email="test@progame.io").fetch() == signed_user
@@ -58,10 +56,11 @@ class TestCaseUserFactory:
         assert unsigned_user.email == "uns-eee84145094cc69e4f816fd9f435e6b3@progame.io"
         assert not unsigned_user.digest
 
-    def t_fetchSignedUserWithoutOriginalEmailCreatesNewUser(self, dbsession, mocker):
-        mocker.patch(
-            "codechallenge.entities.user.uuid4",
-            return_value=mocker.Mock(hex="3ba57f9a004e42918eee6f73326aa89d"),
+    def t_fetchSignedUserWithoutOriginalEmailCreatesNewUser(
+        self, dbsession, monkeypatch
+    ):
+        monkeypatch.setenv(
+            "SIGNED_KEY", "3ba57f9a004e42918eee6f73326aa89d", prepend=None
         )
         signed_user = UserFactory(signed=True).fetch()
         assert signed_user.email == "9a1cfb41abc50c3f37630b673323cef5@progame.io"

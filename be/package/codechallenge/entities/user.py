@@ -1,3 +1,4 @@
+import os
 from hashlib import blake2b
 from uuid import uuid4
 
@@ -20,7 +21,7 @@ class UserFactory:
             user = Users.get_2(email)
             return user or User(**self.kwargs).save()
 
-        key = uuid4().hex.encode("utf-8")
+        key = os.getenv("SIGNED_KEY").encode("utf-8")
         h = blake2b(key=key, digest_size=16)
         h.update(self.original_email.encode("utf-8"))
         digest = h.hexdigest()
