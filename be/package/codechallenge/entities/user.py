@@ -4,7 +4,8 @@ from uuid import uuid4
 import bcrypt
 from codechallenge.app import StoreConfig
 from codechallenge.entities.meta import Base, TableMixin, classproperty
-from sqlalchemy import Boolean, Column, String, select
+from sqlalchemy import Column, String, select
+from sqlalchemy.ext.hybrid import hybrid_property
 
 
 class UserFactory:
@@ -50,7 +51,6 @@ class User(TableMixin, Base):
     password_hash = Column(String)
     # reactions: implicit backward relation
     # user_rankings: implicit backward relation
-    private = Column(Boolean, default=False)
     key = Column(String)
     digest = Column(String)
 
@@ -60,6 +60,10 @@ class User(TableMixin, Base):
             self.set_password(password)
 
         super().__init__(**kwargs)
+
+    @hybrid_property
+    def signed(self):
+        return self.digest is not None
 
     def set_password(self, pw):
         pwhash = bcrypt.hashpw(pw.encode("utf8"), bcrypt.gensalt())

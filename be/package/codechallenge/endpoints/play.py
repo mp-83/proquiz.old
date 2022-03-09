@@ -1,7 +1,7 @@
 import logging
 
 from cerberus import Validator
-from codechallenge.entities import User
+from codechallenge.entities.user import UserFactory
 from codechallenge.exceptions import NotFoundObjectError, ValidateError
 from codechallenge.play.single_player import PlayerStatus, SinglePlayer
 from codechallenge.validation.logical import (
@@ -28,7 +28,6 @@ class PlayEndPoints:
 
     @view_config(route_name="land", request_method="POST")
     def land(self):
-        user = None
         user_input = self.request.matchdict
         v = Validator(land_play_schema)
         if not v.validate(user_input):
@@ -42,9 +41,7 @@ class PlayEndPoints:
             return Response(status=400, json={"error": e.message})
 
         match = data.get("match")
-        if not user:
-            user = User(private=match.is_restricted).save()
-
+        user = UserFactory(signed=match.is_restricted).fetch()
         return Response(json={"match": match.uid, "user": user.uid})
 
     @view_config(route_name="code", request_method="POST")
@@ -62,7 +59,7 @@ class PlayEndPoints:
             return Response(status=400, json={"error": e.message})
 
         match = data.get("match")
-        user = User(private=True).save()
+        user = UserFactory(signed=True).fetch()
         return Response(json={"match": match.uid, "user": user.uid})
 
     @view_config(route_name="start", request_method="POST")

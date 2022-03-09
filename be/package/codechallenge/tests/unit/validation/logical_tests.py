@@ -8,6 +8,7 @@ from codechallenge.entities import (
     Reaction,
     User,
 )
+from codechallenge.entities.user import UserFactory
 from codechallenge.exceptions import NotFoundObjectError, ValidateError
 from codechallenge.validation.logical import (
     RetrieveObject,
@@ -24,7 +25,7 @@ class TestCaseRetrieveObject:
             RetrieveObject(uid=1, otype="match").get()
 
     def t_objectIsOfCorrectType(self, dbsession):
-        user = User().save()
+        user = UserFactory().fetch()
         obj = RetrieveObject(uid=user.uid, otype="user").get()
         assert obj == user
 
@@ -52,7 +53,7 @@ class TestCaseStartEndPoint:
 
     def t_privateMatchRequiresPassword(self, dbsession):
         match = Match(is_restricted=True).save()
-        user = User(private=True).save()
+        user = UserFactory(signed=True).fetch()
         with pytest.raises(ValidateError) as err:
             ValidatePlayStart(
                 match_uid=match.uid, user_uid=user.uid, password=""
@@ -66,7 +67,7 @@ class TestCaseStartEndPoint:
 
     def t_invalidPassword(self, dbsession):
         match = Match(is_restricted=True).save()
-        user = User(private=True).save()
+        user = UserFactory(signed=True).fetch()
         with pytest.raises(ValidateError) as err:
             ValidatePlayStart(
                 match_uid=match.uid, user_uid=user.uid, password="Invalid"
@@ -84,7 +85,7 @@ class TestCaseNextEndPoint:
             text="Where is London?", game_uid=game.uid, position=0
         ).save()
         answer = Answer(question=question, text="UK", position=1).save()
-        user = User(email="user@test.project").save()
+        user = UserFactory(email="user@test.project").fetch()
 
         Reaction(
             match=match,

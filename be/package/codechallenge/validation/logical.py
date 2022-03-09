@@ -78,10 +78,10 @@ class ValidatePlayStart:
         if not match.is_valid:
             raise ValidateError("Invalid match")
 
-        if user.private != match.is_restricted:
+        if user.signed != match.is_restricted:
             raise ValidateError("User cannot access this match")
 
-        if user.private and match.is_restricted:
+        if user.signed and match.is_restricted:
             if not self.password:
                 raise ValidateError("Password is required for private matches")
 

@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
-from codechallenge.entities import Game, Match, Question, User
+from codechallenge.entities import Game, Match, Question
+from codechallenge.entities.user import UserFactory
 
 
 class TestCaseBadRequest:
@@ -60,7 +61,7 @@ class TestCasePlayStart:
     def t_startExpiredMatch(self, testapp):
         one_hour_ago = datetime.now(timezone.utc) - timedelta(hours=1)
         match = Match(expires=one_hour_ago).save()
-        user = User().save()
+        user = UserFactory(signed=match.is_restricted).fetch()
         testapp.post_json(
             "/play/start",
             {"match_uid": match.uid, "user_uid": user.uid},
@@ -72,7 +73,7 @@ class TestCasePlayStart:
         match = Match(is_restricted=False).save()
         game = Game(match_uid=match.uid).save()
         question = Question(game_uid=game.uid, text="1+1 is = to", position=0).save()
-        user = User().save()
+        user = UserFactory(signed=match.is_restricted).fetch()
 
         response = testapp.post_json(
             "/play/start",
@@ -89,7 +90,7 @@ class TestCasePlayStart:
         match = Match(is_restricted=True).save()
         game = Game(match_uid=match.uid).save()
         question = Question(game_uid=game.uid, text="1+1 is = to", position=0).save()
-        user = User(private=True).save()
+        user = UserFactory(signed=match.is_restricted).fetch()
 
         response = testapp.post_json(
             "/play/start",
@@ -104,7 +105,7 @@ class TestCasePlayStart:
 class TestCasePlayNext:
     def t_duplicateSameReaction(self, testapp, trivia_match):
         match = trivia_match
-        user = User().save()
+        user = UserFactory(signed=match.is_restricted).fetch()
         question = match.questions[0][0]
         answer = question.answers_by_position[0]
 
@@ -146,7 +147,7 @@ class TestCasePlayNext:
 
     def t_answerQuestion(self, testapp, trivia_match):
         match = trivia_match
-        user = User().save()
+        user = UserFactory(signed=match.is_restricted).fetch()
         question = match.questions[0][0]
         answer = question.answers_by_position[0]
 
