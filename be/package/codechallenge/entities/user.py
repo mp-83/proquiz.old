@@ -10,11 +10,14 @@ from sqlalchemy import Boolean, Column, String, select
 class UserFactory:
     def __init__(self, **kwargs):
         self.original_email = kwargs.pop("original_email", "")
-        self.restricted = kwargs.pop("logged", None) or self.original_email != ""
+        self.signed = kwargs.pop("signed", None) or self.original_email
+        self.kwargs = kwargs
 
     def fetch(self):
-
-        # user_word = kwargs.pop("user_word", uuid4().hex[:10])
+        email = self.kwargs.get("email")
+        if email:
+            user = Users.get_2(email)
+            return user or User(**self.kwargs).save()
 
         key = uuid4().hex.encode("utf-8")
         h = blake2b(key=key, digest_size=16)
@@ -26,9 +29,9 @@ class UserFactory:
         if user:
             return user
 
-        if not self.restricted:
+        if not self.signed:
             unique_str = uuid4().hex
-            email = f"pub-{unique_str}@progame.io"
+            email = f"uns-{unique_str}@progame.io"
             return User(email=email).save()
 
         user = User()
@@ -52,7 +55,7 @@ class User(TableMixin, Base):
     digest = Column(String)
 
     def __init__(self, **kwargs):
-        password = kwargs.pop("password", "")
+        password = kwargs.pop("password", None)
         if password:
             self.set_password(password)
 
