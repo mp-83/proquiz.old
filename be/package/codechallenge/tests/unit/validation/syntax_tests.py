@@ -1,4 +1,3 @@
-import pytest
 from cerberus import Validator
 from codechallenge.validation.syntax import (
     code_play_schema,
@@ -136,7 +135,7 @@ class TestCaseUserSchema:
         is_valid = v.validate({"email": "", "password": "pass"})
         assert not is_valid
 
-    @pytest.mark.skip("skipped until regex is activated")
+    # @pytest.mark.skip("skipped until regex is activated")
     def t_invalidEmail(self):
         v = Validator(user_login_schema)
         is_valid = v.validate({"email": "e@a.c", "password": "password"})
