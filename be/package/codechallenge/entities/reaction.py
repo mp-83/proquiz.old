@@ -10,19 +10,31 @@ from sqlalchemy.schema import UniqueConstraint
 class Reaction(TableMixin, Base):
     __tablename__ = "reaction"
 
-    match_uid = Column(Integer, ForeignKey("match.uid"), nullable=False)
+    match_uid = Column(
+        Integer, ForeignKey("match.uid", ondelete="CASCADE"), nullable=False
+    )
     match = relationship("Match", backref="reactions")
-    question_uid = Column(Integer, ForeignKey("question.uid"), nullable=False)
+    question_uid = Column(
+        Integer, ForeignKey("question.uid", ondelete="CASCADE"), nullable=False
+    )
     question = relationship("Question", backref="reactions")
-    answer_uid = Column(Integer, ForeignKey("answer.uid"), nullable=True)
+    answer_uid = Column(
+        Integer, ForeignKey("answer.uid", ondelete="SET NULL"), nullable=True
+    )
     _answer = relationship("Answer", backref="reactions")
-    open_answer_uid = Column(Integer, ForeignKey("open_answer.uid"), nullable=True)
+    open_answer_uid = Column(
+        Integer, ForeignKey("open_answer.uid", ondelete="SET NULL"), nullable=True
+    )
     _open_answer = relationship("OpenAnswer", backref="reactions")
-    user_uid = Column(Integer, ForeignKey("user.uid"), nullable=False)
+    user_uid = Column(
+        Integer, ForeignKey("user.uid", ondelete="CASCADE"), nullable=False
+    )
     user = relationship("User", backref="reactions")
     # this column might be saved as the game might be fetched via the question
     # TODO: open point, keep or remove it
-    game_uid = Column(Integer, ForeignKey("game.uid"), nullable=False)
+    game_uid = Column(
+        Integer, ForeignKey("game.uid", ondelete="CASCADE"), nullable=False
+    )
     game = relationship("Game", backref="reactions")
     q_counter = Column(Integer)
     g_counter = Column(Integer)

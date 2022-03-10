@@ -7,7 +7,9 @@ from sqlalchemy.orm import relationship
 class Ranking(TableMixin, Base):
     __tablename__ = "ranking"
 
-    user_uid = Column(Integer, ForeignKey("user.uid"), nullable=False)
+    user_uid = Column(
+        Integer, ForeignKey("user.uid", ondelete="CASCADE"), nullable=False
+    )
     user = relationship("User", backref="user_rankings")
 
     match_uid = Column(Integer, ForeignKey("match.uid"))

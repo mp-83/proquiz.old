@@ -8,7 +8,9 @@ from sqlalchemy.schema import UniqueConstraint
 class Game(TableMixin, Base):
     __tablename__ = "game"
 
-    match_uid = Column(Integer, ForeignKey("match.uid"), nullable=False)
+    match_uid = Column(
+        Integer, ForeignKey("match.uid", ondelete="CASCADE"), nullable=False
+    )
     match = relationship("Match", backref="games")
     index = Column(Integer, default=0)
     # when True question should be returned in order

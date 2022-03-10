@@ -8,7 +8,9 @@ from sqlalchemy.schema import UniqueConstraint
 class Answer(TableMixin, Base):
     __tablename__ = "answer"
 
-    question_uid = Column(Integer, ForeignKey("question.uid"), nullable=False)
+    question_uid = Column(
+        Integer, ForeignKey("question.uid", ondelete="CASCADE"), nullable=False
+    )
     question = relationship("Question", backref="answers")
     # reactions: implicit backward relation
 
