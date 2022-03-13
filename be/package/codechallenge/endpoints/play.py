@@ -28,7 +28,7 @@ class PlayEndPoints:
     @view_decorator(
         route_name="land",
         request_method="POST",
-        schema=land_play_schema,
+        syntax=land_play_schema,
         data_attr="matchdict",
     )
     def land(self, user_input):
@@ -46,7 +46,7 @@ class PlayEndPoints:
     @view_decorator(
         route_name="code",
         request_method="POST",
-        schema=code_play_schema,
+        syntax=code_play_schema,
         data_attr="json",
     )
     def code(self, user_input):
@@ -64,7 +64,7 @@ class PlayEndPoints:
     @view_decorator(
         route_name="start",
         request_method="POST",
-        schema=start_play_schema,
+        syntax=start_play_schema,
         data_attr="json",
     )
     def start(self, user_input):
@@ -90,7 +90,7 @@ class PlayEndPoints:
     @view_decorator(
         route_name="next",
         request_method="POST",
-        schema=next_play_schema,
+        syntax=next_play_schema,
         data_attr="json",
     )
     def next(self, user_input):

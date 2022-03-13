@@ -7,7 +7,7 @@ from pyramid.view import view_config
 class view_decorator(view_config):
     def __call__(self, wrapped):
         settings = self.__dict__.copy()
-        schema = settings.pop("schema", None)
+        syntax_schema = settings.pop("syntax", None)
         data_attr = settings.pop("data_attr", None)
         depth = settings.pop("_depth", 0)
         category = settings.pop("_category", "pyramid")
@@ -27,7 +27,7 @@ class view_decorator(view_config):
         def wrapped_f(*args, **kwargs):
             request = args[0].request
             user_input = getattr(request, data_attr, {})
-            v = Validator(schema)
+            v = Validator(syntax_schema)
             if not v.validate(user_input):
                 return Response(status=400, json=v.errors)
 
@@ -36,4 +36,4 @@ class view_decorator(view_config):
             except BaseException:
                 return Response(status=200)
 
-        return wrapped_f
+        return wrapped_f if syntax_schema else wrapped
