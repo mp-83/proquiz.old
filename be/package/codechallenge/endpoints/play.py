@@ -22,17 +22,43 @@ from pyramid.view import view_config
 logger = logging.getLogger(__name__)
 
 
+class syntaxdecorator:
+    def __init__(self, **dec_kwargs):
+        """
+        If there are decorator arguments, the function
+        to be decorated is not passed to the constructor!
+        """
+        print("Inside __init__()")
+        self.dec_kwargs = dec_kwargs
+
+    def __call__(self, f):
+        """
+        If there are decorator arguments, __call__() is only called
+        once, as part of the decoration process! You can only give
+        it a single argument, which is the function object.
+        """
+
+        def wrapped_f(*args, **kwargs):
+            request = args[0].request
+            schema = self.dec_kwargs.get("schema")
+            data_attr = self.dec_kwargs.get("data_attr")
+            user_input = getattr(request, data_attr, {})
+            v = Validator(schema)
+            if not v.validate(user_input):
+                return Response(status=400, json=v.errors)
+
+            return f(*args, v.document)
+
+        return wrapped_f
+
+
 class PlayEndPoints:
     def __init__(self, request):
         self.request = request
 
+    @syntaxdecorator(schema=land_play_schema, data_attr="matchdict")
     @view_config(route_name="land", request_method="POST")
-    def land(self):
-        user_input = self.request.matchdict
-        v = Validator(land_play_schema)
-        if not v.validate(user_input):
-            return Response(status=400, json=v.errors)
-
+    def land(self, user_input):
         try:
             data = ValidatePlayLand(**user_input).is_valid()
         except (NotFoundObjectError, ValidateError) as e:
@@ -44,13 +70,9 @@ class PlayEndPoints:
         user = UserFactory(signed=match.is_restricted).fetch()
         return Response(json={"match": match.uid, "user": user.uid})
 
+    @syntaxdecorator(schema=code_play_schema, data_attr="json")
     @view_config(route_name="code", request_method="POST")
-    def code(self):
-        user_input = getattr(self.request, "json", None)
-        v = Validator(code_play_schema)
-        if not v.validate(user_input):
-            return Response(status=400, json=v.errors)
-
+    def code(self, user_input):
         try:
             data = ValidatePlayCode(**user_input).is_valid()
         except (NotFoundObjectError, ValidateError) as e:
@@ -62,15 +84,11 @@ class PlayEndPoints:
         user = UserFactory(signed=True).fetch()
         return Response(json={"match": match.uid, "user": user.uid})
 
+    @syntaxdecorator(schema=start_play_schema, data_attr="json")
     @view_config(route_name="start", request_method="POST")
-    def start(self):
-        user_input = getattr(self.request, "json", None)
-        v = Validator(start_play_schema)
-        if not v.validate(user_input):
-            return Response(status=400, json=v.errors)
-
+    def start(self, user_input):
         try:
-            data = ValidatePlayStart(**v.document).is_valid()
+            data = ValidatePlayStart(**user_input).is_valid()
         except (NotFoundObjectError, ValidateError) as e:
             if isinstance(e, NotFoundObjectError):
                 return Response(status=404)
@@ -88,13 +106,9 @@ class PlayEndPoints:
         }
         return Response(json=match_data)
 
+    @syntaxdecorator(schema=next_play_schema, data_attr="json")
     @view_config(route_name="next", request_method="POST")
-    def next(self):
-        user_input = getattr(self.request, "json", None)
-        v = Validator(next_play_schema)
-        if not v.validate(user_input):
-            return Response(status=400, json=v.errors)
-
+    def next(self, user_input):
         try:
             data = ValidatePlayNext(**user_input).is_valid()
         except (NotFoundObjectError, ValidateError) as e:
