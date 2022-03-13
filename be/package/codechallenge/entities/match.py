@@ -210,7 +210,7 @@ class MatchHash:
 
     def get_hash(self, length=MATCH_HASH_LEN):
         value = self.new_value(length)
-        while Matches.with_uhash(value):
+        while Matches.get(uhash=value):
             value = self.new_value(length)
 
         return value
@@ -225,7 +225,7 @@ class MatchPassword:
 
     def get_value(self, length=MATCH_PASSWORD_LEN):
         value = self.new_value(length)
-        while Matches.with_hash_and_password(self.match_uhash, value):
+        while Matches.get(uhash=self.match_uhash, password=value):
             value = self.new_value(length)
 
         return value
@@ -253,30 +253,14 @@ class Matches:
         return cls.session.query(Match).count()
 
     @classmethod
-    def with_name(cls, name):
-        return cls.session.query(Match).filter_by(name=name).one_or_none()
-
-    @classmethod
-    def get(cls, uid):
-        return cls.session.query(Match).filter_by(uid=uid).one_or_none()
-
-    @classmethod
-    def with_uhash(cls, uhash):
-        return cls.session.query(Match).filter_by(uhash=uhash).one_or_none()
+    def get(cls, **filters):
+        return cls.session.query(Match).filter_by(**filters).one_or_none()
 
     @classmethod
     def active_with_code(cls, code):
         return (
             cls.session.query(Match)
             .filter(Match.code == code, Match.expires > datetime.now())
-            .one_or_none()
-        )
-
-    @classmethod
-    def with_hash_and_password(cls, uhash, password):
-        return (
-            cls.session.query(Match)
-            .filter_by(uhash=uhash, password=password)
             .one_or_none()
         )
 

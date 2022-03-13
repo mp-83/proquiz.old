@@ -26,7 +26,7 @@ class ValidatePlayLand:
         self.match_uhash = kwargs.get("match_uhash")
 
     def valid_match(self):
-        match = Matches.with_uhash(self.match_uhash)
+        match = Matches.get(uhash=self.match_uhash)
         if not match:
             raise NotFoundObjectError("")
 

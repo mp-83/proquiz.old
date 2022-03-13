@@ -5,7 +5,7 @@ from uuid import uuid4
 import bcrypt
 from codechallenge.app import StoreConfig
 from codechallenge.entities.meta import Base, TableMixin, classproperty
-from sqlalchemy import Column, String, select
+from sqlalchemy import Column, String
 from sqlalchemy.ext.hybrid import hybrid_property
 
 
@@ -18,7 +18,7 @@ class UserFactory:
     def fetch(self):
         email = self.kwargs.get("email")
         if email:
-            user = Users.get_2(email)
+            user = Users.get(email=email)
             return user or User(**self.kwargs).save()
 
         key = os.getenv("SIGNED_KEY").encode("utf-8")
@@ -27,7 +27,7 @@ class UserFactory:
         digest = h.hexdigest()
         email = f"{digest}@progame.io"
 
-        user = Users.get_2(email)
+        user = Users.get(email=email)
         if user:
             return user
 
@@ -80,9 +80,6 @@ class User(TableMixin, Base):
     def session(self):
         return StoreConfig().session
 
-    def all(self):
-        return self.session.execute(select(User)).all()
-
     def save(self):
         self.session.add(self)
         self.session.commit()
@@ -99,9 +96,5 @@ class Users:
         return cls.session.query(User).count()
 
     @classmethod
-    def get_2(cls, email):
-        return cls.session.query(User).filter_by(email=email).one_or_none()
-
-    @classmethod
-    def get(cls, uid):
-        return cls.session.query(User).filter_by(uid=uid).one_or_none()
+    def get(cls, **filters):
+        return cls.session.query(User).filter_by(**filters).one_or_none()
