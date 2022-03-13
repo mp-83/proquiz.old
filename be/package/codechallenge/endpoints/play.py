@@ -1,9 +1,9 @@
 import logging
 
-from cerberus import Validator
 from codechallenge.entities.user import UserFactory
 from codechallenge.exceptions import NotFoundObjectError, ValidateError
 from codechallenge.play.single_player import PlayerStatus, SinglePlayer
+from codechallenge.utils import view_decorator
 from codechallenge.validation.logical import (
     ValidatePlayCode,
     ValidatePlayLand,
@@ -17,77 +17,8 @@ from codechallenge.validation.syntax import (
     start_play_schema,
 )
 from pyramid.response import Response
-from pyramid.view import view_config
 
 logger = logging.getLogger(__name__)
-
-
-class syntaxdecorator:
-    def __init__(self, **dec_kwargs):
-        """
-        If there are decorator arguments, the function
-        to be decorated is not passed to the constructor!
-        """
-        print("Inside __init__()")
-        self.dec_kwargs = dec_kwargs
-
-    def __call__(self, f):
-        """
-        If there are decorator arguments, __call__() is only called
-        once, as part of the decoration process! You can only give
-        it a single argument, which is the function object.
-        """
-
-        def wrapped_f(*args, **kwargs):
-            request = args[0].request
-            schema = self.dec_kwargs.get("schema")
-            data_attr = self.dec_kwargs.get("data_attr")
-            user_input = getattr(request, data_attr, {})
-            v = Validator(schema)
-            if not v.validate(user_input):
-                return Response(status=400, json=v.errors)
-
-            try:
-                return f(*args, v.document)
-            except Exception:
-                return Response(status=200)
-
-        return wrapped_f
-
-
-class view_decorator(view_config):
-    def __call__(self, wrapped):
-        settings = self.__dict__.copy()
-        schema = settings.pop("schema", None)
-        data_attr = settings.pop("data_attr", None)
-        depth = settings.pop("_depth", 0)
-        category = settings.pop("_category", "pyramid")
-
-        def callback(context, name, ob):
-            config = context.config.with_package(info.module)
-            config.add_view(view=ob, **settings)
-
-        info = self.venusian.attach(
-            wrapped, callback, category=category, depth=depth + 1
-        )
-
-        if info.scope == "class":
-            if settings.get("attr") is None:
-                settings["attr"] = wrapped.__name__
-
-        def wrapped_f(*args, **kwargs):
-            request = args[0].request
-            user_input = getattr(request, data_attr, {})
-            v = Validator(schema)
-            if not v.validate(user_input):
-                return Response(status=400, json=v.errors)
-
-            try:
-                return wrapped(*args, v.document)
-            except Exception:
-                return Response(status=200)
-
-        return wrapped_f
 
 
 class PlayEndPoints:
@@ -112,8 +43,12 @@ class PlayEndPoints:
         user = UserFactory(signed=match.is_restricted).fetch()
         return Response(json={"match": match.uid, "user": user.uid})
 
-    @syntaxdecorator(schema=code_play_schema, data_attr="json")
-    @view_config(route_name="code", request_method="POST")
+    @view_decorator(
+        route_name="code",
+        request_method="POST",
+        schema=code_play_schema,
+        data_attr="json",
+    )
     def code(self, user_input):
         try:
             data = ValidatePlayCode(**user_input).is_valid()
@@ -126,8 +61,12 @@ class PlayEndPoints:
         user = UserFactory(signed=True).fetch()
         return Response(json={"match": match.uid, "user": user.uid})
 
-    @syntaxdecorator(schema=start_play_schema, data_attr="json")
-    @view_config(route_name="start", request_method="POST")
+    @view_decorator(
+        route_name="start",
+        request_method="POST",
+        schema=start_play_schema,
+        data_attr="json",
+    )
     def start(self, user_input):
         try:
             data = ValidatePlayStart(**user_input).is_valid()
@@ -148,8 +87,12 @@ class PlayEndPoints:
         }
         return Response(json=match_data)
 
-    @syntaxdecorator(schema=next_play_schema, data_attr="json")
-    @view_config(route_name="next", request_method="POST")
+    @view_decorator(
+        route_name="next",
+        request_method="POST",
+        schema=next_play_schema,
+        data_attr="json",
+    )
     def next(self, user_input):
         try:
             data = ValidatePlayNext(**user_input).is_valid()
