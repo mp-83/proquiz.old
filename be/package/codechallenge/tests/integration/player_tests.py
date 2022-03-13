@@ -87,15 +87,16 @@ class TestCasePlayStart:
 
     def t_startMatchWithoutQuestion(self, testapp):
         match = Match(is_restricted=False).save()
-        Game(match_uid=match.uid).save()
+        game = Game(match_uid=match.uid).save()
         user = UserFactory(signed=match.is_restricted).fetch()
 
-        testapp.post_json(
+        response = testapp.post_json(
             "/play/start",
             {"match_uid": match.uid, "user_uid": user.uid},
             headers={"X-CSRF-Token": testapp.get_csrf_token()},
-            status=200,
+            status=400,
         )
+        assert response.json["error"] == f"Game {game.uid} has no questions"
 
     # the password feature is tested more thoroughly in the logical tests
     def t_startRestrictedMatchUsingPassword(self, testapp):

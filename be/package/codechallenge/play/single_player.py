@@ -30,7 +30,7 @@ class QuestionFactory:
                 self.displayed_ids += (q.uid,)
                 return q
 
-        raise GameOver(f"Game {self._game} has no questions")
+        raise GameOver(f"Game {self._game.uid} has no questions")
 
     def previous(self):
         # remember that the reaction is not deleted
@@ -50,7 +50,7 @@ class QuestionFactory:
             if not self.displayed_ids
             else "Only one question was displayed"
         )
-        raise GameError(f"{msg} for Game {self._game}")
+        raise GameError(f"{msg} for Game {self._game.uid}")
 
     @property
     def current(self):
@@ -156,7 +156,7 @@ class SinglePlayer:
         # TODO to fix
         if self._match.left_attempts(self._user) == 0:
             raise MatchNotPlayableError(
-                f"User {self._user} has no left attempts for Match {self._match.name}"
+                f"User {self._user.email} has no left attempts for Match {self._match.name}"
             )
 
         self._game_factory = GameFactory(self._match, *self._status.all_games_played())

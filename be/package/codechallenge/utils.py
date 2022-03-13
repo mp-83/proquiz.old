@@ -33,7 +33,7 @@ class view_decorator(view_config):
 
             try:
                 return wrapped(*args, v.document)
-            except BaseException:
-                return Response(status=200)
+            except BaseException as e:
+                return Response(status=400, json={"error": e.message})
 
         return wrapped_f if syntax_schema else wrapped
