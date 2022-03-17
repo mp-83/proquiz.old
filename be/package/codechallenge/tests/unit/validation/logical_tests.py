@@ -8,13 +8,14 @@ from codechallenge.entities import (
     Reaction,
     User,
 )
-from codechallenge.entities.user import UserFactory
+from codechallenge.entities.user import UserFactory, WordDigest
 from codechallenge.exceptions import NotFoundObjectError, ValidateError
 from codechallenge.validation.logical import (
     RetrieveObject,
     ValidatePlayCode,
     ValidatePlayLand,
     ValidatePlayNext,
+    ValidatePlaySign,
     ValidatePlayStart,
 )
 
@@ -40,6 +41,18 @@ class TestCaseCodeEndPoint:
     def t_wrongCode(self, dbsession):
         with pytest.raises(NotFoundObjectError):
             ValidatePlayCode(match_uhash="wrong-hash").valid_match()
+
+
+class TestCaseSignEndPoint:
+    def t_wrongToken(self, dbsession):
+        original_email = "user@test.io"
+
+        email_digest = WordDigest(original_email).value()
+        token_digest = WordDigest("01112021").value()
+        email = f"{email_digest}@progame.io"
+        User(email=email, email_digest=email_digest, token_digest=token_digest).save()
+        with pytest.raises(NotFoundObjectError):
+            ValidatePlaySign(original_email, "25121980").is_valid()
 
 
 class TestCaseStartEndPoint:

@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
-from codechallenge.entities import Game, Match, Question
-from codechallenge.entities.user import UserFactory
+from codechallenge.entities import Game, Match, Question, User
+from codechallenge.entities.user import UserFactory, WordDigest
 
 
 class TestCaseBadRequest:
@@ -50,11 +50,15 @@ class TestCasePlayCode:
 class TestCasePlaySign:
     def t_successfulSign(self, testapp):
         Match(with_hash=True).save()
+        email_digest = WordDigest("user@test.io").value()
+        token_digest = WordDigest("01112021").value()
+        email = f"{email_digest}@progame.io"
+        User(email=email, email_digest=email_digest, token_digest=token_digest).save()
         testapp.post_json(
             "/play/sign",
-            {"email": "user@test.com", "token": "01031988"},
+            {"email": "user@test.io", "token": "01031988"},
             headers={"X-CSRF-Token": testapp.get_csrf_token()},
-            status=200,
+            status=404,
         )
 
 

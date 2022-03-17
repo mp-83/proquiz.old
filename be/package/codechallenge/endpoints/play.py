@@ -8,6 +8,7 @@ from codechallenge.validation.logical import (
     ValidatePlayCode,
     ValidatePlayLand,
     ValidatePlayNext,
+    ValidatePlaySign,
     ValidatePlayStart,
 )
 from codechallenge.validation.syntax import (
@@ -119,4 +120,12 @@ class PlayEndPoints:
         data_attr="json",
     )
     def sign(self, user_input):
+        try:
+            data = ValidatePlaySign(**user_input).is_valid()
+        except (NotFoundObjectError, ValidateError) as e:
+            if isinstance(e, NotFoundObjectError):
+                return Response(status=404)
+            return Response(status=400, json={"error": e.message})
+
+        _ = data.get("user")
         return Response(json={})

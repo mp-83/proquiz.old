@@ -1,4 +1,5 @@
 from codechallenge.entities import Answers, Matches, Questions, Reactions, Users
+from codechallenge.entities.user import WordDigest
 from codechallenge.exceptions import NotFoundObjectError, ValidateError
 
 
@@ -52,6 +53,23 @@ class ValidatePlayCode:
 
     def is_valid(self):
         return {"match": self.valid_match()}
+
+
+class ValidatePlaySign:
+    def __init__(self, email, token):
+        self.original_email = email
+        self.token = token
+
+    def valid_user(self):
+        email_digest = WordDigest(self.original_email).value()
+        token_digest = WordDigest(self.token).value()
+        user = Users.get(email_digest=email_digest, token_digest=token_digest)
+        if user:
+            return user
+        raise NotFoundObjectError("Invalid email-token")
+
+    def is_valid(self):
+        return {"user": self.valid_user()}
 
 
 class ValidatePlayStart:

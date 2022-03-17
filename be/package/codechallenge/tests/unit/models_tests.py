@@ -30,14 +30,21 @@ class TestCaseUserFactory:
         )
         signed_user = UserFactory(original_email="test@progame.io").fetch()
         assert signed_user.email == "916a55cf753a5c847b861df2bdbbd8de@progame.io"
-        assert signed_user.digest == "916a55cf753a5c847b861df2bdbbd8de"
+        assert signed_user.email_digest == "916a55cf753a5c847b861df2bdbbd8de"
 
     def t_fetchExistingSignedUser(self, dbsession, monkeypatch):
         monkeypatch.setenv(
             "SIGNED_KEY", "3ba57f9a004e42918eee6f73326aa89d", prepend=None
         )
-        signed_user = User(email="916a55cf753a5c847b861df2bdbbd8de@progame.io").save()
-        assert UserFactory(original_email="test@progame.io").fetch() == signed_user
+        signed_user = User(
+            email_digest="916a55cf753a5c847b861df2bdbbd8de",
+            token_digest="2357e975e4daaee0348474750b792660",
+        ).save()
+        assert signed_user is not None
+        assert (
+            UserFactory(original_email="test@progame.io", token="25111961").fetch()
+            == signed_user
+        )
 
     def t_fetchUnsignedUserShouldReturnNewUserEveryTime(self, dbsession, mocker):
         # called twice to showcase the expected behaviour
@@ -47,14 +54,14 @@ class TestCaseUserFactory:
         )
         unsigned_user = UserFactory().fetch()
         assert unsigned_user.email == "uns-3ba57f9a004e42918eee6f73326aa89d@progame.io"
-        assert not unsigned_user.digest
+        assert not unsigned_user.token_digest
         mocker.patch(
             "codechallenge.entities.user.uuid4",
             return_value=mocker.Mock(hex="eee84145094cc69e4f816fd9f435e6b3"),
         )
         unsigned_user = UserFactory().fetch()
         assert unsigned_user.email == "uns-eee84145094cc69e4f816fd9f435e6b3@progame.io"
-        assert not unsigned_user.digest
+        assert not unsigned_user.token_digest
 
     def t_fetchSignedUserWithoutOriginalEmailCreatesNewUser(
         self, dbsession, monkeypatch
@@ -64,7 +71,7 @@ class TestCaseUserFactory:
         )
         signed_user = UserFactory(signed=True).fetch()
         assert signed_user.email == "9a1cfb41abc50c3f37630b673323cef5@progame.io"
-        assert signed_user.digest == "9a1cfb41abc50c3f37630b673323cef5"
+        assert signed_user.email_digest == "9a1cfb41abc50c3f37630b673323cef5"
 
     def t_createNewInternalUser(self, dbsession):
         internal_user = UserFactory(
@@ -78,7 +85,8 @@ class TestCaseUserFactory:
         new_internal_user = UserFactory(
             email="internal@progame.io", password="password"
         ).fetch()
-        assert UserFactory(email=new_internal_user.email).fetch() == new_internal_user
+        existing_user = UserFactory(email=new_internal_user.email).fetch()
+        assert existing_user == new_internal_user
 
 
 class TestCaseQuestion:
