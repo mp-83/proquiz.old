@@ -45,6 +45,9 @@ next_play_schema = {
 
 
 def check_date(field, value, error):
+    if value is None:
+        return
+
     try:
         datetime.strptime(value, "%d%m%Y")
     except ValueError:

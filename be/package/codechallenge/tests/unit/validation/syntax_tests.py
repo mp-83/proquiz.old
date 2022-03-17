@@ -61,6 +61,18 @@ class TestCasePlaySchemas:
         is_valid = v.validate({"email": "user@pp.com", "token": "12022021"})
         assert is_valid
 
+    def t_invalidBirthDateNull(self):
+        v = Validator(sign_play_schema)
+        is_valid = v.validate({"email": "user@pp.com", "token": None})
+        assert not is_valid
+        assert v.errors == {"token": ["null value not allowed"]}
+
+    def t_invalidEmailNull(self):
+        v = Validator(sign_play_schema)
+        is_valid = v.validate({"email": None, "token": "11012014"})
+        assert not is_valid
+        assert v.errors == {"email": ["null value not allowed"]}
+
 
 class TestCaseQuestionSchema:
     def t_templateQuestion(self):
