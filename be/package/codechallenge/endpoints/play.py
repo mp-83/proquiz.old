@@ -14,6 +14,7 @@ from codechallenge.validation.syntax import (
     code_play_schema,
     land_play_schema,
     next_play_schema,
+    sign_play_schema,
     start_play_schema,
 )
 from pyramid.response import Response
@@ -110,3 +111,12 @@ class PlayEndPoints:
         next_q = player.react(answer)
 
         return Response(json={"question": next_q.json, "user": user.uid})
+
+    @view_decorator(
+        route_name="sign",
+        request_method="POST",
+        syntax=sign_play_schema,
+        data_attr="json",
+    )
+    def sign(self, user_input):
+        return Response(json={})

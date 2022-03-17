@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from codechallenge.constants import (
     CODE_POPULATION,
     HASH_POPULATION,
@@ -39,6 +41,30 @@ next_play_schema = {
     "user_uid": {"type": "integer", "coerce": int, "required": True, "min": 1},
     "answer_uid": {"type": "integer", "coerce": int, "required": True, "min": 1},
     "question_uid": {"type": "integer", "coerce": int, "required": True, "min": 1},
+}
+
+
+def check_date(field, value, error):
+    try:
+        datetime.strptime(value, "%d%m%Y")
+    except ValueError:
+        error(field, "Invalid data format")
+
+
+sign_play_schema = {
+    "email": {
+        "type": "string",
+        "required": True,
+        "regex": r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]{2,}\.[a-zA-Z]{2,}",
+        "maxlength": 30,
+    },
+    "token": {
+        "type": "string",
+        "required": True,
+        "minlength": 8,
+        "maxlength": 8,
+        "check_with": check_date,
+    },
 }
 
 create_question_schema = {

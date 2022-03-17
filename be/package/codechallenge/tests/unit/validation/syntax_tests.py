@@ -7,6 +7,7 @@ from codechallenge.validation.syntax import (
     edit_question_schema,
     land_play_schema,
     next_play_schema,
+    sign_play_schema,
     start_play_schema,
     user_login_schema,
 )
@@ -54,6 +55,11 @@ class TestCasePlaySchemas:
         )
         assert not is_valid
         assert v.errors == {"question_uid": ["required field"]}
+
+    def t_emailAndBirthDate(self):
+        v = Validator(sign_play_schema)
+        is_valid = v.validate({"email": "user@pp.com", "token": "12022021"})
+        assert is_valid
 
 
 class TestCaseQuestionSchema:

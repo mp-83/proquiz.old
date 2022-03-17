@@ -19,6 +19,7 @@ def play_routes(config):
     config.add_route("start", "/start")
     config.add_route("next", "/next")
     config.add_route("code", "/code")
+    config.add_route("sign", "/sign")
     config.add_route("land", "/{match_uhash}")
 
 

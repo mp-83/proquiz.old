@@ -6,18 +6,16 @@ from codechallenge.entities.user import UserFactory
 
 class TestCaseBadRequest:
     def t_endpoints(self, testapp):
-        endpoints = ["/play/BAD", "/play/start", "/play/next"]
+        # TODO to improve: if the enpoint url is malformed it the /play
+        # enpoint matches (route matching logic).
+        endpoints = ["/play/BAD", "/play/start", "/play/next", "/play/sign"]
         for endpoint in endpoints:
-            try:
-                testapp.post_json(
-                    endpoint,
-                    {"match_uid": None},
-                    headers={"X-CSRF-Token": testapp.get_csrf_token()},
-                    status=400,
-                )
-            # TODO: to replace with specific exception
-            except Exception as err:
-                assert not err
+            testapp.post_json(
+                endpoint,
+                {"match_uid": None},
+                headers={"X-CSRF-Token": testapp.get_csrf_token()},
+                status=400,
+            )
 
 
 class TestCasePlayLand:
@@ -47,6 +45,17 @@ class TestCasePlayCode:
         # the user.uid value can't be known ahead, but it will be > 0
         assert response.json["user"]
         assert response.json["match"] == match.uid
+
+
+class TestCasePlaySign:
+    def t_successfulSign(self, testapp):
+        Match(with_hash=True).save()
+        testapp.post_json(
+            "/play/sign",
+            {"email": "user@test.com", "token": "01031988"},
+            headers={"X-CSRF-Token": testapp.get_csrf_token()},
+            status=200,
+        )
 
 
 class TestCasePlayStart:
