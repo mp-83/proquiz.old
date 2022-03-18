@@ -5,7 +5,7 @@ services:
     env_file:
      - "./be/.env"
     volumes:
-      - "interviewdb:/var/lib/mysql"
+      - "quizdb:/var/lib/mysql"
 
   server:
     env_file:
@@ -42,5 +42,5 @@ services:
       - "8080:3000"
 
 volumes:
-  interviewdb:
+  quizdb:
   cache:
