@@ -125,6 +125,36 @@ class TestCaseMatchSchema:
         assert is_valid
         assert v.document["is_restricted"]
 
+    def t_expirationValuesCannotBeNone(self):
+        v = Validator(create_match_schema)
+        document = {
+            "name": "new match",
+            "with_code": "true",
+            "questions": [],
+            "to_time": None,
+            "from_time": None,
+        }
+        is_valid = v.validate(document)
+        assert not is_valid
+        assert v.errors == {
+            "from_time": ["null value not allowed"],
+            "to_time": ["null value not allowed"],
+        }
+
+    def t_expirationValuesMustBeDatetimeIsoFormatted(self):
+        v = Validator(create_match_schema)
+        is_valid = v.validate(
+            {
+                "name": "new match",
+                "times": "2",
+                "with_code": "true",
+                "questions": [],
+                "from_time": "2022-03-19T16:10:39.135166",
+                "to_time": "2022-03-19T16:10:39.935155",
+            }
+        )
+        assert is_valid
+
     def t_multipleEdgeValues(self):
         v = Validator(create_match_schema)
         document = {

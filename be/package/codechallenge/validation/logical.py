@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from codechallenge.entities import Answers, Matches, Questions, Reactions, Users
 from codechallenge.entities.user import WordDigest
 from codechallenge.exceptions import NotFoundObjectError, ValidateError
@@ -176,3 +178,17 @@ class ValidateEditMatch:
 
     def is_valid(self):
         return self.valid_match()
+
+
+class ValidateNewCodeMatch:
+    def __init__(self, from_time, to_time):
+        self.from_time = from_time
+        self.to_time = to_time
+
+    def is_valid(self):
+        now = datetime.now()
+        if self.from_time < now:
+            raise ValidateError("from-time must be greater than now")
+
+        if self.to_time < self.from_time:
+            raise ValidateError("to-time must be greater than from-time")

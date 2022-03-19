@@ -27,7 +27,7 @@ class TestCaseMatchEndpoints:
         match_name = "New Match"
         response = testapp.post_json(
             "/match/new",
-            {"name": match_name, "questions": TEST_1},
+            {"name": match_name, "questions": TEST_1, "is_restricted": "true"},
             headers={"X-CSRF-Token": testapp.get_csrf_token()},
             status=200,
         )
@@ -35,6 +35,7 @@ class TestCaseMatchEndpoints:
         assert Questions.count() == 4
         questions = response.json["match"]["questions"]
         assert questions[0][0]["text"] == TEST_1[0]["text"]
+        assert response.json["match"]["is_restricted"]
 
     def t_requestUnexistentMatch(self, testapp):
         testapp.get("/match/30", status=404)
@@ -48,33 +49,37 @@ class TestCaseMatchEndpoints:
         Question(text="Where is Vienna?", game_uid=second_game.uid, position=0).save()
 
         response = testapp.get(f"/match/{match.uid}", status=200)
-        assert response.json == {
-            "match": {
-                "name": match_name,
-                "is_restricted": True,
-                "expires": None,
-                "order": True,
-                "times": 1,
-                "questions": [
-                    [
-                        {
-                            "code": None,
-                            "position": 0,
-                            "text": "Where is London?",
-                            "answers": [],
-                        }
-                    ],
-                    [
-                        {
-                            "code": None,
-                            "position": 0,
-                            "text": "Where is Vienna?",
-                            "answers": [],
-                        }
-                    ],
-                ],
-            }
-        }
+
+        assert response.json["match"]["name"] == match_name
+
+        assert list(response.json["match"].keys()) == [
+            "name",
+            "is_restricted",
+            "expires",
+            "order",
+            "times",
+            "code",
+            "uhash",
+            "questions",
+        ]
+        assert response.json["match"]["questions"] == [
+            [
+                {
+                    "code": None,
+                    "position": 0,
+                    "text": "Where is London?",
+                    "answers": [],
+                }
+            ],
+            [
+                {
+                    "code": None,
+                    "position": 0,
+                    "text": "Where is Vienna?",
+                    "answers": [],
+                }
+            ],
+        ]
 
     def t_matchCannotBeChangedIfStarted(self, testapp):
         match_name = "New Match"
@@ -135,3 +140,14 @@ class TestCaseMatchEndpoints:
 
         rjson = response.json
         assert rjson["matches"] == [m.json for m in [m1, m2, m3]]
+
+    def t_createMatchWithCode(self, testapp):
+        match_name = "New Match"
+        response = testapp.post_json(
+            "/match/new",
+            {"name": match_name, "with_code": "true"},
+            headers={"X-CSRF-Token": testapp.get_csrf_token()},
+            status=200,
+        )
+
+        assert response.json["match"]["code"]

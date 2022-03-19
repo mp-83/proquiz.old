@@ -10,6 +10,7 @@ requires = [
     "click",
     "cryptography",
     "pyramid",
+    "pyramid_jinja2",
     "pyramid_tm",
     "pyramid_retry",
     "redis",

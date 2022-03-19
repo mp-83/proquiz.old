@@ -194,7 +194,7 @@ class TestCaseMatchModel:
         assert match.questions[1][0].game == second_game
 
     def t_createMatchWithHash(self, dbsession):
-        match = Match(with_hash=True).save()
+        match = Match(with_code=False).save()
         assert match.uhash is not None
         assert len(match.uhash) == MATCH_HASH_LEN
 
@@ -324,12 +324,12 @@ class TestCaseGameModel:
             text="Where is Berlin?", game_uid=game.uid, position=2
         ).save()
 
-        assert len(emitted_queries) == 6
+        assert len(emitted_queries) == 7
         assert game.ordered_questions[0] == question_1
         assert game.ordered_questions[1] == question_2
         assert game.ordered_questions[2] == question_3
         assert game.ordered_questions[3] == question_4
-        assert len(emitted_queries) == 7
+        assert len(emitted_queries) == 8
 
 
 class TestCaseReactionModel:

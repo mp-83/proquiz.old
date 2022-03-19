@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 import pytest
 from codechallenge.entities import (
     Answer,
@@ -12,6 +14,7 @@ from codechallenge.entities.user import UserFactory, WordDigest
 from codechallenge.exceptions import NotFoundObjectError, ValidateError
 from codechallenge.validation.logical import (
     RetrieveObject,
+    ValidateNewCodeMatch,
     ValidatePlayCode,
     ValidatePlayLand,
     ValidatePlayNext,
@@ -131,3 +134,26 @@ class TestCaseNextEndPoint:
     def t_matchDoesNotExists(self, dbsession):
         with pytest.raises(NotFoundObjectError):
             ValidatePlayNext(match_uid=1).valid_match()
+
+
+class TestCaseCreateMatch:
+    def t_fromTimeGreaterThanToTime(self, dbsession):
+        # to avoid from_time to be < datetime.now() when
+        # the check is performed, the value is increased
+        # by two seconds (or we mock datetime.now)
+        with pytest.raises(ValidateError) as e:
+            ValidateNewCodeMatch(
+                from_time=(datetime.now() + timedelta(seconds=2)),
+                to_time=(datetime.now() - timedelta(seconds=10)),
+            ).is_valid()
+
+        assert e.value.message == "to-time must be greater than from-time"
+
+    def t_fromTimeIsExpired(self, dbsession):
+        with pytest.raises(ValidateError) as e:
+            ValidateNewCodeMatch(
+                from_time=(datetime.now() - timedelta(seconds=1)),
+                to_time=(datetime.now() + timedelta(days=1)),
+            ).is_valid()
+
+        assert e.value.message == "from-time must be greater than now"

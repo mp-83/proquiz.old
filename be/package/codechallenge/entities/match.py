@@ -27,13 +27,13 @@ class Match(TableMixin, Base):
     name = Column(String, nullable=False, unique=True)
     # unique hash identifying this match
     uhash = Column(String)
-    # password needed to start the match if it's private
-    password = Column(String)
     # code needed to start match
     code = Column(String)
-    # if true, this match is playable only by users with the link
+    # password needed to start the match if it's restricted
+    password = Column(String)
+    # designates the accessibility to this match
     is_restricted = Column(Boolean, default=True)
-    # after this time match is no longer playable
+    # determines the time range till the match is playable
     expires = Column(DateTime(timezone=True))
     # how many times a match can be played
     times = Column(Integer, default=1)
@@ -54,13 +54,13 @@ class Match(TableMixin, Base):
             uuid_time_substring = "{}".format(uuid1())[:23]
             kwargs["name"] = f"M-{uuid_time_substring}"
 
-        with_hash = kwargs.pop("with_hash", False)
-        if with_hash:
-            self.uhash = MatchHash().get_hash()
-
         with_code = kwargs.pop("with_code", False)
         if with_code:
             self.code = MatchCode().get_code()
+
+        with_hash = not with_code
+        if with_hash:
+            self.uhash = MatchHash().get_hash()
 
         if kwargs.get("is_restricted"):
             self.uhash = kwargs.get("uhash") or MatchHash().get_hash()
@@ -195,6 +195,8 @@ class Match(TableMixin, Base):
             "expires": self.expires,
             "order": self.order,
             "times": self.times,
+            "code": self.code,
+            "uhash": self.uhash,
             "questions": [[q.json for q in g.ordered_questions] for g in self.games],
         }
 

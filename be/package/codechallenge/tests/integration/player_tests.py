@@ -21,7 +21,7 @@ class TestCaseBadRequest:
 class TestCasePlayLand:
     # the test scenario for land/404 is already tested above
     def t_playLand(self, testapp):
-        match = Match(with_hash=True).save()
+        match = Match(with_code=False).save()
         response = testapp.post(
             f"/play/{match.uhash}",
             headers={"X-CSRF-Token": testapp.get_csrf_token()},
@@ -49,7 +49,7 @@ class TestCasePlayCode:
 
 class TestCasePlaySign:
     def t_successfulSign(self, testapp):
-        Match(with_hash=True).save()
+        Match(with_code=True).save()
         email_digest = WordDigest("user@test.io").value()
         token_digest = WordDigest("01112021").value()
         email = f"{email_digest}@progame.io"

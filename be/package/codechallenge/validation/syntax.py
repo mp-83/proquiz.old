@@ -120,15 +120,30 @@ def coerce_times(value):
     return value
 
 
+def check_datetime_isoformat(field, value, error):
+    if value is None:
+        return
+
+    try:
+        datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
+    except ValueError:
+        error(field, "Invalid data format")
+
+
 create_match_schema = {
     "name": {"type": "string"},
-    # coerce callables are executed according to the order they are in the tuple
+    "with_code": {"type": "boolean", "coerce": bool},
     "times": {
         "type": "integer",
-        "coerce": (coerce_times, int),
+        "coerce": (
+            coerce_times,
+            int,
+        ),  # coerce callables are executed according to the order they are in the tuple
         "min": 1,
         "nullable": True,
     },
+    "from_time": {"type": "string", "check_with": check_datetime_isoformat},
+    "to_time": {"type": "string", "check_with": check_datetime_isoformat},
     "is_restricted": {"type": "boolean", "coerce": bool},
     "order": {"type": "boolean", "coerce": coerce_order},
     "questions": {
