@@ -8,11 +8,6 @@ from codechallenge.exceptions import (
 )
 
 
-# TODO is this used anywhere?
-class PlayException(Exception):
-    """"""
-
-
 class QuestionFactory:
     def __init__(self, game, *displayed_ids):
         self._game = game
@@ -159,6 +154,9 @@ class SinglePlayer:
                 f"User {self._user.email} has no left attempts for Match {self._match.name}"
             )
 
+        if not self._match.is_active:
+            raise MatchError("Expired match")
+
         self._game_factory = GameFactory(self._match, *self._status.all_games_played())
         game = self._game_factory.next()
 
@@ -166,9 +164,6 @@ class SinglePlayer:
             game, *self._status.questions_displayed()
         )
         question = self._question_factory.next()
-
-        # left as sanity check. To be removed after testing
-        assert game.uid == question.game.uid
 
         self._current_reaction = Reaction(
             match_uid=self._match.uid,
@@ -224,6 +219,9 @@ class SinglePlayer:
         )
 
     def react(self, answer):
+        if not self._match.is_active:
+            raise MatchError("Expired match")
+
         if not self._current_reaction:
             self._current_reaction = self.last_reaction(answer.question)
             self._game_factory = GameFactory(

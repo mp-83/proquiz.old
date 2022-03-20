@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 import pytest
 from codechallenge.entities import (
     Answer,
@@ -266,6 +268,41 @@ class TestCaseSinglePlayer:
 
         assert len(user.reactions)
         assert next_q == second
+
+    def t_matchAtStartTime(self, dbsession):
+        match = Match(to_time=datetime.now() - timedelta(microseconds=10)).save()
+        first_game = Game(match_uid=match.uid, index=1).save()
+        Question(text="Where is London?", game_uid=first_game.uid, position=0).save()
+        user = User(email="user@test.project").save()
+
+        status = PlayerStatus(user, match)
+        player = SinglePlayer(status, user, match)
+        with pytest.raises(MatchError) as e:
+            player.start()
+
+        assert e.value.message == "Expired match"
+
+    def t_matchRightBeforeReaction(self, dbsession):
+        # the to_time attribute is set right before the player initialisation
+        # to bypass the is_active check inside start() and fail at reaction
+        # time (where is expected)
+        match = Match().save()
+        first_game = Game(match_uid=match.uid, index=1).save()
+        question = Question(
+            text="Where is London?", game_uid=first_game.uid, position=0
+        ).save()
+        answer = Answer(question=question, text="UK", position=1).save()
+        user = User(email="user@test.project").save()
+
+        match.to_time = datetime.now() + timedelta(microseconds=5000)
+        match.save()
+        status = PlayerStatus(user, match)
+        player = SinglePlayer(status, user, match)
+        player.start()
+        with pytest.raises(MatchError) as e:
+            player.react(answer)
+
+        assert e.value.message == "Expired match"
 
     def t_matchCannotBePlayedMoreThanMatchTimes(self, dbsession):
         match = Match().save()
