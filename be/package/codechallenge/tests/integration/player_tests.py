@@ -48,18 +48,21 @@ class TestCasePlayCode:
 
 
 class TestCasePlaySign:
-    def t_successfulSign(self, testapp):
+    def t_successfulSignReturnsExisting(self, testapp):
         Match(with_code=True).save()
         email_digest = WordDigest("user@test.io").value()
         token_digest = WordDigest("01112021").value()
         email = f"{email_digest}@progame.io"
-        User(email=email, email_digest=email_digest, token_digest=token_digest).save()
-        testapp.post_json(
+        user = User(
+            email=email, email_digest=email_digest, token_digest=token_digest
+        ).save()
+        response = testapp.post_json(
             "/play/sign",
-            {"email": "user@test.io", "token": "01031988"},
+            {"email": "user@test.io", "token": "01112021"},
             headers={"X-CSRF-Token": testapp.get_csrf_token()},
-            status=404,
+            status=200,
         )
+        assert response.json["user"] == user.uid
 
 
 class TestCasePlayStart:

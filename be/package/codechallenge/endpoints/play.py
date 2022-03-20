@@ -127,5 +127,5 @@ class PlayEndPoints:
                 return Response(status=404)
             return Response(status=400, json={"error": e.message})
 
-        _ = data.get("user")
-        return Response(json={})
+        user = data.get("user")
+        return Response(json={"user": user.uid})
