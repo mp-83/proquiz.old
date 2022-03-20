@@ -33,8 +33,9 @@ class Match(TableMixin, Base):
     password = Column(String)
     # designates the accessibility to this match
     is_restricted = Column(Boolean, default=True)
-    # determines the time range till the match is playable
-    expires = Column(DateTime(timezone=True))
+    # determine the time range the match is playable
+    from_time = Column(DateTime(timezone=True))
+    to_time = Column(DateTime(timezone=True))
     # how many times a match can be played
     times = Column(Integer, default=1)
     # when True games should be played in order
@@ -49,6 +50,13 @@ class Match(TableMixin, Base):
         the time, therefore the ones that change
         every tick and guarantee the uniqueness
         """
+        expires = kwargs.pop("expires", None)
+        if not kwargs.get("to_time"):
+            self.to_time = expires
+
+        if not kwargs.get("from_time"):
+            self.from_time = datetime.now()
+
         _name = kwargs.get("name")
         if _name is None or _name == "":
             uuid_time_substring = "{}".format(uuid1())[:23]
@@ -79,6 +87,10 @@ class Match(TableMixin, Base):
     def questions_count(self):
         return sum(len(g.questions) for g in self.games)
 
+    @property
+    def expires(self):
+        return self.to_time
+
     def refresh(self):
         self.session.refresh(self)
         return self
@@ -93,7 +105,7 @@ class Match(TableMixin, Base):
         return matched_row.scalar_one_or_none()
 
     @property
-    def is_valid(self):
+    def is_active(self):
         if self.expires:
             return (self.expires - datetime.now()).total_seconds() > 0
         return True
@@ -192,7 +204,7 @@ class Match(TableMixin, Base):
         return {
             "name": self.name,
             "is_restricted": self.is_restricted,
-            "expires": self.expires,
+            "expires": self.expires.isoformat() if self.to_time else None,
             "order": self.order,
             "times": self.times,
             "code": self.code,
@@ -262,7 +274,7 @@ class Matches:
     def active_with_code(cls, code):
         return (
             cls.session.query(Match)
-            .filter(Match.code == code, Match.expires > datetime.now())
+            .filter(Match.code == code, Match.to_time > datetime.now())
             .one_or_none()
         )
 

@@ -1,5 +1,5 @@
 class BaseException(Exception):
-    def __init__(self, message, *args):
+    def __init__(self, message="", *args):
         super(Exception).__init__(*args)
         self._message = message
 

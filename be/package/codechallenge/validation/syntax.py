@@ -3,6 +3,7 @@ from datetime import datetime
 from codechallenge.constants import (
     CODE_POPULATION,
     HASH_POPULATION,
+    ISOFORMAT,
     MATCH_CODE_LEN,
     MATCH_HASH_LEN,
     MATCH_PASSWORD_LEN,
@@ -120,14 +121,11 @@ def coerce_times(value):
     return value
 
 
-def check_datetime_isoformat(field, value, error):
-    if value is None:
-        return
-
+def coerce_datetime_isoformat(value):
     try:
-        datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
-    except ValueError:
-        error(field, "Invalid data format")
+        return datetime.strptime(value, ISOFORMAT)
+    except (ValueError, TypeError):
+        return
 
 
 create_match_schema = {
@@ -142,8 +140,8 @@ create_match_schema = {
         "min": 1,
         "nullable": True,
     },
-    "from_time": {"type": "string", "check_with": check_datetime_isoformat},
-    "to_time": {"type": "string", "check_with": check_datetime_isoformat},
+    "from_time": {"type": "datetime", "coerce": coerce_datetime_isoformat},
+    "to_time": {"type": "datetime", "coerce": coerce_datetime_isoformat},
     "is_restricted": {"type": "boolean", "coerce": bool},
     "order": {"type": "boolean", "coerce": coerce_order},
     "questions": {

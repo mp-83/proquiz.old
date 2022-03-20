@@ -43,7 +43,18 @@ class TestCaseLandEndPoint:
 class TestCaseCodeEndPoint:
     def t_wrongCode(self, dbsession):
         with pytest.raises(NotFoundObjectError):
-            ValidatePlayCode(match_uhash="wrong-hash").valid_match()
+            ValidatePlayCode(match_code="2222").valid_match()
+
+    def t_matchActiveness(self, dbsession):
+        ten_hours_ago = datetime.now() - timedelta(hours=40)
+        two_hours_ago = datetime.now() - timedelta(hours=3600)
+        match = Match(
+            with_code=True, from_time=ten_hours_ago, to_time=two_hours_ago
+        ).save()
+        with pytest.raises(ValidateError) as err:
+            ValidatePlayCode(match_code=match.code).valid_match()
+
+        assert err.value.message == "Expired match"
 
 
 class TestCaseSignEndPoint:

@@ -21,7 +21,7 @@ class RetrieveObject:
         obj = klass.get(uid=self.object_uid)
         if obj:
             return obj
-        raise NotFoundObjectError("")
+        raise NotFoundObjectError()
 
 
 class ValidatePlayLand:
@@ -31,9 +31,9 @@ class ValidatePlayLand:
     def valid_match(self):
         match = Matches.get(uhash=self.match_uhash)
         if not match:
-            raise NotFoundObjectError("")
+            raise NotFoundObjectError()
 
-        if match.is_valid:
+        if match.is_active:
             return match
 
         raise ValidateError("Expired match")
@@ -47,11 +47,14 @@ class ValidatePlayCode:
         self.match_code = kwargs.get("match_code")
 
     def valid_match(self):
-        match = Matches.active_with_code(self.match_code)
+        match = Matches.get(code=self.match_code)
         if not match:
-            raise NotFoundObjectError("")
+            raise NotFoundObjectError()
 
-        return match
+        if match.is_active:
+            return match
+
+        raise ValidateError("Expired match")
 
     def is_valid(self):
         return {"match": self.valid_match()}
@@ -85,7 +88,7 @@ class ValidatePlayStart:
         if user:
             return user
 
-        raise NotFoundObjectError("Invalid user")
+        raise NotFoundObjectError()
 
     def valid_match(self):
         return RetrieveObject(self.match_uid, otype="match").get()
@@ -95,8 +98,8 @@ class ValidatePlayStart:
         match = self.valid_match()
         user = self.valid_user()
 
-        if not match.is_valid:
-            raise ValidateError("Invalid match")
+        if not match.is_active:
+            raise ValidateError("Expired match")
 
         if user.signed != match.is_restricted:
             raise ValidateError("User cannot access this match")
@@ -150,7 +153,7 @@ class ValidatePlayNext:
             self._data["user"] = user
             return
 
-        raise NotFoundObjectError("Invalid user")
+        raise NotFoundObjectError()
 
     def valid_match(self):
         match = RetrieveObject(self.match_uid, otype="match").get()

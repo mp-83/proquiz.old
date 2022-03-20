@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from cerberus import Validator
 from codechallenge.validation.syntax import (
     code_play_schema,
@@ -13,8 +15,20 @@ from codechallenge.validation.syntax import (
 )
 
 
+class TestCaseNullable:
+    def t_nullableValues(self):
+        for schema, field in [
+            (land_play_schema, "match_uhash"),
+            (code_play_schema, "match_code"),
+        ]:
+            v = Validator(schema)
+            is_valid = v.validate({field: None})
+            assert not is_valid
+            assert v.errors[field][0].startswith("null value not allowed")
+
+
 class TestCasePlaySchemas:
-    def t_matchUidAsNone(self):
+    def t_matchUHashCannotBeNone(self):
         v = Validator(land_play_schema)
         is_valid = v.validate({"match_uhash": "IJD34KOP"})
         assert not is_valid
@@ -154,6 +168,7 @@ class TestCaseMatchSchema:
             }
         )
         assert is_valid
+        assert isinstance(v.document["to_time"], datetime)
 
     def t_multipleEdgeValues(self):
         v = Validator(create_match_schema)
@@ -183,7 +198,6 @@ class TestCaseUserSchema:
         is_valid = v.validate({"email": "", "password": "pass"})
         assert not is_valid
 
-    # @pytest.mark.skip("skipped until regex is activated")
     def t_invalidEmail(self):
         v = Validator(user_login_schema)
         is_valid = v.validate({"email": "e@a.c", "password": "password"})

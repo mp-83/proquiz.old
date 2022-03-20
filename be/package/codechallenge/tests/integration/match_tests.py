@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from codechallenge.entities import Game, Match, Question, Questions, Reaction, User
 from codechallenge.tests.fixtures import TEST_1
 
@@ -143,11 +145,19 @@ class TestCaseMatchEndpoints:
 
     def t_createMatchWithCode(self, testapp):
         match_name = "New Match"
+        now = datetime.now()
+        tomorrow = now + timedelta(days=1)
         response = testapp.post_json(
             "/match/new",
-            {"name": match_name, "with_code": "true"},
+            {
+                "name": match_name,
+                "with_code": "true",
+                "from_time": now.isoformat(),
+                "to_time": tomorrow.isoformat(),
+            },
             headers={"X-CSRF-Token": testapp.get_csrf_token()},
             status=200,
         )
 
         assert response.json["match"]["code"]
+        assert response.json["match"]["expires"] == tomorrow.isoformat()
