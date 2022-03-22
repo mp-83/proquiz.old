@@ -28,13 +28,19 @@ class GameOver(BaseException):
     """"""
 
 
-class MatchOver(BaseException):
-    """Match is started but contains not games"""
-
-
 class ValidateError(BaseException):
     """"""
 
 
 class NotFoundObjectError(BaseException):
     """"""
+
+
+class MatchOver(Exception):
+    def __init__(self, message="", *args):
+        super(Exception).__init__(*args)
+        self._message = message
+
+    @property
+    def message(self):
+        return self._message

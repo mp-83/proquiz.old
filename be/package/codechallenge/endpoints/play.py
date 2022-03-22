@@ -1,7 +1,7 @@
 import logging
 
 from codechallenge.entities.user import UserFactory
-from codechallenge.exceptions import NotFoundObjectError, ValidateError
+from codechallenge.exceptions import MatchOver, NotFoundObjectError, ValidateError
 from codechallenge.play.single_player import PlayerStatus, SinglePlayer
 from codechallenge.utils import view_decorator
 from codechallenge.validation.logical import (
@@ -85,8 +85,8 @@ class PlayEndPoints:
         player = SinglePlayer(status, user, match)
         current_question = player.start()
         match_data = {
+            "match": match.uid,
             "question": current_question.json,
-            "answers": [a.json for a in current_question.answers],
             "user": user.uid,
         }
         return Response(json=match_data)
@@ -111,7 +111,10 @@ class PlayEndPoints:
 
         status = PlayerStatus(user, match)
         player = SinglePlayer(status, user, match)
-        next_q = player.react(answer)
+        try:
+            next_q = player.react(answer)
+        except MatchOver:
+            return Response(json={"question": None})
 
         return Response(json={"question": next_q.json, "user": user.uid})
 

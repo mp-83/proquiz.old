@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
-from codechallenge.entities import Game, Match, Question, User
+from codechallenge.entities import Answer, Game, Match, Question, User
 from codechallenge.entities.user import UserFactory, WordDigest
 
 
@@ -95,8 +95,10 @@ class TestCasePlayStart:
             headers={"X-CSRF-Token": testapp.get_csrf_token()},
             status=200,
         )
+
+        assert response.json["match"] == match.uid
         assert response.json["question"] == question.json
-        assert response.json["answers"] == []
+        assert response.json["question"]["answers"] == []
         # the user.uid value can't be known ahead, but it will be > 0
         assert response.json["user"]
 
@@ -192,3 +194,24 @@ class TestCasePlayNext:
         )
         assert response.json["question"] == match.questions[0][1].json
         assert response.json["user"] == user.uid
+
+    def t_completeMatch(self, testapp):
+        match = Match().save()
+        first_game = Game(match_uid=match.uid, index=0).save()
+        question = Question(
+            text="Where is London?", game_uid=first_game.uid, position=0, time=2
+        ).save()
+        answer = Answer(question=question, text="UK", position=1, level=2).save()
+        user = User(email="user@test.project").save()
+        response = testapp.post_json(
+            "/play/next",
+            {
+                "match_uid": match.uid,
+                "question_uid": question.uid,
+                "answer_uid": answer.uid,
+                "user_uid": user.uid,
+            },
+            headers={"X-CSRF-Token": testapp.get_csrf_token()},
+            status=200,
+        )
+        assert response.json["question"] is None

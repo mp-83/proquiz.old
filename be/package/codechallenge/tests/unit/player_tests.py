@@ -326,9 +326,9 @@ class TestCaseSinglePlayer:
         match = Match().save()
         first_game = Game(match_uid=match.uid, index=0).save()
         question = Question(
-            text="Where is London?", game_uid=first_game.uid, position=0
+            text="Where is London?", game_uid=first_game.uid, position=0, time=2
         ).save()
-        answer = Answer(question=question, text="UK", position=1).save()
+        answer = Answer(question=question, text="UK", position=1, level=2).save()
         user = User(email="user@test.project").save()
 
         status = PlayerStatus(user, match)
@@ -336,6 +336,8 @@ class TestCaseSinglePlayer:
         player.start()
         with pytest.raises(MatchOver):
             player.react(answer)
+
+        assert user.reactions[0].score > 0
 
     def t_playMatchOverMultipleRequests(self, dbsession):
         # the SinglePlayer is instanced multiple times
