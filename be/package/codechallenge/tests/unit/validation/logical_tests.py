@@ -74,7 +74,9 @@ class TestCaseStartEndPoint:
         match = Match(is_restricted=True).save()
         user = User(email="user@test.project").save()
         with pytest.raises(ValidateError) as err:
-            ValidatePlayStart(match_uid=match.uid, user_uid=user.uid).is_valid()
+            ValidatePlayStart(
+                match_uid=match.uid, user_uid=user.uid, password=match.password
+            ).is_valid()
 
         assert err.value.message == "User cannot access this match"
 
@@ -94,11 +96,9 @@ class TestCaseStartEndPoint:
 
     def t_invalidPassword(self, dbsession):
         match = Match(is_restricted=True).save()
-        user = UserFactory(signed=True).fetch()
+        UserFactory(signed=True).fetch()
         with pytest.raises(ValidateError) as err:
-            ValidatePlayStart(
-                match_uid=match.uid, user_uid=user.uid, password="Invalid"
-            ).is_valid()
+            ValidatePlayStart(match_uid=match.uid, password="Invalid").is_valid()
 
         assert err.value.message == "Password mismatch"
 

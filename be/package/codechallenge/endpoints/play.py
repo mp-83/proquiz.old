@@ -42,8 +42,7 @@ class PlayEndPoints:
             return Response(status=400, json={"error": e.message})
 
         match = data.get("match")
-        user = UserFactory(signed=match.is_restricted).fetch()
-        return Response(json={"match": match.uid, "user": user.uid})
+        return Response(json={"match": match.uid})
 
     @view_decorator(
         route_name="code",
@@ -79,6 +78,9 @@ class PlayEndPoints:
 
         match = data.get("match")
         user = data.get("user")
+        if not user:
+            user = UserFactory(signed=match.is_restricted).fetch()
+
         status = PlayerStatus(user, match)
         player = SinglePlayer(status, user, match)
         current_question = player.start()

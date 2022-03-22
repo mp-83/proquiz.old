@@ -85,10 +85,9 @@ class ValidatePlayStart:
 
     def valid_user(self):
         user = Users.get(uid=self.user_uid)
-        if user:
-            return user
-
-        raise NotFoundObjectError()
+        if self.user_uid and not user:
+            raise NotFoundObjectError()
+        return user
 
     def valid_match(self):
         return RetrieveObject(self.match_uid, otype="match").get()
@@ -101,17 +100,20 @@ class ValidatePlayStart:
         if not match.is_active:
             raise ValidateError("Expired match")
 
-        if user.signed != match.is_restricted:
-            raise ValidateError("User cannot access this match")
-
-        if user.signed and match.is_restricted:
+        if match.is_restricted:
             if not self.password:
                 raise ValidateError("Password is required for private matches")
 
             if self.password != match.password:
                 raise ValidateError("Password mismatch")
 
-        return {"user": user, "match": match}
+        if user and user.signed != match.is_restricted:
+            raise ValidateError("User cannot access this match")
+
+        data = {"match": match}
+        if user:
+            data.update(user=user)
+        return data
 
 
 class ValidatePlayNext:

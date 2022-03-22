@@ -40,6 +40,11 @@ class TestCasePlaySchemas:
         assert not is_valid
         assert v.errors["match_code"][0].startswith("value does not match regex")
 
+    def t_validStartPayloadWithoutUser(self):
+        v = Validator(start_play_schema)
+        is_valid = v.validate({"match_uid": 1})
+        assert is_valid
+
     def t_validStartPayloadWithoutPassword(self):
         v = Validator(start_play_schema)
         is_valid = v.validate({"match_uid": 1, "user_uid": 1})

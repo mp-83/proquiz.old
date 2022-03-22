@@ -27,8 +27,6 @@ class TestCasePlayLand:
             headers={"X-CSRF-Token": testapp.get_csrf_token()},
             status=200,
         )
-        # the user.uid value can't be known ahead, but it will be > 0
-        assert response.json["user"]
         assert response.json["match"] == match.uid
 
 
@@ -85,20 +83,21 @@ class TestCasePlayStart:
             status=400,
         )
 
-    def t_startMatch(self, testapp):
+    def t_startMatchAndUserIsImplicitlyCreated(self, testapp):
         match = Match(is_restricted=False).save()
         game = Game(match_uid=match.uid).save()
         question = Question(game_uid=game.uid, text="1+1 is = to", position=0).save()
-        user = UserFactory(signed=match.is_restricted).fetch()
+        UserFactory(signed=match.is_restricted).fetch()
 
         response = testapp.post_json(
             "/play/start",
-            {"match_uid": match.uid, "user_uid": user.uid},
+            {"match_uid": match.uid},
             headers={"X-CSRF-Token": testapp.get_csrf_token()},
             status=200,
         )
         assert response.json["question"] == question.json
         assert response.json["answers"] == []
+        # the user.uid value can't be known ahead, but it will be > 0
         assert response.json["user"]
 
     def t_startMatchWithoutQuestion(self, testapp):

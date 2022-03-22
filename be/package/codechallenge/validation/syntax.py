@@ -30,7 +30,7 @@ code_play_schema = {
 
 start_play_schema = {
     "match_uid": {"type": "integer", "coerce": int, "required": True, "min": 1},
-    "user_uid": {"type": "integer", "coerce": int, "required": True, "min": 1},
+    "user_uid": {"type": "integer", "coerce": int, "min": 1},
     "password": {
         "type": "string",
         "regex": "[" + f"{PASSWORD_POPULATION}" + "]{" + f"{MATCH_PASSWORD_LEN}" + "}",
