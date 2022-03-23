@@ -8,39 +8,37 @@ class BaseException(Exception):
         return self._message
 
 
-class NotUsableQuestionError(BaseException):
+class InternalException(BaseException):
     """"""
 
 
-class MatchError(BaseException):
+class MatchOver(BaseException):
     """"""
 
 
-class MatchNotPlayableError(BaseException):
+class NotUsableQuestionError(InternalException):
+    """"""
+
+
+class MatchError(InternalException):
+    """"""
+
+
+class MatchNotPlayableError(InternalException):
     """Match has been played by the user more than match.times"""
 
 
-class GameError(BaseException):
+class GameError(InternalException):
     """Generic exception occuring during Match"""
 
 
-class GameOver(BaseException):
+class GameOver(InternalException):
     """"""
 
 
-class ValidateError(BaseException):
+class ValidateError(InternalException):
     """"""
 
 
-class NotFoundObjectError(BaseException):
+class NotFoundObjectError(InternalException):
     """"""
-
-
-class MatchOver(Exception):
-    def __init__(self, message="", *args):
-        super(Exception).__init__(*args)
-        self._message = message
-
-    @property
-    def message(self):
-        return self._message

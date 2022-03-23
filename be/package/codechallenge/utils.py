@@ -1,5 +1,5 @@
 from cerberus import Validator
-from codechallenge.exceptions import BaseException
+from codechallenge.exceptions import InternalException
 from pyramid.response import Response
 from pyramid.view import view_config
 
@@ -33,7 +33,7 @@ class view_decorator(view_config):
 
             try:
                 return wrapped(*args, v.document)
-            except BaseException as e:
+            except InternalException as e:
                 return Response(status=400, json={"error": e.message})
 
         return wrapped_f if syntax_schema else wrapped
