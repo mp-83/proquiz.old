@@ -11,6 +11,7 @@ def default_routes(config):
     config.add_route("new_match", "/match/new")
     config.add_route("get_match", "/match/{uid}")
     config.add_route("edit_match", "/match/edit/{uid}")
+    config.add_route("list_players", "/players")
 
 
 def play_routes(config):
@@ -26,10 +27,8 @@ def play_routes(config):
 def includeme(config):
     config.include(default_routes)
     config.include(play_routes, route_prefix="/play")
-
-    config.add_static_view(name="static", path="codechallenge:static")
-
     config.scan("codechallenge.endpoints.login")
     config.scan("codechallenge.endpoints.match")
     config.scan("codechallenge.endpoints.question")
     config.scan("codechallenge.endpoints.play")
+    config.scan("codechallenge.endpoints.user")

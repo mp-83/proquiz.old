@@ -21,6 +21,7 @@ class MatchEndPoints:
         request_method="GET",
     )
     def list_matches(self):
+        # TODO: to fix the filtering parameters
         _ = self.request.params
         all_matches = Matches.all_matches(**{})
         return Response(json={"matches": [m.json for m in all_matches]})

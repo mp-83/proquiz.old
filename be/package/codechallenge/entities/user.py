@@ -5,7 +5,7 @@ from uuid import uuid4
 import bcrypt
 from codechallenge.app import StoreConfig
 from codechallenge.entities.meta import Base, TableMixin, classproperty
-from sqlalchemy import Column, String
+from sqlalchemy import Boolean, Column, String
 from sqlalchemy.ext.hybrid import hybrid_property
 
 
@@ -74,6 +74,7 @@ class User(TableMixin, Base):
     # reactions: implicit backward relation
     # user_rankings: implicit backward relation
     key = Column(String)
+    is_admin = Column(Boolean, default=False)
 
     def __init__(self, **kwargs):
         password = kwargs.pop("password", None)
@@ -105,6 +106,10 @@ class User(TableMixin, Base):
         self.session.commit()
         return self
 
+    @property
+    def json(self):
+        return {"uid": self.uid, "email": self.email, "name": self.name}
+
 
 class Users:
     @classproperty
@@ -118,3 +123,7 @@ class Users:
     @classmethod
     def get(cls, **filters):
         return cls.session.query(User).filter_by(**filters).one_or_none()
+
+    @classmethod
+    def all(cls):
+        return cls.session.query(User).all()
