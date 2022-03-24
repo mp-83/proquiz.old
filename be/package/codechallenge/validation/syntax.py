@@ -194,3 +194,8 @@ user_login_schema = {
     },
     "password": {"type": "string", "required": True, "minlength": 8, "maxlength": 100},
 }
+
+
+player_list_schema = {
+    "match_uid": {"type": "integer", "coerce": int, "required": True, "min": 1},
+}

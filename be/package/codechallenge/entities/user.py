@@ -4,6 +4,7 @@ from uuid import uuid4
 
 import bcrypt
 from codechallenge.app import StoreConfig
+from codechallenge.entities import Reaction
 from codechallenge.entities.meta import Base, TableMixin, classproperty
 from sqlalchemy import Boolean, Column, String
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -127,3 +128,12 @@ class Users:
     @classmethod
     def all(cls):
         return cls.session.query(User).all()
+
+    @classmethod
+    def players_of_match(cls, match_uid):
+        return (
+            cls.session.query(User)
+            .join(Reaction, Reaction.user_uid == User.uid)
+            .filter(Reaction.match_uid == match_uid)
+            .all()
+        )

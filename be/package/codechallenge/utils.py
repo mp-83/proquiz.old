@@ -27,6 +27,8 @@ class view_decorator(view_config):
         def wrapped_f(*args, **kwargs):
             request = args[0].request
             user_input = getattr(request, data_attr, {})
+            if data_attr == "params":
+                user_input = dict(user_input)
             v = Validator(syntax_schema)
             if not v.validate(user_input):
                 return Response(status=400, json=v.errors)
