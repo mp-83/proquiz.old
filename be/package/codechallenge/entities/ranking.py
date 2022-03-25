@@ -26,6 +26,16 @@ class Ranking(TableMixin, Base):
         self.session.commit()
         return self
 
+    @property
+    def json(self):
+        return {
+            "match": {
+                "name": self.match.name,
+                "uid": self.match.uid,
+            },
+            "user": {"name": self.user.name},
+        }
+
 
 class Rankings:
     @classproperty

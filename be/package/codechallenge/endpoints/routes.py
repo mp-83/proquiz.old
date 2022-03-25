@@ -12,6 +12,7 @@ def default_routes(config):
     config.add_route("get_match", "/match/{uid}")
     config.add_route("edit_match", "/match/edit/{uid}")
     config.add_route("list_players", "/players")
+    config.add_route("match_rankings", "/rankings")
 
 
 def play_routes(config):
@@ -32,3 +33,4 @@ def includeme(config):
     config.scan("codechallenge.endpoints.question")
     config.scan("codechallenge.endpoints.play")
     config.scan("codechallenge.endpoints.user")
+    config.scan("codechallenge.endpoints.ranking")

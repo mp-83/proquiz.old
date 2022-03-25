@@ -9,7 +9,7 @@ from pyramid.response import Response
 logger = logging.getLogger(__name__)
 
 
-class UserPoints:
+class UserEndPoints:
     def __init__(self, request):
         self.request = request
 
