@@ -1,4 +1,4 @@
-from codechallenge.entities import Reaction, Reactions
+from codechallenge.entities import Ranking, Reaction, Reactions
 from codechallenge.exceptions import (
     GameError,
     GameOver,
@@ -131,6 +131,9 @@ class PlayerStatus:
     def all_games_played(self):
         return {r.game.uid: r.game for r in self._all_reactions_query.all()}
 
+    def current_score(self):
+        return sum([r.score for r in self.all_reactions()])
+
     @property
     def match(self):
         return self._current_match
@@ -188,6 +191,10 @@ class SinglePlayer:
     @property
     def can_be_resumed(self):
         return self._game_factory
+
+    @property
+    def match_score(self):
+        return self._status.total_score()
 
     def last_reaction(self, question):
         reactions = Reactions.all_reactions_of_user_to_match(
@@ -249,3 +256,15 @@ class SinglePlayer:
                 game, *self._status.questions_displayed()
             )
             return self._question_factory.next()
+
+
+class PlayScore:
+    def __init__(self, match_uid, user_uid, score):
+        self.match_uid = match_uid
+        self.user_uid = user_uid
+        self.score = score
+
+    def save_to_ranking(self):
+        return Ranking(
+            match_uid=self.match_uid, user_uid=self.user_uid, score=self.score
+        ).save()

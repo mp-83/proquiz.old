@@ -2,7 +2,7 @@ import logging
 
 from codechallenge.entities.user import UserFactory
 from codechallenge.exceptions import MatchOver, NotFoundObjectError, ValidateError
-from codechallenge.play.single_player import PlayerStatus, SinglePlayer
+from codechallenge.play.single_player import PlayerStatus, PlayScore, SinglePlayer
 from codechallenge.utils import view_decorator
 from codechallenge.validation.logical import (
     ValidatePlayCode,
@@ -114,6 +114,7 @@ class PlayEndPoints:
         try:
             next_q = player.react(answer)
         except MatchOver:
+            PlayScore(match.uid, user.uid, status.current_score()).save_to_ranking()
             return Response(json={"question": None})
 
         return Response(json={"question": next_q.json, "user": user.uid})

@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
-from codechallenge.entities import Answer, Game, Match, Question, User
+from codechallenge.entities import Answer, Game, Match, Question, Rankings, User
 from codechallenge.entities.user import UserFactory, WordDigest
 
 
@@ -215,3 +215,4 @@ class TestCasePlayNext:
             status=200,
         )
         assert response.json["question"] is None
+        assert len(Rankings.of_match(match.uid)) == 1

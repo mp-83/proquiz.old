@@ -1,5 +1,5 @@
 from codechallenge.app import StoreConfig
-from codechallenge.entities.meta import Base, TableMixin
+from codechallenge.entities.meta import Base, TableMixin, classproperty
 from sqlalchemy import Column, ForeignKey, Integer
 from sqlalchemy.orm import relationship
 
@@ -25,3 +25,17 @@ class Ranking(TableMixin, Base):
         self.session.add(self)
         self.session.commit()
         return self
+
+
+class Rankings:
+    @classproperty
+    def session(self):
+        return StoreConfig().session
+
+    @classmethod
+    def of_match(cls, match_uid):
+        return cls.session.query(Ranking).filter_by(match_uid=match_uid).all()
+
+    @classmethod
+    def all(cls):
+        return cls.session.query(Ranking).all()

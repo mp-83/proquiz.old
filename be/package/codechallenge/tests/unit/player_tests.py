@@ -6,6 +6,7 @@ from codechallenge.entities import (
     Game,
     Match,
     Question,
+    Rankings,
     Reaction,
     Reactions,
     User,
@@ -20,6 +21,7 @@ from codechallenge.exceptions import (
 from codechallenge.play.single_player import (
     GameFactory,
     PlayerStatus,
+    PlayScore,
     QuestionFactory,
     SinglePlayer,
 )
@@ -231,6 +233,18 @@ class TestCaseStatus:
         status = PlayerStatus(user, match)
         assert status.all_games_played() == {g1.uid: g1, g2.uid: g2}
 
+    def t_matchTotalScore(self, dbsession):
+        match = Match().save()
+        g1 = Game(match_uid=match.uid, index=0).save()
+        g2 = Game(match_uid=match.uid, index=1).save()
+        q1 = Question(text="Where is Miami", position=0, game=g1).save()
+        q2 = Question(text="Where is London", position=0, game=g2).save()
+        user = User(email="user@test.project").save()
+        Reaction(match=match, question=q1, user=user, game_uid=g1.uid, score=3).save()
+        Reaction(match=match, question=q2, user=user, game_uid=g2.uid, score=2.4).save()
+        status = PlayerStatus(user, match)
+        assert status.current_score() == 5.4
+
 
 class TestCaseSinglePlayer:
     def t_reactionIsCreatedAsSoonAsQuestionIsReturned(self, dbsession):
@@ -337,8 +351,6 @@ class TestCaseSinglePlayer:
         with pytest.raises(MatchOver):
             player.react(answer)
 
-        assert user.reactions[0].score > 0
-
     def t_playMatchOverMultipleRequests(self, dbsession):
         # the SinglePlayer is instanced multiple times
         match = Match().save()
@@ -399,3 +411,12 @@ class TestCaseResumeMatch:
         status = PlayerStatus(user, match)
         player = SinglePlayer(status, user, match)
         assert not player.match_can_be_resumed
+
+
+class TestCasePlayScore:
+    def t_compute_score(self, dbsession):
+        match = Match().save()
+        user = User(email="user@test.project").save()
+        PlayScore(match.uid, user.uid, 5.5).save_to_ranking()
+
+        assert len(Rankings.all()) == 1
