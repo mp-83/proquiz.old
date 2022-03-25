@@ -145,12 +145,6 @@ class Questions:
     def questions_with_ids(cls, *ids):
         return cls.session.query(Question).filter(Question.uid.in_(ids))
 
-    # TODO to pass *values
-    # @classmethod
-    # def get(cls, **filter):
-    #     matched_row = cls.session.execute(select(Question).where(Question.uid == uid))
-    #     return matched_row.scalar_one_or_none()
-
     @classmethod
     def get(cls, **filters):
         return cls.session.query(Question).filter_by(**filters).one_or_none()
