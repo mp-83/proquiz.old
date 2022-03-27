@@ -39,6 +39,25 @@ class TestCaseMatchEndpoints:
         assert questions[0][0]["text"] == TEST_1[0]["text"]
         assert response.json["match"]["is_restricted"]
 
+    def t_createMatchWithCode(self, testapp):
+        match_name = "New Match"
+        now = datetime.now()
+        tomorrow = now + timedelta(days=1)
+        response = testapp.post_json(
+            "/match/new",
+            {
+                "name": match_name,
+                "with_code": "true",
+                "from_time": now.isoformat(),
+                "to_time": tomorrow.isoformat(),
+            },
+            headers={"X-CSRF-Token": testapp.get_csrf_token()},
+            status=200,
+        )
+
+        assert response.json["match"]["code"]
+        assert response.json["match"]["expires"] == tomorrow.isoformat()
+
     def t_requestUnexistentMatch(self, testapp):
         testapp.get("/match/30", status=404)
 
@@ -143,21 +162,22 @@ class TestCaseMatchEndpoints:
         rjson = response.json
         assert rjson["matches"] == [m.json for m in [m1, m2, m3]]
 
-    def t_createMatchWithCode(self, testapp):
-        match_name = "New Match"
-        now = datetime.now()
-        tomorrow = now + timedelta(days=1)
+    def t_importQuestionsFromYaml(self, testapp, yaml_file):
         response = testapp.post_json(
-            "/match/new",
-            {
-                "name": match_name,
-                "with_code": "true",
-                "from_time": now.isoformat(),
-                "to_time": tomorrow.isoformat(),
-            },
+            "/match/yaml_import",
+            {"data": yaml_file},
             headers={"X-CSRF-Token": testapp.get_csrf_token()},
             status=200,
         )
 
-        assert response.json["match"]["code"]
-        assert response.json["match"]["expires"] == tomorrow.isoformat()
+        assert response.json["match"]["name"]
+
+    def t_importQuestionsFromExcel(self, testapp, excel_file):
+        response = testapp.post_json(
+            "/match/excel_import",
+            {"data": excel_file},
+            headers={"X-CSRF-Token": testapp.get_csrf_token()},
+            status=200,
+        )
+
+        assert response.json["match"]["name"]

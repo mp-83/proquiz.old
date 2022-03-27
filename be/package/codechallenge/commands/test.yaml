@@ -1,0 +1,46 @@
+version: "3.5"
+services:
+  serverdb:
+    image: "mysql"
+    env_file:
+     - "./be/.env"
+    volumes:
+      - "quizdb:/var/lib/mysql"
+
+  server:
+    env_file:
+     - "./be/.env"
+    build:
+      context: "./be"
+    volumes:
+      - "./be/package:/package"
+    ports:
+      - "5500:5500"
+
+  redis:
+    image: "redis"
+    env_file:
+     - "./be/.env"
+    # instructs the server to save 1 or more writes every 20 seconds
+    command: redis-server --save 20 1 --requirepass ${REDIS_PW}
+    ports:
+     - "5379:6379"
+    volumes:
+     - cache:/var/lib/redis/data
+#     - $PWD/redis.conf:/usr/local/etc/redis/redis.conf
+    environment:
+     - REDIS_REPLICATION_MODE=master
+
+  frontend:
+    env_file:
+     - "./fe/.env"
+    build:
+      context: "./fe"
+    volumes:
+      - "./fe/webapp:/webapp"
+    ports:
+      - "8080:3000"
+
+volumes:
+  quizdb:
+  cache:

@@ -8,6 +8,8 @@ from codechallenge.validation.syntax import (
     edit_match_schema,
     edit_question_schema,
     land_play_schema,
+    match_excel_import_schema,
+    match_yaml_import_schema,
     next_play_schema,
     sign_play_schema,
     start_play_schema,
@@ -194,6 +196,16 @@ class TestCaseMatchSchema:
         is_valid = v.validate({"is_restricted": False})
         assert is_valid
         assert not v.document["is_restricted"]
+
+    def t_binaryYamlData(self, yaml_file):
+        v = Validator(match_yaml_import_schema)
+        is_valid = v.validate({"match_uid": 1, "data": yaml_file.read()})
+        assert is_valid
+
+    def t_binaryExcelData(self, excel_file):
+        v = Validator(match_excel_import_schema)
+        is_valid = v.validate({"match_uid": 1, "data": excel_file.read()})
+        assert is_valid
 
 
 class TestCaseUserSchema:

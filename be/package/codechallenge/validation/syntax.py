@@ -200,6 +200,19 @@ player_list_schema = {
     "match_uid": {"type": "integer", "coerce": int, "required": True, "min": 1},
 }
 
+
 match_rankings_schema = {
     "match_uid": {"type": "integer", "coerce": int, "required": True, "min": 1},
+}
+
+
+match_yaml_import_schema = {
+    "match_uid": {"type": "integer", "coerce": int, "required": True, "min": 1},
+    "data": {"type": "binary", "required": True},
+}
+
+
+match_excel_import_schema = {
+    "match_uid": {"type": "integer", "coerce": int, "required": True, "min": 1},
+    "data": {"type": "binary", "required": True},
 }

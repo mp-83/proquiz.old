@@ -13,6 +13,7 @@ requires = [
     "pyramid_jinja2",
     "pyramid_tm",
     "pyramid_retry",
+    "pyyaml",
     "redis",
     "sqlalchemy",
     "waitress",

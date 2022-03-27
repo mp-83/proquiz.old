@@ -5,7 +5,12 @@ from codechallenge.exceptions import NotFoundObjectError, ValidateError
 from codechallenge.security import login_required
 from codechallenge.utils import view_decorator
 from codechallenge.validation.logical import RetrieveObject, ValidateEditMatch
-from codechallenge.validation.syntax import create_match_schema, edit_match_schema
+from codechallenge.validation.syntax import (
+    create_match_schema,
+    edit_match_schema,
+    match_excel_import_schema,
+    match_yaml_import_schema,
+)
 from pyramid.response import Response
 
 logger = logging.getLogger(__name__)
@@ -77,3 +82,23 @@ class MatchEndPoints:
 
         match.update(**user_input)
         return Response(json={"match": match.json})
+
+    @login_required
+    @view_decorator(
+        route_name="match_yaml_import",
+        request_method="POST",
+        syntax=match_yaml_import_schema,
+        data_attr="json",
+    )
+    def match_yaml_import(self, user_input):
+        return Response(json={"match": None})
+
+    @login_required
+    @view_decorator(
+        route_name="match_excel_import",
+        request_method="POST",
+        syntax=match_excel_import_schema,
+        data_attr="json",
+    )
+    def match_excel_import(self, user_input):
+        return Response(json={"match": None})

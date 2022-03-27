@@ -252,3 +252,21 @@ def create_fixture_test(dbsession):
         new_question.create_with_answers(q["answers"])
 
     yield match
+
+
+@pytest.fixture
+def yaml_file():
+    _ = """
+  a: 1
+  b:
+    c: 3
+    d: 4
+"""
+
+    with open("codechallenge/tests/unit/validation/logical_tests.py", "rb") as fp:
+        yield fp
+
+
+@pytest.fixture
+def excel_file(yaml_file):
+    yield yaml_file
