@@ -4,11 +4,14 @@ from codechallenge.entities import Game, Match, Matches, Question
 from codechallenge.exceptions import NotFoundObjectError, ValidateError
 from codechallenge.security import login_required
 from codechallenge.utils import view_decorator
-from codechallenge.validation.logical import RetrieveObject, ValidateEditMatch
+from codechallenge.validation.logical import (
+    RetrieveObject,
+    ValidateEditMatch,
+    ValidateMatchImport,
+)
 from codechallenge.validation.syntax import (
     create_match_schema,
     edit_match_schema,
-    match_excel_import_schema,
     match_yaml_import_schema,
 )
 from pyramid.response import Response
@@ -91,14 +94,22 @@ class MatchEndPoints:
         data_attr="json",
     )
     def match_yaml_import(self, user_input):
-        return Response(json={"match": None})
+        match_uid = user_input.get("match_uid")
+
+        try:
+            match = ValidateMatchImport(match_uid).is_valid()
+        except (NotFoundObjectError, ValidateError) as e:
+            if isinstance(e, NotFoundObjectError):
+                return Response(status=404)
+            return Response(status=400, json={"error": e.message})
+
+        return Response(json={"match": match.json})
 
     @login_required
     @view_decorator(
         route_name="match_excel_import",
         request_method="POST",
-        syntax=match_excel_import_schema,
-        data_attr="json",
     )
     def match_excel_import(self, user_input):
+        # TODO continue implementation in version 0.2
         return Response(json={"match": None})

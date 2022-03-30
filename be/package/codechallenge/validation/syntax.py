@@ -1,5 +1,8 @@
+import re
+from base64 import b64decode
 from datetime import datetime
 
+import yaml
 from codechallenge.constants import (
     CODE_POPULATION,
     HASH_POPULATION,
@@ -206,13 +209,27 @@ match_rankings_schema = {
 }
 
 
+def coerce_yaml_content(value):
+    if not value:
+        return ""
+
+    try:
+        return yaml.load(value, yaml.Loader)
+    except yaml.scanner.ScannerError:
+        return ""
+
+
+def coerce_to_b64content(value):
+    b64content = re.sub(r"data:application/x-yaml;base64,", "", value)
+    return b64decode(b64content)
+    # except binascii.Error as e:
+
+
 match_yaml_import_schema = {
     "match_uid": {"type": "integer", "coerce": int, "required": True, "min": 1},
-    "data": {"type": "binary", "required": True},
-}
-
-
-match_excel_import_schema = {
-    "match_uid": {"type": "integer", "coerce": int, "required": True, "min": 1},
-    "data": {"type": "binary", "required": True},
+    "data": {
+        "type": "dict",
+        "required": True,
+        "coerce": (coerce_to_b64content, coerce_yaml_content),
+    },
 }

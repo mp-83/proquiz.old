@@ -9,6 +9,7 @@ requires = [
     "pymysql",
     "click",
     "cryptography",
+    "openpyxl",
     "pyramid",
     "pyramid_jinja2",
     "pyramid_tm",

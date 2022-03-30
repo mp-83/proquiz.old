@@ -14,6 +14,7 @@ from codechallenge.entities.user import UserFactory, WordDigest
 from codechallenge.exceptions import NotFoundObjectError, ValidateError
 from codechallenge.validation.logical import (
     RetrieveObject,
+    ValidateMatchImport,
     ValidateNewCodeMatch,
     ValidatePlayCode,
     ValidatePlayLand,
@@ -168,3 +169,9 @@ class TestCaseCreateMatch:
             ).is_valid()
 
         assert e.value.message == "from-time must be greater than now"
+
+
+class TestCaseImportFromYaml:
+    def t_matchDoesNotExists(self, dbsession):
+        with pytest.raises(NotFoundObjectError):
+            ValidateMatchImport(match_uid=1).valid_match()

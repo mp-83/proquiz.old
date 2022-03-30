@@ -1,4 +1,5 @@
 import os
+from base64 import b64encode
 
 import alembic
 import alembic.command
@@ -255,18 +256,44 @@ def create_fixture_test(dbsession):
 
 
 @pytest.fixture
-def yaml_file():
-    _ = """
-  a: 1
-  b:
-    c: 3
-    d: 4
-"""
-
-    with open("codechallenge/tests/unit/validation/logical_tests.py", "rb") as fp:
-        yield fp
+def valid_encoded_yaml_content():
+    document = """
+      questions:
+        - Where is Adelaide?
+        - answers:
+          - Australia
+          - Japan
+          - Kenya
+    """
+    b64content = b64encode(document.encode("utf-8")).decode()
+    b64string = f"data:application/x-yaml;base64,{b64content}"
+    yield b64string
 
 
 @pytest.fixture
-def excel_file(yaml_file):
-    yield yaml_file
+def faulty_encoded_yaml_content():
+    document = """
+      questions:
+        - Where is Belfast?
+        answers:
+          - Sweden
+          - England
+          - Ireland
+    """
+    b64content = b64encode(document.encode("utf-8")).decode()
+    b64string = f"data:application/x-yaml;base64,{b64content}"
+    yield b64string
+
+
+@pytest.fixture
+def yaml_file_handler():
+    with open("codechallenge/tests/files/file.yaml", "rb") as fp:
+        b64content = b64encode(fp.read()).decode()
+        b64string = f"data:application/x-yaml;base64,{b64content}"
+        yield b64string, "file.yaml"
+
+
+@pytest.fixture
+def excel_file_handler():
+    with open("codechallenge/tests/files/file.xlsx", "rb") as fp:
+        yield fp, "file.xlsx"

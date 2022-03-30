@@ -197,3 +197,14 @@ class ValidateNewCodeMatch:
 
         if self.to_time < self.from_time:
             raise ValidateError("to-time must be greater than from-time")
+
+
+class ValidateMatchImport:
+    def __init__(self, match_uid):
+        self.match_uid = match_uid
+
+    def valid_match(self):
+        return RetrieveObject(self.match_uid, otype="match").get()
+
+    def is_valid(self):
+        return self.valid_match()

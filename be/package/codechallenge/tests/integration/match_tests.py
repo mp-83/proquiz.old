@@ -162,22 +162,15 @@ class TestCaseMatchEndpoints:
         rjson = response.json
         assert rjson["matches"] == [m.json for m in [m1, m2, m3]]
 
-    def t_importQuestionsFromYaml(self, testapp, yaml_file):
+    def t_importQuestionsFromYaml(self, testapp, yaml_file_handler):
+        match = Match().save()
+        base64_content, fname = yaml_file_handler
+
         response = testapp.post_json(
             "/match/yaml_import",
-            {"data": yaml_file},
-            headers={"X-CSRF-Token": testapp.get_csrf_token()},
+            {"match_uid": match.uid, "data": base64_content},
+            headers={"X-CSRF-Token": testapp.get_csrf_token(), "filename": fname},
             status=200,
         )
 
-        assert response.json["match"]["name"]
-
-    def t_importQuestionsFromExcel(self, testapp, excel_file):
-        response = testapp.post_json(
-            "/match/excel_import",
-            {"data": excel_file},
-            headers={"X-CSRF-Token": testapp.get_csrf_token()},
-            status=200,
-        )
-
-        assert response.json["match"]["name"]
+        assert response.json["match"]["questions"]

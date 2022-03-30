@@ -8,7 +8,6 @@ from codechallenge.validation.syntax import (
     edit_match_schema,
     edit_question_schema,
     land_play_schema,
-    match_excel_import_schema,
     match_yaml_import_schema,
     next_play_schema,
     sign_play_schema,
@@ -197,15 +196,40 @@ class TestCaseMatchSchema:
         assert is_valid
         assert not v.document["is_restricted"]
 
-    def t_binaryYamlData(self, yaml_file):
+    def t_validYamlContent(self, valid_encoded_yaml_content):
         v = Validator(match_yaml_import_schema)
-        is_valid = v.validate({"match_uid": 1, "data": yaml_file.read()})
+        is_valid = v.validate({"match_uid": 1, "data": valid_encoded_yaml_content})
         assert is_valid
+        assert v.document["data"] == {
+            "questions": [
+                "Where is Adelaide?",
+                {"answers": ["Australia", "Japan", "Kenya"]},
+            ]
+        }
 
-    def t_binaryExcelData(self, excel_file):
-        v = Validator(match_excel_import_schema)
-        is_valid = v.validate({"match_uid": 1, "data": excel_file.read()})
-        assert is_valid
+    def t_invalidYamlContent(self, faulty_encoded_yaml_content):
+        v = Validator(match_yaml_import_schema)
+        is_valid = v.validate({"match_uid": 1, "data": faulty_encoded_yaml_content})
+        assert not is_valid
+        assert (
+            "cannot be coerced: while parsing a block collection" in v.errors["data"][0]
+        )
+
+    def t_invalidContentPadding(self, faulty_encoded_yaml_content):
+        v = Validator(match_yaml_import_schema)
+        is_valid = v.validate(
+            {"match_uid": 1, "data": faulty_encoded_yaml_content[:-1]}
+        )
+        assert not is_valid
+        assert "cannot be coerced: Incorrect padding" in v.errors["data"][0]
+
+    def t_invalidDataValues(self):
+        v = Validator(match_yaml_import_schema)
+        document = {"match_uid": 1}
+        for value in [None, ""]:
+            document.update(data=value)
+            is_valid = v.validate(document)
+            assert not is_valid
 
 
 class TestCaseUserSchema:
