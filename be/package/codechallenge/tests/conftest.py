@@ -256,36 +256,6 @@ def create_fixture_test(dbsession):
 
 
 @pytest.fixture
-def valid_encoded_yaml_content():
-    document = """
-      questions:
-        - Where is Adelaide?
-        - answers:
-          - Australia
-          - Japan
-          - Kenya
-    """
-    b64content = b64encode(document.encode("utf-8")).decode()
-    b64string = f"data:application/x-yaml;base64,{b64content}"
-    yield b64string
-
-
-@pytest.fixture
-def faulty_encoded_yaml_content():
-    document = """
-      questions:
-        - Where is Belfast?
-        answers:
-          - Sweden
-          - England
-          - Ireland
-    """
-    b64content = b64encode(document.encode("utf-8")).decode()
-    b64string = f"data:application/x-yaml;base64,{b64content}"
-    yield b64string
-
-
-@pytest.fixture
 def yaml_file_handler():
     with open("codechallenge/tests/files/file.yaml", "rb") as fp:
         b64content = b64encode(fp.read()).decode()

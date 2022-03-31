@@ -222,7 +222,19 @@ def coerce_yaml_content(value):
 def coerce_to_b64content(value):
     b64content = re.sub(r"data:application/x-yaml;base64,", "", value)
     return b64decode(b64content)
-    # except binascii.Error as e:
+
+
+def to_expected_mapping(value):
+    result = {"questions": []}
+    question = {}
+    for i, elem in enumerate(value.get("questions")):
+        if i % 2 == 0:
+            question["text"] = elem
+        else:
+            question["answers"] = [{"text": text} for text in elem["answers"]]
+            result["questions"].append(question)
+            question = {}
+    return result
 
 
 match_yaml_import_schema = {
@@ -230,6 +242,26 @@ match_yaml_import_schema = {
     "data": {
         "type": "dict",
         "required": True,
-        "coerce": (coerce_to_b64content, coerce_yaml_content),
+        "coerce": (coerce_to_b64content, coerce_yaml_content, to_expected_mapping),
+        "schema": {
+            "questions": {
+                "type": "list",
+                "schema": {
+                    "type": "dict",
+                    "schema": {
+                        "text": {"type": "string", "required": True},
+                        "answers": {
+                            "type": "list",
+                            "schema": {
+                                "type": "dict",
+                                "schema": {
+                                    "text": {"type": "string", "required": True}
+                                },
+                            },
+                        },
+                    },
+                },
+            }
+        },
     },
 }

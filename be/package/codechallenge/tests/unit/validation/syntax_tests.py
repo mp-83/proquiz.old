@@ -1,5 +1,7 @@
+from base64 import b64encode
 from datetime import datetime
 
+import pytest
 from cerberus import Validator
 from codechallenge.validation.syntax import (
     code_play_schema,
@@ -12,6 +14,7 @@ from codechallenge.validation.syntax import (
     next_play_schema,
     sign_play_schema,
     start_play_schema,
+    to_expected_mapping,
     user_login_schema,
 )
 
@@ -196,40 +199,149 @@ class TestCaseMatchSchema:
         assert is_valid
         assert not v.document["is_restricted"]
 
+
+class TestCaseYamlSchema:
+    @pytest.fixture
+    def valid_encoded_yaml_content(self):
+        document = """
+          questions:
+            - Where is Adelaide?
+            - answers:
+              - Australia
+              - Japan
+              - Kenya
+            - Where is Paris
+            - answers:
+               - France
+               - Argentina
+               - Iceland
+        """
+        b64content = b64encode(document.encode("utf-8")).decode()
+        b64string = f"data:application/x-yaml;base64,{b64content}"
+        yield b64string
+
     def t_validYamlContent(self, valid_encoded_yaml_content):
         v = Validator(match_yaml_import_schema)
         is_valid = v.validate({"match_uid": 1, "data": valid_encoded_yaml_content})
         assert is_valid
-        assert v.document["data"] == {
-            "questions": [
-                "Where is Adelaide?",
-                {"answers": ["Australia", "Japan", "Kenya"]},
-            ]
+        assert v.document == {
+            "match_uid": 1,
+            "data": {
+                "questions": [
+                    {
+                        "text": "Where is Adelaide?",
+                        "answers": [
+                            {"text": "Australia"},
+                            {"text": "Japan"},
+                            {"text": "Kenya"},
+                        ],
+                    },
+                    {
+                        "text": "Where is Paris",
+                        "answers": [
+                            {"text": "France"},
+                            {"text": "Argentina"},
+                            {"text": "Iceland"},
+                        ],
+                    },
+                ]
+            },
         }
 
-    def t_invalidYamlContent(self, faulty_encoded_yaml_content):
+    def t_invalidYamlContent(self):
+        # missing dash char before answers key
+        document = """
+          questions:
+            - Where is Belfast?
+            answers:
+              - Sweden
+              - England
+              - Ireland
+        """
+        b64content = b64encode(document.encode("utf-8")).decode()
+        b64string = f"data:application/x-yaml;base64,{b64content}"
+
         v = Validator(match_yaml_import_schema)
-        is_valid = v.validate({"match_uid": 1, "data": faulty_encoded_yaml_content})
+        is_valid = v.validate({"match_uid": 1, "data": b64string})
         assert not is_valid
         assert (
             "cannot be coerced: while parsing a block collection" in v.errors["data"][0]
         )
 
-    def t_invalidContentPadding(self, faulty_encoded_yaml_content):
+    def t_invalidContentPadding(self, valid_encoded_yaml_content):
+        # but invalid padding
         v = Validator(match_yaml_import_schema)
-        is_valid = v.validate(
-            {"match_uid": 1, "data": faulty_encoded_yaml_content[:-1]}
-        )
+        is_valid = v.validate({"match_uid": 1, "data": valid_encoded_yaml_content[:-1]})
         assert not is_valid
         assert "cannot be coerced: Incorrect padding" in v.errors["data"][0]
 
-    def t_invalidDataValues(self):
+    def t_questionEmptyTextIsParseAsNull(self):
+        document = """
+          questions:
+            -
+            - answers:
+              - Sweden
+              - England
+              - Ireland
+        """
+        b64content = b64encode(document.encode("utf-8")).decode()
+        b64string = f"data:application/x-yaml;base64,{b64content}"
+
         v = Validator(match_yaml_import_schema)
-        document = {"match_uid": 1}
-        for value in [None, ""]:
-            document.update(data=value)
-            is_valid = v.validate(document)
-            assert not is_valid
+        is_valid = v.validate({"match_uid": 1, "data": b64string})
+        assert not is_valid
+        assert v.errors["data"][0] == {
+            "questions": [{0: [{"text": ["null value not allowed"]}]}]
+        }
+
+    def t_questionIsMissingAnswersAreNotParsed(self):
+        document = """
+          questions:
+            - answers:
+              - Sweden
+              - England
+              - Ireland
+        """
+        b64content = b64encode(document.encode("utf-8")).decode()
+        b64string = f"data:application/x-yaml;base64,{b64content}"
+
+        v = Validator(match_yaml_import_schema)
+        is_valid = v.validate({"match_uid": 1, "data": b64string})
+        assert is_valid
+        assert v.document == {"match_uid": 1, "data": {"questions": []}}
+
+    def t_expectedMappingMethod(self):
+        # test meant to document input => output transformation
+        value = {
+            "questions": [
+                None,
+                {"answers": ["Australia", "Japan", "Kenya"]},
+                "Where is Paris",
+                {"answers": ["France", "Argentina", "Iceland"]},
+            ]
+        }
+
+        result = to_expected_mapping(value)
+        assert result == {
+            "questions": [
+                {
+                    "text": None,
+                    "answers": [
+                        {"text": "Australia"},
+                        {"text": "Japan"},
+                        {"text": "Kenya"},
+                    ],
+                },
+                {
+                    "text": "Where is Paris",
+                    "answers": [
+                        {"text": "France"},
+                        {"text": "Argentina"},
+                        {"text": "Iceland"},
+                    ],
+                },
+            ]
+        }
 
 
 class TestCaseUserSchema:
