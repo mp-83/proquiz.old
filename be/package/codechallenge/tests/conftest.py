@@ -153,9 +153,9 @@ def fillTestingDB(app):
     with tm:
         dbsession.add_all(
             [
-                Question(text="q1.text", code="q1.code", position=0),
-                Question(text="q2.text", code="q2.code", position=1),
-                Question(text="q3.text", code="q3.code", position=2),
+                Question(text="q1.text", position=0),
+                Question(text="q2.text", position=1),
+                Question(text="q3.text", position=2),
             ]
         )
 

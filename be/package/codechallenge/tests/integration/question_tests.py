@@ -17,7 +17,6 @@ class TestCaseQuestionEP:
             "/question/new",
             {
                 "text": "eleven pm",
-                "code": "x = 0; x += 1; print(x)",
                 "position": 2,
             },
             status=200,

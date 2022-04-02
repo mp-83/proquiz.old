@@ -105,7 +105,6 @@ class Question(TableMixin, Base):
             game_uid=self.game.uid if self.game else None,
             text=self.text,
             position=self.position,
-            code=self.code,
         )
         self.session.add(new)
         for _answer in self.answers:

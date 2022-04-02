@@ -137,7 +137,6 @@ class Match(TableMixin, Base):
                 game_uid=g.uid,
                 text=q.get("text"),
                 position=len(g.questions),
-                code=q.get("code"),
             )
             question.create_with_answers(q["answers"])
             result.append(question)
@@ -169,13 +168,11 @@ class Match(TableMixin, Base):
                 question = existing.get(q.get("uid"))
                 question.text = q.get("text", question.text)
                 question.position = q.get("position", question.position)
-                question.code = q.get("code", question.code)
             else:
                 question = Question(
                     game_uid=g.uid,
                     text=q.get("text"),
                     position=len(g.questions),
-                    code=q.get("code"),
                 )
             self.session.add(question)
             result.append(question)
@@ -202,7 +199,6 @@ class Match(TableMixin, Base):
                 game_uid=new_game.uid,
                 text=question.text,
                 position=question.position,
-                code=question.code,
             )
             self.session.add(new)
             result.append(new)
