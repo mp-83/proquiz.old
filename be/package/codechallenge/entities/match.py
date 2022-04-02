@@ -128,6 +128,23 @@ class Match(TableMixin, Base):
                 setattr(self, name, value)
         self.session.commit()
 
+    def insert_questions(self, questions, commit=False):
+        result = []
+        g = Game(match_uid=self.uid).save()
+        for q in questions:
+            question = Question(
+                game_uid=g.uid,
+                text=q.get("text"),
+                position=len(g.questions),
+                code=q.get("code"),
+            )
+            question.create_with_answers(q["answers"])
+            result.append(question)
+
+        if commit:
+            self.session.commit()
+        return result
+
     def update_questions(self, questions, commit=False):
         """Add or update questions for this match
 

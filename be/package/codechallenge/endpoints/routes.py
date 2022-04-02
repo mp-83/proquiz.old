@@ -10,7 +10,6 @@ def default_routes(config):
     config.add_route("list_matches", "/match/list")
     config.add_route("new_match", "/match/new")
     config.add_route("match_yaml_import", "/match/yaml_import")
-    config.add_route("match_excel_import", "/match/excel_import")
     config.add_route("get_match", "/match/{uid}")
     config.add_route("edit_match", "/match/edit/{uid}")
     config.add_route("list_players", "/players")

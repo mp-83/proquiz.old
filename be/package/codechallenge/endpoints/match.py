@@ -103,13 +103,5 @@ class MatchEndPoints:
                 return Response(status=404)
             return Response(status=400, json={"error": e.message})
 
+        match.insert_questions(user_input["data"]["questions"])
         return Response(json={"match": match.json})
-
-    @login_required
-    @view_decorator(
-        route_name="match_excel_import",
-        request_method="POST",
-    )
-    def match_excel_import(self, user_input):
-        # TODO continue implementation in version 0.2
-        return Response(json={"match": None})
