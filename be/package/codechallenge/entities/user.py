@@ -4,6 +4,14 @@ from uuid import uuid4
 
 import bcrypt
 from codechallenge.app import StoreConfig
+from codechallenge.constants import (
+    DIGEST_LENGTH,
+    DIGEST_SIZE,
+    EMAIL_MAX_LENGTH,
+    KEY_LENGTH,
+    PASSWORD_HASH_LENGTH,
+    USER_NAME_MAX_LENGTH,
+)
 from codechallenge.entities import Reaction
 from codechallenge.entities.meta import Base, TableMixin, classproperty
 from sqlalchemy import Boolean, Column, String
@@ -16,7 +24,7 @@ class WordDigest:
 
     def value(self):
         key = os.getenv("SIGNED_KEY").encode("utf-8")
-        h = blake2b(key=key, digest_size=16)
+        h = blake2b(key=key, digest_size=DIGEST_SIZE)
         h.update(self.word.encode("utf-8"))
         return h.hexdigest()
 
@@ -67,14 +75,14 @@ class UserFactory:
 class User(TableMixin, Base):
     __tablename__ = "user"
 
-    email = Column(String, unique=True)
-    email_digest = Column(String, nullable=True)
-    token_digest = Column(String)
-    name = Column(String, nullable=True)
-    password_hash = Column(String)
+    email = Column(String(EMAIL_MAX_LENGTH), unique=True)
+    email_digest = Column(String(DIGEST_LENGTH), nullable=True)
+    token_digest = Column(String(DIGEST_LENGTH))
+    name = Column(String(USER_NAME_MAX_LENGTH), nullable=True)
+    password_hash = Column(String(PASSWORD_HASH_LENGTH))
     # reactions: implicit backward relation
     # user_rankings: implicit backward relation
-    key = Column(String)
+    key = Column(String(KEY_LENGTH))
     is_admin = Column(Boolean, default=False)
 
     def __init__(self, **kwargs):

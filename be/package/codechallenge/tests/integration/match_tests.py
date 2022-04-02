@@ -86,7 +86,6 @@ class TestCaseMatchEndpoints:
         assert response.json["match"]["questions"] == [
             [
                 {
-                    "code": None,
                     "position": 0,
                     "text": "Where is London?",
                     "answers": [],
@@ -94,7 +93,6 @@ class TestCaseMatchEndpoints:
             ],
             [
                 {
-                    "code": None,
                     "position": 0,
                     "text": "Where is Vienna?",
                     "answers": [],

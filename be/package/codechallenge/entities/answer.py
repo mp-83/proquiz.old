@@ -1,4 +1,5 @@
 from codechallenge.app import StoreConfig
+from codechallenge.constants import ANSWER_TEXT_MAX_LENGTH, URL_LENGTH
 from codechallenge.entities.meta import Base, TableMixin, classproperty
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, select
 from sqlalchemy.orm import relationship
@@ -15,8 +16,9 @@ class Answer(TableMixin, Base):
     # reactions: implicit backward relation
 
     position = Column(Integer, nullable=False)
-    text = Column(String(3000), nullable=False)
-    content_url = Column(String)
+    text = Column(String(ANSWER_TEXT_MAX_LENGTH), nullable=False)
+    # whether the content of the answer is an image or any external source
+    content_url = Column(String(URL_LENGTH))
     is_correct = Column(Boolean, default=False)
     level = Column(Integer)
 

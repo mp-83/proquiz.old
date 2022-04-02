@@ -1,4 +1,5 @@
 from codechallenge.app import StoreConfig
+from codechallenge.constants import OPEN_ANSWER_TEXT_MAX_LENGTH, URL_LENGTH
 from codechallenge.entities.meta import Base, TableMixin, classproperty
 from sqlalchemy import Column, String, select
 
@@ -6,8 +7,8 @@ from sqlalchemy import Column, String, select
 class OpenAnswer(TableMixin, Base):
     __tablename__ = "open_answer"
 
-    text = Column(String(3000), nullable=False)
-    content_url = Column(String)
+    text = Column(String(OPEN_ANSWER_TEXT_MAX_LENGTH), nullable=False)
+    content_url = Column(String(URL_LENGTH))
     # reactions: implicit backward relation
 
     @property

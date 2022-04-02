@@ -8,6 +8,7 @@ from codechallenge.constants import (
     HASH_POPULATION,
     MATCH_CODE_LEN,
     MATCH_HASH_LEN,
+    MATCH_NAME_MAX_LENGTH,
     MATCH_PASSWORD_LEN,
     PASSWORD_POPULATION,
 )
@@ -24,13 +25,13 @@ class Match(TableMixin, Base):
     # implicit backward relations
     # games: rankings: reactions:
 
-    name = Column(String, nullable=False, unique=True)
+    name = Column(String(MATCH_NAME_MAX_LENGTH), nullable=False, unique=True)
     # unique hash identifying this match
-    uhash = Column(String)
+    uhash = Column(String(MATCH_HASH_LEN))
     # code needed to start match
-    code = Column(String)
+    code = Column(String(MATCH_CODE_LEN))
     # password needed to start the match if it's restricted
-    password = Column(String)
+    password = Column(String(MATCH_PASSWORD_LEN))
     # designates the accessibility to this match
     is_restricted = Column(Boolean, default=True)
     # determine the time range the match is playable

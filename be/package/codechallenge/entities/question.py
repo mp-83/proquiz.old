@@ -1,4 +1,5 @@
 from codechallenge.app import StoreConfig
+from codechallenge.constants import QUESTION_TEXT_MAX_LENGTH, URL_LENGTH
 from codechallenge.entities.answer import Answer
 from codechallenge.entities.meta import Base, TableMixin, classproperty
 from sqlalchemy import Column, ForeignKey, Integer, String, select
@@ -13,11 +14,10 @@ class Question(TableMixin, Base):
     game = relationship("Game", backref="questions")
     # reactions: implicit backward relation
 
-    text = Column(String(400), nullable=False)
+    text = Column(String(QUESTION_TEXT_MAX_LENGTH), nullable=False)
     position = Column(Integer, nullable=False)
     time = Column(Integer)  # in seconds
-    content_url = Column(String)
-    code = Column(String)
+    content_url = Column(String(URL_LENGTH))
 
     __table_args__ = (
         UniqueConstraint("game_uid", "position", name="ck_question_game_uid_position"),
@@ -126,7 +126,6 @@ class Question(TableMixin, Base):
     def json(self):
         return {
             "text": self.text,
-            "code": self.code,
             "position": self.position,
             "answers": [a.json for a in self.answers],
         }
