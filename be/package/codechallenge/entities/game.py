@@ -9,7 +9,7 @@ class Game(TableMixin, Base):
     __tablename__ = "games"
 
     match_uid = Column(
-        Integer, ForeignKey("match.uid", ondelete="CASCADE"), nullable=False
+        Integer, ForeignKey("matches.uid", ondelete="CASCADE"), nullable=False
     )
     match = relationship("Match", backref="games")
     index = Column(Integer, default=0)

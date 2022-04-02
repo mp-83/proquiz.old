@@ -11,29 +11,29 @@ class Reaction(TableMixin, Base):
     __tablename__ = "reactions"
 
     match_uid = Column(
-        Integer, ForeignKey("match.uid", ondelete="CASCADE"), nullable=False
+        Integer, ForeignKey("matches.uid", ondelete="CASCADE"), nullable=False
     )
     match = relationship("Match", backref="reactions")
     question_uid = Column(
-        Integer, ForeignKey("question.uid", ondelete="CASCADE"), nullable=False
+        Integer, ForeignKey("questions.uid", ondelete="CASCADE"), nullable=False
     )
     question = relationship("Question", backref="reactions")
     answer_uid = Column(
-        Integer, ForeignKey("answer.uid", ondelete="SET NULL"), nullable=True
+        Integer, ForeignKey("answers.uid", ondelete="SET NULL"), nullable=True
     )
     _answer = relationship("Answer", backref="reactions")
     open_answer_uid = Column(
-        Integer, ForeignKey("open_answer.uid", ondelete="SET NULL"), nullable=True
+        Integer, ForeignKey("open_answers.uid", ondelete="SET NULL"), nullable=True
     )
     _open_answer = relationship("OpenAnswer", backref="reactions")
     user_uid = Column(
-        Integer, ForeignKey("user.uid", ondelete="CASCADE"), nullable=False
+        Integer, ForeignKey("users.uid", ondelete="CASCADE"), nullable=False
     )
     user = relationship("User", backref="reactions")
     # this column might be saved as the game might be fetched via the question
     # TODO: open point, keep or remove it
     game_uid = Column(
-        Integer, ForeignKey("game.uid", ondelete="CASCADE"), nullable=False
+        Integer, ForeignKey("games.uid", ondelete="CASCADE"), nullable=False
     )
     game = relationship("Game", backref="reactions")
     q_counter = Column(Integer)

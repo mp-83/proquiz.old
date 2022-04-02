@@ -10,7 +10,7 @@ from sqlalchemy.schema import UniqueConstraint
 class Question(TableMixin, Base):
     __tablename__ = "questions"
 
-    game_uid = Column(Integer, ForeignKey("game.uid", ondelete="SET NULL"))
+    game_uid = Column(Integer, ForeignKey("games.uid", ondelete="SET NULL"))
     game = relationship("Game", backref="questions")
     # reactions: implicit backward relation
 

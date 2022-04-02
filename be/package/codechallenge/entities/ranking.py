@@ -8,11 +8,11 @@ class Ranking(TableMixin, Base):
     __tablename__ = "rankings"
 
     user_uid = Column(
-        Integer, ForeignKey("user.uid", ondelete="CASCADE"), nullable=False
+        Integer, ForeignKey("users.uid", ondelete="CASCADE"), nullable=False
     )
     user = relationship("User", backref="user_rankings")
 
-    match_uid = Column(Integer, ForeignKey("match.uid"))
+    match_uid = Column(Integer, ForeignKey("matches.uid"))
     match = relationship("Match", backref="rankings")
 
     score = Column(Integer, nullable=False)

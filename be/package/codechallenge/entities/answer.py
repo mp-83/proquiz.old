@@ -10,7 +10,7 @@ class Answer(TableMixin, Base):
     __tablename__ = "answers"
 
     question_uid = Column(
-        Integer, ForeignKey("question.uid", ondelete="CASCADE"), nullable=False
+        Integer, ForeignKey("questions.uid", ondelete="CASCADE"), nullable=False
     )
     question = relationship("Question", backref="answers")
     # reactions: implicit backward relation
