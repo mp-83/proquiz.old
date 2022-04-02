@@ -6,7 +6,7 @@ from sqlalchemy.schema import UniqueConstraint
 
 
 class Game(TableMixin, Base):
-    __tablename__ = "game"
+    __tablename__ = "games"
 
     match_uid = Column(
         Integer, ForeignKey("match.uid", ondelete="CASCADE"), nullable=False

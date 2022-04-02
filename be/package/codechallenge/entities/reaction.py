@@ -8,7 +8,7 @@ from sqlalchemy.schema import UniqueConstraint
 
 
 class Reaction(TableMixin, Base):
-    __tablename__ = "reaction"
+    __tablename__ = "reactions"
 
     match_uid = Column(
         Integer, ForeignKey("match.uid", ondelete="CASCADE"), nullable=False

@@ -20,7 +20,7 @@ from sqlalchemy import Boolean, Column, DateTime, Integer, String, select
 
 
 class Match(TableMixin, Base):
-    __tablename__ = "match"
+    __tablename__ = "matches"
 
     # implicit backward relations
     # games: rankings: reactions:

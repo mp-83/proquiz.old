@@ -73,7 +73,7 @@ class UserFactory:
 
 
 class User(TableMixin, Base):
-    __tablename__ = "user"
+    __tablename__ = "users"
 
     email = Column(String(EMAIL_MAX_LENGTH), unique=True)
     email_digest = Column(String(DIGEST_LENGTH), nullable=True)

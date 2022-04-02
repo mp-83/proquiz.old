@@ -5,7 +5,7 @@ from sqlalchemy.orm import relationship
 
 
 class Ranking(TableMixin, Base):
-    __tablename__ = "ranking"
+    __tablename__ = "rankings"
 
     user_uid = Column(
         Integer, ForeignKey("user.uid", ondelete="CASCADE"), nullable=False

@@ -7,7 +7,7 @@ from sqlalchemy.schema import UniqueConstraint
 
 
 class Answer(TableMixin, Base):
-    __tablename__ = "answer"
+    __tablename__ = "answers"
 
     question_uid = Column(
         Integer, ForeignKey("question.uid", ondelete="CASCADE"), nullable=False
