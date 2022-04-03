@@ -16,6 +16,8 @@ services:
       - "./be/package:/package"
     ports:
       - "5500:5500"
+    stdin_open: true
+    tty: true
 
   redis:
     image: "redis"

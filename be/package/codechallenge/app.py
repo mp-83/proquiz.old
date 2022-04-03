@@ -57,9 +57,9 @@ def main(global_config, **settings):
         root_factory="codechallenge.entities.meta.Root",
     )
     config.include("pyramid_jinja2")
+    config.include("codechallenge.security")
     config.include("codechallenge.endpoints.routes")
     config.include("codechallenge.entities.meta")
-    config.include("codechallenge.security")
 
     StoreConfig().config = config
     return config.make_wsgi_app()

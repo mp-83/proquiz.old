@@ -7,7 +7,6 @@ requires = [
     "bcrypt",
     "cerberus",
     "pymysql",
-    "click",
     "cryptography",
     "openpyxl",
     "pyramid",

@@ -17,9 +17,12 @@ class Login:
         self.request = request
 
     @view_decorator(
-        route_name="login",
-        request_method="POST",
+        route_name="home", request_method="GET", renderer="templates/home_page.jinja2"
     )
+    def home(self):
+        return {}
+
+    @view_decorator(route_name="login", request_method="POST", require_csrf=False)
     def login(self):
         user_data = getattr(self.request, "json", None)
         v = Validator(user_login_schema)
@@ -29,7 +32,7 @@ class Login:
         # TODO to fix later
         next_url = self.request.params.get("next", "")
         if not next_url:
-            next_url = self.request.route_url("new_question")
+            next_url = self.request.route_url("list_matches")
 
         email = v.document.get("email")
         password = v.document.get("password")
@@ -37,6 +40,7 @@ class Login:
         if user is not None and user.check_password(password):
             new_csrf_token(self.request)
             headers = remember(self.request, user.uid)
+            print(f"Headers ==> {headers}")
             return HTTPSeeOther(location=next_url, headers=headers)
         return Response(status=400, json={"error": "Login failed"})
 
