@@ -8,7 +8,7 @@ I quickly realised that this idea would not have been suitable for the context s
 
 When I started working on the quiz I opted for [Pyramid](https://docs.pylonsproject.org/projects/pyramid/en/latest/) because I wanted to learn this framework.
 
-This repository contains the first complete version. Although Pyramid is more a Model-View-Template framework, I developed my solution using a standard REST CRUD approach.
+This repository contains the first complete version. Although Pyramid is more a Model-View-Template framework, I TDD developed my solution using a standard REST CRUD approach.
 
 ![Diagram version 1](docs/pyramid-diagram.png "Diagram v.1")
 
