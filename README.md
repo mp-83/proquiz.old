@@ -14,9 +14,13 @@ This repository contains the first complete version. Although Pyramid is more a 
 
 A set of endpoints mapped to entities (aka `models`) with a simple validation mechanism in between, plus the _play_ logic.
 
-This project was then ported to the [new version](https://github.com/mp-83/proquiz), that uses FastAPI.
+### Current
 
-Still you can start the application via
+The new and current [version](https://github.com/mp-83/proquiz) of this project is build with FastAPI.
+
+### Compose
+
+You can start the application via
 ```
 docker-compose up -d
 ```
